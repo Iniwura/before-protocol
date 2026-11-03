@@ -2,7 +2,7 @@
 import {CHAIN_ID,RPC_URL,isAddress,parseHexUint} from '../web/core.mjs';
 const rpcURL=process.env.RH_TESTNET_RPC || RPC_URL;
 const address=process.argv[2] || process.env.BEFORE_TEST_DEPLOYER_ADDRESS || '';
-if(address && !isAddress(address)){
+if(address && (!isAddress(address) || /^0x0{40}$/i.test(address))){
   console.error('Expected a public, 0x-prefixed 20-byte deployer address. Never pass private keys.');
   process.exit(2);
 }
