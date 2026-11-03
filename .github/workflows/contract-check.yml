@@ -1,0 +1,20 @@
+name: Contracts
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: stable
+      - name: Solidity build
+        run: forge build
+      - name: Unit, adversarial and fuzz tests
+        run: forge test --fuzz-runs 1024 -vvv
+      - name: Independent reference-model tests
+        run: node --test checks/reference.test.mjs
