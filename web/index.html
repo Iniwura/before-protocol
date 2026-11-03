@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#f8f9fb">
+<meta name="description" content="BEFORE: testnet transaction protection, practice challenges and independently inspectable proof.">
+<title>BEFORE — Protect / Challenge / Proof</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg"><link rel="stylesheet" href="/styles.css"><script type="module" src="/app.js"></script>
+</head><body><div class="app-shell">
+<header class="topbar">
+<a class="brand" href="/" aria-label="BEFORE home"><span class="brand-symbol" aria-hidden="true"><span></span><span></span></span><span>BEFORE<span class="brand-period">.</span></span></a>
+<div class="top-actions"><span class="network-indicator"><span class="status-dot" id="network-dot"></span><span id="network-status-text">Testnet · Checking</span></span><a class="source-link" href="https://github.com/Iniwura/before-protocol" target="_blank" rel="noopener noreferrer">GitHub ↗</a></div>
+</header>
+<main class="main">
+<div class="page-heading"><div class="eyebrow"><span class="eyebrow-line"></span> Robinhood Chain / Testnet</div><h1>Transaction protection,<br><span>with proof.</span></h1></div>
+<nav class="app-tabs" role="tablist" aria-label="BEFORE sections">
+<button class="tab active" type="button" role="tab" id="tab-protect" aria-controls="panel-protect" aria-selected="true" data-tab="protect"><span class="tab-num">01</span>Protect</button>
+<button class="tab" type="button" role="tab" id="tab-challenge" aria-controls="panel-challenge" aria-selected="false" data-tab="challenge" tabindex="-1"><span class="tab-num">02</span>Challenge</button>
+<button class="tab" type="button" role="tab" id="tab-proof" aria-controls="panel-proof" aria-selected="false" data-tab="proof" tabindex="-1"><span class="tab-num">03</span>Proof</button>
+</nav>
+<section class="view active" role="tabpanel" id="panel-protect" aria-labelledby="tab-protect">
+<div class="view-heading"><div><h2>Protect</h2><p>See how a vault enforces transfer rules.</p></div><span class="mode-pill">● Local policy preview</span></div>
+<div class="work-grid">
+<div class="panel policy-panel"><div class="panel-overline">Current policy</div>
+<div class="limit-grid"><div><span class="field-label">Per transfer</span><div class="limit-value">60 <small>tokens</small></div></div><div><span class="field-label">Per UTC day</span><div class="limit-value">100 <small>tokens</small></div></div></div>
+<div class="rule-separator"></div>
+<form id="protect-form" novalidate>
+<label class="input-label" for="protect-amount">Transfer amount</label><div class="input-unit"><input id="protect-amount" name="amount" type="text" inputmode="numeric" pattern="[0-9]*" value="75" autocomplete="off" required><span>tokens</span></div><div class="input-note">Whole tokens · mock policy</div>
+<label class="input-label second-label" for="protect-spent">Already spent today</label><div class="input-unit"><input id="protect-spent" name="spent" type="text" inputmode="numeric" pattern="[0-9]*" value="40" autocomplete="off" required><span>tokens</span></div>
+<fieldset class="destination-field"><legend class="input-label">Destination</legend><label><input type="radio" name="destination" value="approved" checked><span>Approved wallet</span></label><label><input type="radio" name="destination" value="other"><span>Another wallet</span></label></fieldset>
+<button class="primary-button" type="submit">Check rules <span aria-hidden="true">→</span></button>
+</form></div>
+<div class="result-panel" id="protect-result" aria-live="polite"><div class="result-topline"><span>POLICY CHECK</span><span>LOCAL / NO TRANSACTION</span></div><div class="result-center"><div class="result-symbol" id="protect-symbol">×</div><div class="result-tag" id="protect-tag">BLOCKED</div><h3 id="protect-result-title">Transfer denied.</h3><p id="protect-result-text">Transfer exceeds the 60-token limit.</p></div><div class="result-footer">Enforced by the vault contract when deployed <span aria-hidden="true">↗</span></div></div>
+</div><div class="disclosure"><span class="disclosure-mark">i</span> Browser-only policy check. No assets move or onchain result is claimed.</div>
+</section>
+<section class="view" role="tabpanel" id="panel-challenge" aria-labelledby="tab-challenge" hidden>
+<div class="view-heading"><div><h2>Challenge</h2><p>Find the missing rule in an intentionally flawed vault.</p></div><span class="mode-pill">● Mock-token practice</span></div>
+<div class="challenge-layout"><div class="panel challenge-panel"><div class="panel-overline">The flaw</div><h3>Two valid transfers.<br><span>One invalid outcome.</span></h3><p>The practice vault checks each transfer, but never totals daily spend.</p>
+<form id="challenge-form" novalidate><div class="two-inputs"><div><label class="input-label" for="challenge-a">First transfer</label><div class="input-unit"><input id="challenge-a" type="text" inputmode="numeric" value="60"><span>mock</span></div></div><div><label class="input-label" for="challenge-b">Second transfer</label><div class="input-unit"><input id="challenge-b" type="text" inputmode="numeric" value="50"><span>mock</span></div></div></div><button class="primary-button" type="submit">Verify bypass <span aria-hidden="true">→</span></button></form></div>
+<div class="challenge-result panel"><div class="panel-overline">Local evaluation</div><div class="test-track"><div class="test-step"><span class="test-icon" id="challenge-first-icon">✓</span><div><strong>Per-transfer check</strong><span>Each transfer must be ≤60</span></div></div><div class="test-step"><span class="test-icon" id="challenge-total-icon">!</span><div><strong>Daily spend check</strong><span id="challenge-total-label">110 total vs 100 allowed</span></div></div></div><div class="challenge-verdict" id="challenge-verdict" aria-live="polite">The flawed vault would allow an invalid daily total.</div><div class="small-disclosure">Local model of an intentional vulnerability. No onchain exploit or reward has occurred.</div></div></div></section>
+<section class="view" role="tabpanel" id="panel-proof" aria-labelledby="tab-proof" hidden>
+<div class="view-heading"><div><h2>Proof</h2><p>Inspect real testnet data without connecting a wallet.</p></div><span class="mode-pill">● Read-only RPC</span></div>
+<div class="proof-grid">
+<div class="panel proof-intro"><div class="panel-overline">Network</div><div class="chain-value" id="proof-chain">Checking…</div><div class="field-label">Chain ID 46630</div><div class="rule-separator"></div><div class="proof-meta"><span>Latest block</span><strong id="proof-block">—</strong></div><button class="secondary-button" type="button" id="refresh-chain">Refresh network <span aria-hidden="true">↻</span></button></div>
+<div class="panel proof-lookup"><div class="panel-overline">Contract inspector</div><form id="vault-form"><label class="input-label" for="vault-address">Testnet vault address</label><input class="wide-input" id="vault-address" type="text" spellcheck="false" placeholder="0x…" autocomplete="off" required><button class="secondary-button" type="submit">Read vault state ↗</button></form><div class="lookup-result" id="vault-result" aria-live="polite">No vault address has been inspected.</div></div></div>
+<div class="panel transaction-panel"><div class="panel-overline">Transaction inspector</div><form id="tx-form" class="tx-form"><label class="input-label" for="tx-hash">Testnet transaction hash</label><div class="tx-row"><input class="wide-input" id="tx-hash" type="text" spellcheck="false" placeholder="0x…" autocomplete="off" required><button class="secondary-button" type="submit">Inspect ↗</button></div></form><div class="lookup-result" id="tx-result" aria-live="polite">No transaction has been inspected.</div></div>
+<div class="disclosure"><span class="disclosure-mark">i</span> RPC results are live when reachable. This interface does not audit pasted contracts or receipts.</div>
+</section>
+</main>
+<footer class="footer"><span>BEFORE / Phase 2</span><span>Research prototype · No real WIF or custodial protection</span><a href="https://github.com/Iniwura/before-protocol/blob/main/docs/SECURITY_NOTES.md" target="_blank" rel="noopener noreferrer">Security notes ↗</a></footer>
+</div></body></html>

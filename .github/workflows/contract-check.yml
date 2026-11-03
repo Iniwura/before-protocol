@@ -1,4 +1,4 @@
-name: Contracts
+name: Contracts and web
 on:
   push:
   pull_request:
@@ -16,5 +16,9 @@ jobs:
         run: forge build
       - name: Unit, adversarial and fuzz tests
         run: forge test --fuzz-runs 1024 -vvv
-      - name: Independent reference-model tests
+      - name: Independent policy reference tests
         run: node --test checks/reference.test.mjs
+      - name: Web policy and validation tests
+        run: node --test web/test/core.test.mjs
+      - name: Browser source syntax
+        run: node --check web/app.js
