@@ -4,7 +4,7 @@
 
 BEFORE is a prototype for the [World Is Flat](https://worldisflat.fun/build) hackathon on Robinhood Chain. It demonstrates enforceable ERC-20 transfer policies, an isolated intentionally vulnerable practice vault, and deterministic verification of a policy bypass.
 
-> **Research only. Not audited, not deployed, and not suitable for custody of real assets.** No real WIF token or reward is used.
+> **Research only. The browser prototype is deployed; the contracts are not deployed or audited. Do not deposit real assets.** No real WIF token or reward is used.
 
 ## Protect
 
@@ -38,9 +38,23 @@ The network check is read-only; it requires internet access.
 - 9 / 9 independent JavaScript reference-model tests passed.
 - BeforeVault line coverage was 98.25% in the local coverage run, with branch gaps remaining.
 - Robinhood Chain testnet public RPC returned chain ID 46630 in a read-only check.
-- **No chain deployment, audited security claim, real-token custody, real WIF reward, or frontend yet.**
+- **No chain deployment, audited security claim, real-token custody, or real WIF reward.**
 
 These are previous local environment results; GitHub Actions runs separately and is the repository CI source of truth.
+
+## Live research prototype
+
+**Website:** https://before-web-theta.vercel.app/
+
+The responsive, dependency-free frontend has three experiences:
+
+- **Protect:** local, clearly labeled policy preview. No real transaction occurs.
+- **Challenge:** local simulation of the intentional split-transfer flaw using mock amounts. No paid bounty.
+- **Proof:** live read-only testnet RPC inspection for supplied vault-like addresses and transaction receipts. It does not establish contract authenticity or security.
+
+The web code is in `web/`; `node --test web/test/core.test.mjs` runs its 13 pure-logic checks. GitHub Actions checks Solidity, policy-model and web tests. CI is at https://github.com/Iniwura/before-protocol/actions.
+
+The static website being live does not mean the contracts have been deployed. Testnet-chain transactions and verified contract addresses remain outstanding.
 
 ## Architecture
 
@@ -59,6 +73,6 @@ These are previous local environment results; GitHub Actions runs separately and
 2. Deploy **mock-only** contracts on Robinhood Chain testnet and capture explorer receipts and verified source.
 3. Increase property/invariant coverage and obtain independent security review before any real custody.
 4. Design a separate and economically defensible WIF reward flow. The existing trivially solvable training exercise must never be presented as a paid research bounty.
-5. Build a minimal, accessible, responsive Protect / Challenge / Proof interface.
+5. Continue browser QA and replace local preview-only flows with real, safely scoped testnet interactions once testnet contracts are verifiably deployed.
 
-[Deployment](docs/DEPLOYMENT.md) · [Security boundaries](docs/SECURITY_NOTES.md) · [Verification](docs/VERIFICATION.md) · [Milestones](docs/PHASE_1.md)
+[Deployment](docs/DEPLOYMENT.md) · [Security boundaries](docs/SECURITY_NOTES.md) · [Verification](docs/VERIFICATION.md) · [Phase 1](docs/PHASE_1.md) · [Phase 2](docs/PHASE_2.md)
