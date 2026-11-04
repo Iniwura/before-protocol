@@ -45,7 +45,7 @@ Do not describe the local preview or mocked wallet run as a real transaction. Do
 
 `WifSecurityChallenge` is a separate reward escrow that can hold WIF when configured with the intended token address. It uses exact-balance ERC-20 accounting, a solver-bound commit/reveal, a solver bond, a bounded 30-day window, verifier code-hash pinning, first-valid settlement, invalid-proof slashing, cancellation and expiry recovery.
 
-It is not a security oracle. The verifier must bind the challenge ID and solver, inspect the intended target, and be independently reviewed. The current submission contains no WIF address, private key, funded challenge or payout claim. Funding or signing a real challenge is the only remaining user-authorized gate.
+It is not a security oracle. The verifier must bind the challenge ID and solver, inspect the intended target, and be independently reviewed. The current submission contains no WIF address, private key, funded challenge or payout claim. A disposable testnet broadcast still needs test ETH and a user-controlled signature; valuable challenge funding needs a separate explicit approval.
 
 ## Claim language
 
