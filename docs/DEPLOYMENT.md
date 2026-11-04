@@ -4,7 +4,7 @@
 
 ## Local chain
 
-Start Anvil with chain ID 31337, then set BEFORE_TEST_DEPLOYER_KEY to an ephemeral local-only development key in your terminal, never in a source file. Run:
+Start Anvil with chain ID 31337 and use an ephemeral local-only development key or Anvil's unlocked test account. Never use a valuable wallet. Run:
 
 ~~~sh
 forge script script/DeployBefore.s.sol:DeployBefore --rpc-url http://127.0.0.1:8545 --broadcast -vvvv
@@ -18,7 +18,7 @@ Chain ID: 46630. RPC: https://rpc.testnet.chain.robinhood.com. Explorer: https:/
 
 1. Use a newly generated throwaway testnet-only wallet. Obtain test ETH through the official testnet faucet: https://faucet.testnet.chain.robinhood.com.
 2. Verify the RPC using node script/check-chain.mjs.
-3. Set BEFORE_TEST_DEPLOYER_KEY in your local shell or a secret manager. Never upload it to GitHub or paste it into ChatGPT.
+3. Import the disposable key into a local encrypted Foundry keystore (for example, account name `before-testnet`). Never upload the key to GitHub, paste it into ChatGPT, or put it in Vercel variables.
 4. Run a read-only simulation first. This does not sign or broadcast anything:
 
 ~~~sh
@@ -29,10 +29,13 @@ forge script script/DeployBefore.s.sol:DeployBefore \
 
 Confirm the simulation reaches `SIMULATION COMPLETE` and note the estimated test ETH requirement. The sender is public; do not substitute a private key for `--sender`.
 
-5. Run:
+5. Once the simulation passes, broadcast with the local keystore signer. Foundry prompts for the keystore password locally:
 
 ~~~sh
-forge script script/DeployBefore.s.sol:DeployBefore --rpc-url https://rpc.testnet.chain.robinhood.com --broadcast -vvvv
+forge script script/DeployBefore.s.sol:DeployBefore \
+  --account before-testnet \
+  --rpc-url https://rpc.testnet.chain.robinhood.com \
+  --broadcast -vvvv
 ~~~
 
 6. The script deploys `MockERC20`, `BeforeFactory` and an **empty** `WifSecurityChallenge`, then creates only the BTEST demo vault and unpaid practice arena. It never accepts a WIF address and never funds a reward.
