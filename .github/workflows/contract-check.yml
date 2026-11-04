@@ -22,3 +22,18 @@ jobs:
         run: node --test web/test/core.test.mjs web/test/onchain.test.mjs
       - name: Browser source syntax
         run: node --check web/app.js && node --check web/onchain.mjs
+
+  browser-quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install locked browser test dependencies
+        run: npm ci --prefix qa
+      - name: Install Chromium and system libraries
+        working-directory: qa
+        run: npx playwright install --with-deps chromium
+      - name: Accessibility, responsive and mocked-wallet regression
+        run: node qa/verify.mjs
