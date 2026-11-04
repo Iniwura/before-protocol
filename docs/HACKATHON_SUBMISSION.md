@@ -38,6 +38,8 @@ The production mechanism is a separate ERC-20 escrow for meaningful security fin
 
 The browser preview and local/CI evidence are real. Robinhood testnet deployment, verified source, funded WIF challenge and payout are not claimed until public receipts and explorer verification are recorded. The checked-in manifest remains `verified: false`; no private key or real-value custody is included.
 
+The concrete paid-challenge design is documented in [WIF_CHALLENGE_DESIGN.md](WIF_CHALLENGE_DESIGN.md); it keeps the mock training exercise separate from any future WIF bounty.
+
 ## Finalization gate
 
 After a disposable testnet wallet signs the test-only deployment, run the eleven-argument command in [TESTNET_PROOF.md](TESTNET_PROOF.md). Only after the verifier passes should the public addresses and transaction hashes be committed to `web/deployment.json`, followed by a fresh browser run and PR update.
