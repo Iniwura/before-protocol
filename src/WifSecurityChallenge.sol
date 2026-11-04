@@ -22,6 +22,8 @@ contract WifSecurityChallenge {
     error InvalidReward();
     error InvalidBond();
     error InvalidVerifier();
+    error InvalidTarget();
+    error ScopeRequired();
     error InvalidWindow();
     error ChallengeNotFound();
     error ChallengeClosed();
@@ -32,6 +34,7 @@ contract WifSecurityChallenge {
     error CommitmentMismatch();
     error AlreadySettled();
     error VerifierChanged();
+    error TargetChanged();
     error VerifierFailed();
     error NotSponsor();
     error HasCommitments();
@@ -51,10 +54,22 @@ contract WifSecurityChallenge {
         Refunded
     }
 
+    struct ChallengeConfig {
+        address rewardToken;
+        uint256 rewardAmount;
+        uint256 bondAmount;
+        address verifier;
+        address target;
+        bytes32 scopeHash;
+        uint64 commitDeadline;
+        uint64 revealDeadline;
+    }
+
     struct Challenge {
         address sponsor;
         address rewardToken;
         address verifier;
+        address target;
         bytes32 rewardTokenCodeHash;
         bytes32 verifierCodeHash;
         uint256 rewardAmount;
@@ -73,7 +88,9 @@ contract WifSecurityChallenge {
     }
 
     uint256 public nextChallengeId = 1;
-    mapping(uint256 => Challenge) public challenges;
+    mapping(uint256 => Challenge) private _challenges;
+    mapping(uint256 => bytes32) public targetCodeHashes;
+    mapping(uint256 => bytes32) public scopeHashes;
     mapping(uint256 => mapping(address => Commitment)) public commitments;
 
     bool private _entered;
@@ -83,6 +100,8 @@ contract WifSecurityChallenge {
         address indexed sponsor,
         address indexed rewardToken,
         address verifier,
+        address target,
+        bytes32 scopeHash,
         uint256 rewardAmount,
         uint256 bondAmount,
         uint64 commitDeadline,
@@ -112,54 +131,65 @@ contract WifSecurityChallenge {
     /// @notice Escrow a reward and publish a bounded challenge window.
     /// @dev The verifier is part of the challenge's public trust boundary. Review its source
     ///      and ensure it binds both challengeId and solver before funding a live challenge.
-    function createChallenge(
-        address rewardToken,
-        uint256 rewardAmount,
-        uint256 bondAmount,
-        address verifier,
-        uint64 commitDeadline,
-        uint64 revealDeadline
-    ) external nonReentrant returns (uint256 challengeId) {
-        if (rewardToken == address(0) || verifier == address(0)) {
+    function createChallenge(ChallengeConfig calldata config)
+        external
+        nonReentrant
+        returns (uint256 challengeId)
+    {
+        if (config.rewardToken == address(0) || config.verifier == address(0)) {
             revert ZeroAddress();
         }
-        if (rewardAmount == 0) revert InvalidReward();
-        if (bondAmount == 0 || rewardAmount > type(uint256).max - bondAmount) revert InvalidBond();
-        if (rewardToken.code.length == 0) revert UnsupportedToken();
-        if (verifier.code.length == 0) revert InvalidVerifier();
+        if (config.rewardAmount == 0) revert InvalidReward();
+        if (config.bondAmount == 0 || config.rewardAmount > type(uint256).max - config.bondAmount) {
+            revert InvalidBond();
+        }
+        if (config.rewardToken.code.length == 0) revert UnsupportedToken();
+        if (config.verifier.code.length == 0) revert InvalidVerifier();
+        if (config.target == address(0) || config.target.code.length == 0) revert InvalidTarget();
+        if (config.scopeHash == bytes32(0)) revert ScopeRequired();
         if (
-            commitDeadline <= block.timestamp || revealDeadline <= commitDeadline
-                || revealDeadline > block.timestamp + MAX_WINDOW
+            config.commitDeadline <= block.timestamp
+                || config.revealDeadline <= config.commitDeadline
+                || config.revealDeadline > block.timestamp + MAX_WINDOW
         ) revert InvalidWindow();
 
-        _pullExact(rewardToken, msg.sender, address(this), rewardAmount);
+        _pullExact(config.rewardToken, msg.sender, address(this), config.rewardAmount);
 
         challengeId = nextChallengeId++;
-        challenges[challengeId] = Challenge({
+        _challenges[challengeId] = Challenge({
             sponsor: msg.sender,
-            rewardToken: rewardToken,
-            verifier: verifier,
-            rewardTokenCodeHash: rewardToken.codehash,
-            verifierCodeHash: verifier.codehash,
-            rewardAmount: rewardAmount,
-            bondAmount: bondAmount,
-            commitDeadline: commitDeadline,
-            revealDeadline: revealDeadline,
+            rewardToken: config.rewardToken,
+            verifier: config.verifier,
+            target: config.target,
+            rewardTokenCodeHash: config.rewardToken.codehash,
+            verifierCodeHash: config.verifier.codehash,
+            rewardAmount: config.rewardAmount,
+            bondAmount: config.bondAmount,
+            commitDeadline: config.commitDeadline,
+            revealDeadline: config.revealDeadline,
             commitmentCount: 0,
             rewardReleased: false,
             canceled: false
         });
+        targetCodeHashes[challengeId] = config.target.codehash;
+        scopeHashes[challengeId] = config.scopeHash;
 
         emit ChallengeCreated(
             challengeId,
             msg.sender,
-            rewardToken,
-            verifier,
-            rewardAmount,
-            bondAmount,
-            commitDeadline,
-            revealDeadline
+            config.rewardToken,
+            config.verifier,
+            config.target,
+            config.scopeHash,
+            config.rewardAmount,
+            config.bondAmount,
+            config.commitDeadline,
+            config.revealDeadline
         );
+    }
+
+    function challenges(uint256 challengeId) external view returns (Challenge memory) {
+        return _challenges[challengeId];
     }
 
     /// @notice Derive the solver-bound commitment offchain before submitting commit().
@@ -184,6 +214,7 @@ contract WifSecurityChallenge {
         if (challenge.rewardToken.codehash != challenge.rewardTokenCodeHash) {
             revert UnsupportedToken();
         }
+        if (challenge.target.codehash != targetCodeHashes[challengeId]) revert TargetChanged();
 
         Commitment storage current = commitments[challengeId][msg.sender];
         if (current.status != CommitmentStatus.None) revert AlreadyCommitted();
@@ -215,6 +246,7 @@ contract WifSecurityChallenge {
         if (challenge.rewardToken.codehash != challenge.rewardTokenCodeHash) {
             revert UnsupportedToken();
         }
+        if (challenge.target.codehash != targetCodeHashes[challengeId]) revert TargetChanged();
 
         Commitment storage current = commitments[challengeId][msg.sender];
         if (current.status == CommitmentStatus.None) revert CommitmentRequired();
@@ -302,7 +334,7 @@ contract WifSecurityChallenge {
         view
         returns (Challenge storage challenge)
     {
-        challenge = challenges[challengeId];
+        challenge = _challenges[challengeId];
         if (challenge.sponsor == address(0)) revert ChallengeNotFound();
     }
 

@@ -8,6 +8,7 @@ import {MockFeeToken} from "../src/mocks/MockFeeToken.sol";
 interface VmChallenge {
     function prank(address who) external;
     function warp(uint256 timestamp) external;
+    function etch(address target, bytes calldata code) external;
     function expectRevert(bytes4 errorSelector) external;
 }
 
@@ -31,6 +32,8 @@ contract RevertingVerifier is IChallengeVerifier {
     }
 }
 
+contract ChallengeTarget {}
+
 contract WifSecurityChallengeTest {
     VmChallenge private constant vm =
         VmChallenge(address(uint160(uint256(keccak256("hevm cheat code")))));
@@ -40,6 +43,7 @@ contract WifSecurityChallengeTest {
     WifSecurityChallenge internal escrow;
     MockERC20 internal reward;
     FixedEvidenceVerifier internal verifier;
+    ChallengeTarget internal target;
 
     uint256 internal constant REWARD = 100 ether;
     uint256 internal constant BOND = 10 ether;
@@ -48,6 +52,7 @@ contract WifSecurityChallengeTest {
         escrow = new WifSecurityChallenge();
         reward = new MockERC20();
         verifier = new FixedEvidenceVerifier(bytes("valid"), true);
+        target = new ChallengeTarget();
         reward.mint(address(this), 1_000 ether);
         reward.mint(SOLVER, 100 ether);
         reward.mint(OTHER_SOLVER, 100 ether);
@@ -60,21 +65,18 @@ contract WifSecurityChallengeTest {
 
     function testCreateChallengeEscrowsExactReward() public {
         (uint256 id,,) = _create(verifier);
-        (
-            address sponsor,
-            address token,
-            address configuredVerifier,,,
-            uint256 rewardAmount,
-            uint256 bondAmount,,,
-            uint256 commitmentCount,
-            bool rewardReleased,
-            bool canceled
-        ) = escrow.challenges(id);
-        require(sponsor == address(this), "wrong sponsor");
-        require(token == address(reward), "wrong reward token");
-        require(configuredVerifier == address(verifier), "wrong verifier");
-        require(rewardAmount == REWARD && bondAmount == BOND, "wrong economics");
-        require(commitmentCount == 0 && !rewardReleased && !canceled, "wrong initial state");
+        WifSecurityChallenge.Challenge memory challenge = escrow.challenges(id);
+        require(challenge.sponsor == address(this), "wrong sponsor");
+        require(challenge.rewardToken == address(reward), "wrong reward token");
+        require(challenge.verifier == address(verifier), "wrong verifier");
+        require(challenge.target == address(target), "wrong target");
+        require(escrow.targetCodeHashes(id) == address(target).codehash, "wrong target hash");
+        require(escrow.scopeHashes(id) == keccak256("before-training-scope-v1"), "wrong scope hash");
+        require(challenge.rewardAmount == REWARD && challenge.bondAmount == BOND, "wrong economics");
+        require(
+            challenge.commitmentCount == 0 && !challenge.rewardReleased && !challenge.canceled,
+            "wrong initial state"
+        );
         require(reward.balanceOf(address(escrow)) == REWARD, "reward not escrowed exactly");
     }
 
@@ -177,6 +179,21 @@ contract WifSecurityChallengeTest {
         require(reward.balanceOf(SOLVER) == 100 ether, "bond not refunded");
     }
 
+    function testTargetCodeChangeFailsClosed() public {
+        (uint256 id, uint64 commitDeadline,) = _create(verifier);
+        bytes memory evidence = bytes("valid");
+        bytes32 salt = bytes32(uint256(15));
+        bytes32 digest = escrow.commitmentFor(id, SOLVER, salt, evidence);
+        vm.prank(SOLVER);
+        escrow.commit(id, digest);
+
+        vm.etch(address(target), hex"6000");
+        vm.warp(uint256(commitDeadline) + 1);
+        vm.expectRevert(WifSecurityChallenge.TargetChanged.selector);
+        vm.prank(SOLVER);
+        escrow.reveal(id, salt, evidence);
+    }
+
     function testExpiryRefundsRewardAndLeavesPendingBondsClaimable() public {
         (uint256 id,, uint64 revealDeadline) = _create(verifier);
         bytes memory evidence = bytes("valid");
@@ -200,8 +217,8 @@ contract WifSecurityChallengeTest {
         (uint256 id,,) = _create(verifier);
         escrow.cancel(id);
         require(reward.balanceOf(address(this)) == 1_000 ether, "cancel did not refund reward");
-        (,,,,,,,,,, bool rewardReleased, bool canceled) = escrow.challenges(id);
-        require(rewardReleased && canceled, "cancel state missing");
+        WifSecurityChallenge.Challenge memory challenge = escrow.challenges(id);
+        require(challenge.rewardReleased && challenge.canceled, "cancel state missing");
     }
 
     function testSponsorCannotCancelAfterCommit() public {
@@ -220,24 +237,58 @@ contract WifSecurityChallengeTest {
         fee.approve(address(escrow), 100 ether);
         vm.expectRevert(WifSecurityChallenge.UnsupportedToken.selector);
         escrow.createChallenge(
-            address(fee),
-            10 ether,
-            1 ether,
-            address(verifier),
-            uint64(block.timestamp + 1 days),
-            uint64(block.timestamp + 2 days)
+            _config(
+                address(fee),
+                10 ether,
+                1 ether,
+                address(verifier),
+                address(target),
+                bytes32(uint256(1)),
+                uint64(block.timestamp + 1 days),
+                uint64(block.timestamp + 2 days)
+            )
         );
     }
 
     function testInvalidWindowsAndMissingChallengeFailClosed() public {
         vm.expectRevert(WifSecurityChallenge.InvalidWindow.selector);
         escrow.createChallenge(
-            address(reward),
-            REWARD,
-            BOND,
-            address(verifier),
-            uint64(block.timestamp + 2 days),
-            uint64(block.timestamp + 1 days)
+            _config(
+                address(reward),
+                REWARD,
+                BOND,
+                address(verifier),
+                address(target),
+                bytes32(uint256(1)),
+                uint64(block.timestamp + 2 days),
+                uint64(block.timestamp + 1 days)
+            )
+        );
+        vm.expectRevert(WifSecurityChallenge.InvalidTarget.selector);
+        escrow.createChallenge(
+            _config(
+                address(reward),
+                REWARD,
+                BOND,
+                address(verifier),
+                SOLVER,
+                bytes32(uint256(1)),
+                uint64(block.timestamp + 1 days),
+                uint64(block.timestamp + 2 days)
+            )
+        );
+        vm.expectRevert(WifSecurityChallenge.ScopeRequired.selector);
+        escrow.createChallenge(
+            _config(
+                address(reward),
+                REWARD,
+                BOND,
+                address(verifier),
+                address(target),
+                bytes32(0),
+                uint64(block.timestamp + 1 days),
+                uint64(block.timestamp + 2 days)
+            )
         );
         vm.expectRevert(WifSecurityChallenge.ChallengeNotFound.selector);
         escrow.commitmentFor(999, SOLVER, bytes32(0), bytes("valid"));
@@ -250,12 +301,38 @@ contract WifSecurityChallengeTest {
         commitDeadline = uint64(block.timestamp + 1 days);
         revealDeadline = uint64(block.timestamp + 2 days);
         id = escrow.createChallenge(
-            address(reward),
-            REWARD,
-            BOND,
-            address(configuredVerifier),
-            commitDeadline,
-            revealDeadline
+            _config(
+                address(reward),
+                REWARD,
+                BOND,
+                address(configuredVerifier),
+                address(target),
+                keccak256("before-training-scope-v1"),
+                commitDeadline,
+                revealDeadline
+            )
         );
+    }
+
+    function _config(
+        address rewardToken,
+        uint256 rewardAmount,
+        uint256 bondAmount,
+        address configuredVerifier,
+        address configuredTarget,
+        bytes32 scopeHash,
+        uint64 commitDeadline,
+        uint64 revealDeadline
+    ) internal pure returns (WifSecurityChallenge.ChallengeConfig memory) {
+        return WifSecurityChallenge.ChallengeConfig({
+                rewardToken: rewardToken,
+                rewardAmount: rewardAmount,
+                bondAmount: bondAmount,
+                verifier: configuredVerifier,
+                target: configuredTarget,
+                scopeHash: scopeHash,
+                commitDeadline: commitDeadline,
+                revealDeadline: revealDeadline
+            });
     }
 }
