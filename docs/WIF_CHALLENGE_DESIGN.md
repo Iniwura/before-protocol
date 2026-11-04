@@ -2,6 +2,8 @@
 
 `WifSecurityChallenge` is a settlement primitive, not a security oracle. A live WIF challenge is only meaningful when the target, scope, evidence rule and reviewer set are concrete before a sponsor funds it.
 
+The solver commitment domain includes `address(escrow)`, `block.chainid`, `challengeId`, the solver address, salt and `keccak256(evidence)`. This prevents a copied commitment from being replayed on another chain or revealed by another wallet.
+
 ## First challenge template
 
 **Finding:** demonstrate a reproducible way for an unauthorized caller, or an authorized caller using the wrong destination, to violate the target vault's stated transfer policy while the target and token remain unchanged.

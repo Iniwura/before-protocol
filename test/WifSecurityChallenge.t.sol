@@ -10,6 +10,7 @@ import {ReviewedFindingVerifier} from "../src/ReviewedFindingVerifier.sol";
 interface VmChallenge {
     function prank(address who) external;
     function warp(uint256 timestamp) external;
+    function chainId(uint256 newChainId) external;
     function etch(address target, bytes calldata code) external;
     function expectRevert(bytes4 errorSelector) external;
 }
@@ -336,6 +337,17 @@ contract WifSecurityChallengeTest {
         vm.prank(OTHER_SOLVER);
         escrow.reveal(id, salt, evidence);
         require(reward.balanceOf(OTHER_SOLVER) == 100 ether - BOND, "copied reveal moved funds");
+    }
+
+    function testCommitmentCannotBeReplayedAcrossChainIds() public {
+        (uint256 id,,) = _create(verifier);
+        bytes memory evidence = bytes("valid");
+        bytes32 salt = bytes32(uint256(21));
+        bytes32 original = escrow.commitmentFor(id, SOLVER, salt, evidence);
+
+        vm.chainId(46631);
+        bytes32 otherChain = escrow.commitmentFor(id, SOLVER, salt, evidence);
+        require(original != otherChain, "commitment omitted chain domain");
     }
 
     function testOtherCommittedSolverCanRecoverBondAfterFirstValidClaim() public {

@@ -215,8 +215,9 @@ contract WifSecurityChallenge {
     }
 
     /// @notice Lock a bond against a private evidence hash.
-    /// @dev The solver address is part of the digest, so a copied commitment cannot be revealed
-    ///      by a mempool observer under their own address.
+    /// @dev The digest is bound to this escrow, chain, challenge and solver, so a copied
+    ///      commitment cannot be replayed on another chain or revealed by an observer under
+    ///      their own address.
     function commit(uint256 challengeId, bytes32 commitment) external nonReentrant {
         Challenge storage challenge = _requireChallenge(challengeId);
         if (challenge.canceled || challenge.rewardReleased) revert ChallengeClosed();
@@ -358,7 +359,9 @@ contract WifSecurityChallenge {
         view
         returns (bytes32)
     {
-        return keccak256(abi.encode(address(this), challengeId, solver, salt, keccak256(evidence)));
+        return keccak256(
+            abi.encode(address(this), block.chainid, challengeId, solver, salt, keccak256(evidence))
+        );
     }
 
     function _pullExact(address asset, address from, address to, uint256 amount) private {
