@@ -2,9 +2,9 @@
 
 **Protect. Challenge. Proof.**
 
-BEFORE is a prototype for the [World Is Flat](https://worldisflat.fun/build) hackathon on Robinhood Chain. It demonstrates enforceable ERC-20 transfer policies, an isolated intentionally vulnerable practice vault, and deterministic verification of a policy bypass.
+BEFORE is a prototype for the [World Is Flat](https://worldisflat.fun/build) hackathon on Robinhood Chain. It demonstrates enforceable ERC-20 transfer policies, an isolated intentionally vulnerable practice vault, deterministic verification of a policy bypass, and a separate commit/reveal escrow for independently verifiable security findings.
 
-> **Research only. The browser prototype is deployed; the contracts are not deployed or audited. Do not deposit real assets.** No real WIF token or reward is used.
+> **Research only. The browser prototype is deployed; the contracts are not deployed or audited. Do not deposit real assets.** The WIF-capable escrow is implemented and tested, but no real WIF reward is funded or claimed.
 
 ## Protect
 
@@ -25,18 +25,18 @@ Requires [Foundry](https://getfoundry.sh/) and Node.js.
 ~~~sh
 forge build
 forge test --fuzz-runs 1024 -vvv
-node --test checks/reference.test.mjs
+node --test checks/reference.test.mjs checks/deployment-proof.test.mjs checks/deployment-cli.test.mjs web/test/core.test.mjs web/test/onchain.test.mjs
 node script/check-chain.mjs
 ~~~
 
 The network check is read-only; it requires internet access.
 
-## Verified Phase 1 checkpoint — 2026-11-03
+## Verified engineering checkpoint — 2026-11-04
 
 - Foundry 1.9.0 and Solc 0.8.36 compiled the code successfully.
-- 28 / 28 Solidity tests passed in a local Foundry EVM (including fuzz tests at 1,024 runs each).
-- 9 / 9 independent JavaScript reference-model tests passed.
-- BeforeVault line coverage was 98.25% in the local coverage run, with branch gaps remaining.
+- Solidity policy, factory, adversarial and escrow tests pass in a local Foundry EVM; fuzz tests run at 1,024 cases each.
+- Independent JavaScript policy, deployment-proof, web ABI and CLI tests pass.
+- The WIF-capable escrow has dedicated commit/reveal, copied-commitment, invalid-proof, expiry, cancellation and fee-token tests.
 - Robinhood Chain testnet public RPC returned chain ID 46630 in a read-only check.
 - **No chain deployment, audited security claim, real-token custody, or real WIF reward.**
 
@@ -49,7 +49,7 @@ These are previous local environment results; GitHub Actions runs separately and
 The responsive, dependency-free frontend has three experiences:
 
 - **Protect:** local, clearly labeled policy preview. No real transaction occurs.
-- **Challenge:** local simulation of the intentional split-transfer flaw using mock amounts. No paid bounty.
+- **Challenge:** local simulation of the intentional split-transfer flaw using mock amounts. The onchain practice path uses BTEST only and pays no bounty.
 - **Proof:** live read-only testnet RPC inspection for supplied vault-like addresses and transaction receipts. It does not establish contract authenticity or security.
 
 The web code is in `web/`; `node --test web/test/core.test.mjs` runs its 13 pure-logic checks. GitHub Actions checks Solidity, policy-model and web tests. CI is at https://github.com/Iniwura/before-protocol/actions.
@@ -61,6 +61,7 @@ The static website being live does not mean the contracts have been deployed. Te
 - src/BeforeVault.sol — protected immutable policy vault.
 - src/TrainingVault.sol — deliberately vulnerable mock-only practice vault.
 - src/TrainingArena.sol — deterministic training proof verifier.
+- src/WifSecurityChallenge.sol — separate ERC-20 reward escrow with solver-bound commit/reveal and expiry paths.
 - src/mocks — purpose-built test tokens, including adversarial mocks.
 - test — Solidity unit, fuzz, negative-path, and end-to-end tests.
 - reference and checks — dependency-free policy model, not a replacement for Solidity execution.
@@ -77,6 +78,12 @@ This is not a real-WIF bounty or a mainnet custody release.
 
 See [Phase 3 implementation and deployment gates](docs/PHASE_3.md).
 
+## WIF-funded security challenges
+
+`WifSecurityChallenge` is intentionally separate from the public BTEST exercise. A sponsor escrows a chosen ERC-20 reward, sets an independently reviewed verifier and a maximum 30-day commit/reveal window, and requires each solver to post a bond. A solver commits a hash bound to their wallet, salt and evidence, then reveals after the commit window. Only a verifier-approved reveal receives the reward and bond; invalid evidence slashes the bond to the sponsor; expiry returns the reward and releases unanswered bonds.
+
+The contract can hold WIF when configured with the intended Robinhood Chain WIF token, but this repository does not contain a WIF address, private key, funded challenge, or payout claim. The verifier is part of the trust boundary and must bind both the challenge ID and solver and receive independent review before any valuable funding.
+
 ## Proving a testnet deployment
 
 After a mock-only testnet deployment, `script/verify-testnet.mjs` can check the actual factory and test-token creation receipts, their contract addresses, 12 confirmation blocks, and byte-for-byte runtime code against Foundry artifacts. It is read-only and cannot make a false testnet claim from only a pasted address.
@@ -88,9 +95,9 @@ After a mock-only testnet deployment, `script/verify-testnet.mjs` can check the 
 ## Next gates
 
 1. Confirm current competition rules and complete project registration.
-2. Deploy **mock-only** contracts on Robinhood Chain testnet and capture explorer receipts and verified source.
+2. Deploy the mock-only demo contracts and empty challenge escrow on Robinhood Chain testnet and capture explorer receipts and verified source.
 3. Increase property/invariant coverage and obtain independent security review before any real custody.
-4. Design a separate and economically defensible WIF reward flow. The existing trivially solvable training exercise must never be presented as a paid research bounty.
+4. Configure a separate WIF reward only for a meaningful, independently reviewed verifier; the existing trivially solvable training exercise must never be presented as a paid research bounty.
 5. Continue browser QA and replace local preview-only flows with real, safely scoped testnet interactions once testnet contracts are verifiably deployed.
 
 [Deployment](docs/DEPLOYMENT.md) · [Security boundaries](docs/SECURITY_NOTES.md) · [Verification](docs/VERIFICATION.md) · [Phase 1](docs/PHASE_1.md) · [Phase 2](docs/PHASE_2.md)

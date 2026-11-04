@@ -22,7 +22,7 @@ const server = createServer(async(req,res)=>{
 await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
 const base='http://127.0.0.1:'+server.address().port;
 const browser=await chromium.launch({headless:true});
-const fixture={owner:'0x'+'3'.repeat(40),factory:'0x'+'1'.repeat(40),mockToken:'0x'+'2'.repeat(40),vault:'0x'+'4'.repeat(40),arena:'0x'+'5'.repeat(40),tx:'0x'+'a'.repeat(64)};
+const fixture={owner:'0x'+'3'.repeat(40),factory:'0x'+'1'.repeat(40),mockToken:'0x'+'2'.repeat(40),challengeEscrow:'0x'+'6'.repeat(40),vault:'0x'+'4'.repeat(40),arena:'0x'+'5'.repeat(40),tx:'0x'+'a'.repeat(64)};
 const padding=addr=>'0x'+'0'.repeat(24)+addr.slice(2);
 function routeRPC(page) {
   return page.route('https://rpc.testnet.chain.robinhood.com/**', route=>{
@@ -88,7 +88,7 @@ try {
   const page=await context.newPage();
   page.on('pageerror',error=>problems.push('mock wallet browser: '+error.message));
   await routeRPC(page);
-  await page.route('**/deployment.json',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({chainId:46630,factory:fixture.factory,mockToken:fixture.mockToken,factoryTx:fixture.tx,mockTokenTx:fixture.tx,verified:true})}));
+  await page.route('**/deployment.json',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({chainId:46630,factory:fixture.factory,mockToken:fixture.mockToken,challengeEscrow:fixture.challengeEscrow,factoryTx:fixture.tx,mockTokenTx:fixture.tx,challengeEscrowTx:fixture.tx,verified:true})}));
   await page.addInitScript(({owner,tx})=>{
     window.__transactions=[];
     window.ethereum={request:async({method,params})=>{

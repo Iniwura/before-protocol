@@ -52,5 +52,7 @@ export function deploymentReady(config) {
   if (!config || config.chainId !== CHAIN_ID || config.verified !== true) return false;
   return isAddress(config.factory) && !/^0x0{40}$/i.test(config.factory)
     && isAddress(config.mockToken) && !/^0x0{40}$/i.test(config.mockToken)
-    && isTxHash(config.factoryTx) && isTxHash(config.mockTokenTx);
+    && isAddress(config.challengeEscrow) && !/^0x0{40}$/i.test(config.challengeEscrow)
+    && isTxHash(config.factoryTx) && isTxHash(config.mockTokenTx)
+    && isTxHash(config.challengeEscrowTx);
 }

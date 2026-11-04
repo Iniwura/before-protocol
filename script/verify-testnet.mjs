@@ -10,12 +10,13 @@ const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const argv=process.argv.slice(2);
 const write=argv.includes('--write');
 const args=argv.filter(a=>a!=='--write');
-if(args.length!==4){
-  console.error('Usage: node script/verify-testnet.mjs FACTORY_ADDRESS FACTORY_DEPLOY_TX MOCK_TOKEN_ADDRESS MOCK_TOKEN_DEPLOY_TX [--write]');
+if(args.length!==4 && args.length!==6){
+  console.error('Usage: node script/verify-testnet.mjs FACTORY_ADDRESS FACTORY_DEPLOY_TX MOCK_TOKEN_ADDRESS MOCK_TOKEN_DEPLOY_TX [CHALLENGE_ESCROW_ADDRESS CHALLENGE_ESCROW_DEPLOY_TX] [--write]');
   process.exit(2);
 }
-const [factory,factoryTx,mockToken,mockTokenTx]=args;
-if(!isAddress(factory)||!isAddress(mockToken)||!isTxHash(factoryTx)||!isTxHash(mockTokenTx)){
+const [factory,factoryTx,mockToken,mockTokenTx,challengeEscrow,challengeEscrowTx]=args;
+if(!isAddress(factory)||!isAddress(mockToken)||!isTxHash(factoryTx)||!isTxHash(mockTokenTx)
+  || (challengeEscrow !== undefined && (!isAddress(challengeEscrow)||!isTxHash(challengeEscrowTx)))){
   console.error('Malformed public contract address or deployment transaction hash.');
   process.exit(2);
 }
@@ -42,6 +43,9 @@ try{
     {label:'Factory',address:factory,txHash:factoryTx,file:'BeforeFactory'},
     {label:'MockToken',address:mockToken,txHash:mockTokenTx,file:'MockERC20'}
   ];
+  if (challengeEscrow) {
+    pairs.push({label:'ChallengeEscrow',address:challengeEscrow,txHash:challengeEscrowTx,file:'WifSecurityChallenge'});
+  }
   const verified=[];
   for(const item of pairs){
     const receipt=await rpc('eth_getTransactionReceipt',[item.txHash]);
@@ -49,8 +53,9 @@ try{
     const artifactCode=await compiledRuntime(item.file);
     verified.push(attestContract({...item,receipt,actualCode,artifactCode,headBlock:head,minConfirmations:12}));
   }
-  const manifest={chainId:CHAIN_ID,factory,mockToken,factoryTx,mockTokenTx,arena:null,verified:true};
-  console.log('PASS: two deployment receipts match the compiled runtime bytecode on Robinhood testnet.');
+  const manifest={chainId:CHAIN_ID,factory,mockToken,challengeEscrow:challengeEscrow||null,factoryTx,mockTokenTx,challengeEscrowTx:challengeEscrowTx||null,arena:null,verified:true};
+  const countLabel = pairs.length === 2 ? 'two' : 'three';
+  console.log(`PASS: ${countLabel} deployment receipts match the compiled runtime bytecode on Robinhood testnet.`);
   console.log('Confirmations:',verified.map(v=>v.confirmations).join(', '));
   if(write){
     await writeFile(path.join(root,'web/deployment.json'),JSON.stringify(manifest,null,2)+'\n');

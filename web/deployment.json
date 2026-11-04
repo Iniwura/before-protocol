@@ -2,6 +2,10 @@
   "chainId": 46630,
   "factory": null,
   "mockToken": null,
+  "challengeEscrow": null,
   "arena": null,
-  "verified": false
+  "verified": false,
+  "factoryTx": null,
+  "mockTokenTx": null,
+  "challengeEscrowTx": null
 }

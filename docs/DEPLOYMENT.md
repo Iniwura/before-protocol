@@ -25,6 +25,11 @@ Chain ID: 46630. RPC: https://rpc.testnet.chain.robinhood.com. Explorer: https:/
 forge script script/DeployBefore.s.sol:DeployBefore --rpc-url https://rpc.testnet.chain.robinhood.com --broadcast -vvvv
 ~~~
 
-5. Verify chain ID, transaction hashes, deployed bytecode and source code before claiming testnet proof.
+5. The script deploys `MockERC20`, `BeforeFactory` and an **empty** `WifSecurityChallenge`, then creates only the BTEST demo vault and unpaid practice arena. It never accepts a WIF address and never funds a reward.
+6. Verify chain ID, direct creation transaction hashes, deployed bytecode and source code before claiming testnet proof. Use the optional challenge-escrow arguments to `script/verify-testnet.mjs`.
 
 The script restricts itself to chain IDs 31337 and 46630. No public testnet transaction is claimed at this checkpoint. Do not attempt mainnet with this script.
+
+## Valuable WIF funding
+
+Do not put a WIF private key in Foundry scripts, Vercel variables, GitHub, or chat. Funding a challenge is a separate authorization step after the verifier and target have been independently reviewed. The current repository contains no WIF token address, funded challenge, or payout claim.

@@ -9,6 +9,7 @@ BEFORE's next milestone is a **self-service, one-transaction demo vault** and a 
 - `createDemoVault(mockToken)` makes a fresh vault **owned by its caller**, pays 150 freely mintable BTEST into it, and fixes the destination to that same caller. 60 BTEST per transfer, 100 BTEST per fixed UTC day.
 - `createPractice(mockToken)` makes a fresh, 150-BTEST **intentionally vulnerable** practice arena for public demonstration. It pays no rewards.
 - `isVault`, `isPractice`, `latestVaultOf`, `latestPracticeOf` and creation events allow independent provenance checks.
+- `WifSecurityChallenge` is a separate, empty ERC-20 escrow deployment target. The deployment script does not fund it or configure a WIF challenge.
 
 The mock token and testnet native ETH have **no monetary value**. This is not a usable mainnet custody product or an independent security audit.
 
@@ -36,11 +37,11 @@ Use `anvil --chain-id 31337` to validate the actual deployment script with a loc
    ~~~sh
    forge script script/DeployBefore.s.sol:DeployBefore --account before-testnet --rpc-url https://rpc.testnet.chain.robinhood.com --broadcast -vvvv
    ~~~
-7. Record **real** receipt hashes, factory, mock-token, vault and arena addresses, verified source, chain ID, and a public demo transaction in the deployment manifest.
+7. Record **real** receipt hashes, factory, mock-token, empty challenge-escrow, vault and arena addresses, verified source, chain ID, and a public demo transaction in the deployment manifest.
 8. Update `web/deployment.json` only after independent explorer checks. An empty manifest keeps real-contract buttons hidden.
 
 ## Release gates
 
 - The testnet proof must include a denied transfer (revert receipt), an allowed transfer, and a practice split-bypass proof.
 - Distinguish a genuine chain transaction from a local estimate and from third-party smart contract claims.
-- Do not add a monetary WIF payout to this trivial practice exercise. A separate reward mechanism needs a meaningful adversarial challenge and independent security review.
+- Do not add a monetary WIF payout to this trivial practice exercise. `WifSecurityChallenge` needs a meaningful adversarial challenge, a reviewed verifier and explicit sponsor approval before any WIF is funded.

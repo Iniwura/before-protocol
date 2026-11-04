@@ -100,6 +100,7 @@ async function refreshNetwork(){
 $('refresh-chain').addEventListener('click',refreshNetwork);
 
 function setResult(target,message){target.replaceChildren();target.textContent=message;}
+function compactAddress(address){return address.slice(0,6)+'…'+address.slice(-4);}
 function addLookupRows(target,rows,link){
   const grid=document.createElement('div');grid.className='lookup-grid';
   for(const [label,value] of rows){
@@ -186,13 +187,16 @@ async function initializeOnchain() {
     const config = await response.json();
     if (!deploymentReady(config)) return;
     await assertNetwork();
-    const [factoryCode,tokenCode] = await Promise.all([
+    const [factoryCode,tokenCode,challengeCode] = await Promise.all([
       rpc('eth_getCode',[config.factory,'latest']),
-      rpc('eth_getCode',[config.mockToken,'latest'])
+      rpc('eth_getCode',[config.mockToken,'latest']),
+      rpc('eth_getCode',[config.challengeEscrow,'latest'])
     ]);
-    if (!factoryCode || factoryCode==='0x' || !tokenCode || tokenCode==='0x') return;
+    if (!factoryCode || factoryCode==='0x' || !tokenCode || tokenCode==='0x' || !challengeCode || challengeCode==='0x') return;
     // The manifest is created only after manual explorer verification; the browser checks chain and existence.
     verifiedDemo = config;
+    $('proof-escrow').textContent=compactAddress(config.challengeEscrow);
+    $('proof-escrow').title=config.challengeEscrow;
     $('onchain-protect').hidden = false;
     $('onchain-challenge').hidden = false;
   } catch {
