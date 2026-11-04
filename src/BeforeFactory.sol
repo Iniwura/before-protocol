@@ -3,6 +3,7 @@ pragma solidity ^0.8.24;
 
 import {BeforeVault} from "./BeforeVault.sol";
 import {MockERC20} from "./mocks/MockERC20.sol";
+import {TrainingArena} from "./TrainingArena.sol";
 
 /// @notice Creates provenance-tracked, mock-token BEFORE vaults on local chains and Robinhood testnet.
 /// @dev Research prototype only. It intentionally cannot run on mainnet.
@@ -17,6 +18,8 @@ contract BeforeFactory {
 
     mapping(address => bool) public isVault;
     mapping(address => address[]) private _ownerVaults;
+    mapping(address => address[]) private _ownerPractices;
+    mapping(address => bool) public isPractice;
 
     event VaultCreated(
         address indexed owner,
@@ -27,6 +30,8 @@ contract BeforeFactory {
         uint256 dailyLimit,
         bool fundedDemo
     );
+
+    event PracticeCreated(address indexed creator, address indexed arena, address indexed token);
 
     constructor() {
         if (block.chainid != 31337 && block.chainid != 46630) revert TestNetworkOnly();
@@ -75,6 +80,31 @@ contract BeforeFactory {
 
     function vaultCount(address owner) external view returns (uint256) {
         return _ownerVaults[owner].length;
+    }
+
+    /// @notice Create a fresh practice challenge funded only with valueless mock tokens.
+    /// @dev Anyone may solve a practice. This carries no payout.
+    function createPractice(address mockToken) external returns (address arena) {
+        _requireMock(mockToken);
+        TrainingArena training = new TrainingArena(mockToken, DEMO_PER_TRANSFER, DEMO_DAILY_LIMIT);
+        arena = address(training);
+        MockERC20 mock = MockERC20(mockToken);
+        mock.mint(address(this), DEMO_INITIAL_BALANCE);
+        require(mock.approve(arena, DEMO_INITIAL_BALANCE), "mock approve failed");
+        training.fund(DEMO_INITIAL_BALANCE);
+        isPractice[arena] = true;
+        _ownerPractices[msg.sender].push(arena);
+        emit PracticeCreated(msg.sender, arena, mockToken);
+    }
+
+    function latestPracticeOf(address owner) external view returns (address) {
+        uint256 count = _ownerPractices[owner].length;
+        if (count == 0) revert NoVault();
+        return _ownerPractices[owner][count - 1];
+    }
+
+    function practiceCount(address owner) external view returns (uint256) {
+        return _ownerPractices[owner].length;
     }
 
     function _requireMock(address asset) private view {

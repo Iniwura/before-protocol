@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-import {BeforeVault} from "../src/BeforeVault.sol";
-import {TrainingArena} from "../src/TrainingArena.sol";
+import {BeforeFactory} from "../src/BeforeFactory.sol";
 import {MockERC20} from "../src/mocks/MockERC20.sol";
 
 interface VmDeploy {
@@ -12,17 +11,10 @@ interface VmDeploy {
     function stopBroadcast() external;
 }
 
+/// @notice Testnet-only deployment. No valuable tokens can reach demo custody.
 contract DeployBefore {
-    VmDeploy private constant vm = VmDeploy(address(uint160(uint256(keccak256("hevm cheat code")))));
-
-    event BeforeTestDeployment(
-        uint256 indexed chainId,
-        address indexed owner,
-        address mockToken,
-        address protectedVault,
-        address trainingArena,
-        address trainingVault
-    );
+    VmDeploy private constant vm =
+        VmDeploy(address(uint160(uint256(keccak256("hevm cheat code")))));
 
     function run() external {
         require(block.chainid == 31337 || block.chainid == 46630, "local/testnet only");
@@ -31,26 +23,13 @@ contract DeployBefore {
         require(owner != address(0), "invalid deployer");
 
         vm.startBroadcast(key);
-        MockERC20 demoToken = new MockERC20();
-        BeforeVault protectedVault = new BeforeVault(
-            owner, address(demoToken), owner, 60 ether, 100 ether
-        );
-        TrainingArena trainingArena = new TrainingArena(address(demoToken), 60 ether, 100 ether);
-
-        demoToken.mint(owner, 1_000 ether);
-        demoToken.approve(address(protectedVault), 300 ether);
-        protectedVault.deposit(300 ether);
-        demoToken.approve(address(trainingArena), 150 ether);
-        trainingArena.fund(150 ether);
+        MockERC20 mock = new MockERC20();
+        BeforeFactory factory = new BeforeFactory();
+        // A real protected vault with 150 valueless BTEST and a fresh 150-BTEST practice arena.
+        factory.createDemoVault(address(mock));
+        factory.createPractice(address(mock));
         vm.stopBroadcast();
-
-        emit BeforeTestDeployment(
-            block.chainid,
-            owner,
-            address(demoToken),
-            address(protectedVault),
-            address(trainingArena),
-            address(trainingArena.vault())
-        );
+        // Addresses appear in broadcast receipts and VaultCreated / PracticeCreated events.
+        // Check explorer-verified source before publishing a deployment manifest.
     }
 }

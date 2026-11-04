@@ -19,6 +19,6 @@ jobs:
       - name: Independent policy reference tests
         run: node --test checks/reference.test.mjs
       - name: Web policy and validation tests
-        run: node --test web/test/core.test.mjs
+        run: node --test web/test/core.test.mjs web/test/onchain.test.mjs
       - name: Browser source syntax
-        run: node --check web/app.js
+        run: node --check web/app.js && node --check web/onchain.mjs

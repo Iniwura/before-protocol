@@ -67,6 +67,16 @@ The static website being live does not mean the contracts have been deployed. Te
 - script — test-only deployment helper and read-only chain ID checker.
 - docs — deployment, security boundaries, evidence, and milestone handoff.
 
+## Phase 3 — Testnet demo factory (proposed, not deployed)
+
+The `BeforeFactory` source adds self-service creation of **testnet-only, mock-token** vaults and independent practice arenas. A single wallet transaction can create an owner-controlled protected vault pre-funded with valueless BTEST; another creates a separate challenge funded only with BTEST. Factory registry reads let observers check whether an address was created by the configured factory.
+
+The web has wallet transaction paths ready but **they remain hidden** until the versioned `web/deployment.json` is populated with independently verified Robinhood Chain testnet addresses and genuine deployment transaction hashes. Empty or unverified metadata cannot enable blockchain actions.
+
+This is not a real-WIF bounty or a mainnet custody release.
+
+See [Phase 3 implementation and deployment gates](docs/PHASE_3.md).
+
 ## Next gates
 
 1. Confirm current competition rules and complete project registration.

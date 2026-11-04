@@ -3,6 +3,7 @@ pragma solidity ^0.8.24;
 
 import {BeforeFactory} from "../src/BeforeFactory.sol";
 import {BeforeVault} from "../src/BeforeVault.sol";
+import {TrainingArena} from "../src/TrainingArena.sol";
 import {MockERC20} from "../src/mocks/MockERC20.sol";
 import {MockFeeToken} from "../src/mocks/MockFeeToken.sol";
 
@@ -130,4 +131,44 @@ contract BeforeFactoryTest {
         require(BeforeVault(location).owner() == actor, "user ownership lost");
         require(factory.isVault(location), "provenance lost");
     }
+    function testPracticeIsRegisteredAndFundedWithOnlyMockToken() public {
+        vm.prank(ALICE);
+        address arena = factory.createPractice(address(mock));
+        require(factory.isPractice(arena), "practice provenance missing");
+        require(factory.latestPracticeOf(ALICE) == arena, "latest practice wrong");
+        require(factory.practiceCount(ALICE) == 1, "practice count wrong");
+        address practiceVault = address(TrainingArena(arena).vault());
+        require(mock.balanceOf(practiceVault) == 150 ether, "mock practice not funded");
+        require(!factory.isVault(practiceVault), "practice must never be trusted as protected");
+    }
+
+    function testFreshPracticeCanBeProvenByAnyParticipant() public {
+        vm.prank(ALICE);
+        address arena = factory.createPractice(address(mock));
+        uint256[] memory amounts = new uint256[](2);
+        amounts[0] = 60 ether;
+        amounts[1] = 50 ether;
+        vm.prank(BOB);
+        TrainingArena(arena).proveSplitBypass(amounts);
+        require(TrainingArena(arena).solved(), "not solved");
+        require(TrainingArena(arena).solver() == BOB, "wrong solver");
+        require(mock.balanceOf(arena) == 110 ether, "no real mock-token movement");
+    }
+
+    function testEveryUserCanCreateFreshPractice() public {
+        vm.prank(ALICE);
+        address first = factory.createPractice(address(mock));
+        vm.prank(ALICE);
+        address second = factory.createPractice(address(mock));
+        require(first != second, "same practice reused");
+        require(factory.practiceCount(ALICE) == 2, "practice count wrong");
+        require(factory.latestPracticeOf(ALICE) == second, "latest practice wrong");
+    }
+
+    function testNoArbitraryTokensInPractice() public {
+        MockFeeToken fee = new MockFeeToken();
+        vm.expectRevert(BeforeFactory.NotMockToken.selector);
+        factory.createPractice(address(fee));
+    }
+
 }
