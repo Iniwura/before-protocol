@@ -19,15 +19,16 @@ PLAYWRIGHT_BROWSERS_PATH=/tmp/before-browsers node qa/verify.mjs
 node script/check-chain.mjs
 ~~~
 
-The current local checkpoint is 61 Solidity tests, 46 JavaScript checks, 12 accessibility viewport/screen audits, four mocked success-path wallet transactions, two wallet failure paths and zero horizontal-overflow failures. Mocked wallet results are not blockchain broadcasts.
+The current local checkpoint is 61 Solidity tests, 47 JavaScript checks, 12 accessibility viewport/screen audits, four mocked success-path wallet transactions, two wallet failure paths and zero horizontal-overflow failures. Mocked wallet results are not blockchain broadcasts.
 
-The deployment verifier is read-only. Given direct creation receipts, it checks chain ID 46630, receipt success, address/hash correspondence, confirmation depth and exact runtime bytecode for `BeforeFactory`, `MockERC20` and `WifSecurityChallenge`:
+The deployment verifier is read-only. Given direct creation receipts and the two factory-call receipts, it checks chain ID 46630, receipt success, address/hash correspondence, confirmation depth, exact calldata, deployer-owned registry outputs, 150-BTEST balances and exact runtime bytecode for `BeforeFactory`, `MockERC20`, `WifSecurityChallenge`, `BeforeVault`, `TrainingArena` and `TrainingVault`:
 
 ~~~sh
 node script/verify-testnet.mjs \
   0xFACTORY 0xFACTORY_CREATION_TX \
   0xMOCK_TOKEN 0xMOCK_TOKEN_CREATION_TX \
-  0xCHALLENGE_ESCROW 0xCHALLENGE_ESCROW_CREATION_TX
+  0xCHALLENGE_ESCROW 0xCHALLENGE_ESCROW_CREATION_TX \
+  0xDEMO_FACTORY_TX 0xPRACTICE_FACTORY_TX
 ~~~
 
 Only after a human checks the explorer source and receipts should `--write` be used. The checked-in manifest is intentionally `verified: false` until that evidence exists.
