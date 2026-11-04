@@ -40,7 +40,7 @@ The network check is read-only; it requires internet access.
 - Robinhood Chain testnet public RPC returned chain ID 46630 in a read-only check.
 - **No chain deployment, audited security claim, real-token custody, or real WIF reward.**
 
-These are previous local environment results; GitHub Actions runs separately and is the repository CI source of truth.
+GitHub Actions run [37](https://github.com/Iniwura/before-protocol/actions/runs/41904604895) independently passed the contract and browser-quality jobs for this checkpoint. Neither local nor CI results establish testnet deployment, an audit or WIF custody.
 
 ## Live research prototype
 
@@ -52,7 +52,7 @@ The responsive, dependency-free frontend has three experiences:
 - **Challenge:** local simulation of the intentional split-transfer flaw using mock amounts. The onchain practice path uses BTEST only and pays no bounty.
 - **Proof:** live read-only testnet RPC inspection for supplied vault-like addresses and transaction receipts. It does not establish contract authenticity or security.
 
-The web code is in `web/`; `node --test web/test/core.test.mjs` runs its 13 pure-logic checks. GitHub Actions checks Solidity, policy-model and web tests. CI is at https://github.com/Iniwura/before-protocol/actions.
+The web code is in `web/`; the Node test commands cover policy, ABI, deployment-proof and browser-facing logic. GitHub Actions checks Solidity, policy-model, deployment and web tests. CI is at https://github.com/Iniwura/before-protocol/actions.
 
 The static website being live does not mean the contracts have been deployed. Testnet-chain transactions and verified contract addresses remain outstanding.
 

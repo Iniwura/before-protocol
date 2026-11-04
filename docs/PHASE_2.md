@@ -12,7 +12,7 @@
 ## Not yet done
 
 - Robinhood Chain testnet deployment, verified-bytecode link or confirmed chain transactions.
-- Wallet transactions, token custody onchain, security review or monetary reward contracts.
+- Wallet transactions, valuable token custody onchain, an independent security review or a funded monetary reward.
 - Real WIF reward settlement and meaningful adversarial challenge economics.
 - Comprehensive browser accessibility and wallet QA against a publicly deployed site.
 
