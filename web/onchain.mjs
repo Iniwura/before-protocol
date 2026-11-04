@@ -50,9 +50,19 @@ export function readBoolResult(hex) {
 }
 export function deploymentReady(config) {
   if (!config || config.chainId !== CHAIN_ID || config.verified !== true) return false;
-  return isAddress(config.factory) && !/^0x0{40}$/i.test(config.factory)
-    && isAddress(config.mockToken) && !/^0x0{40}$/i.test(config.mockToken)
-    && isAddress(config.challengeEscrow) && !/^0x0{40}$/i.test(config.challengeEscrow)
-    && isTxHash(config.factoryTx) && isTxHash(config.mockTokenTx)
-    && isTxHash(config.challengeEscrowTx);
+  const address = value => isAddress(value) && !/^0x0{40}$/i.test(value);
+  const tx = value => isTxHash(value);
+  if (!address(config.factory) || !address(config.mockToken) || !address(config.challengeEscrow)
+    || !tx(config.factoryTx) || !tx(config.mockTokenTx) || !tx(config.challengeEscrowTx)) return false;
+
+  const deploymentAddresses = ['deployer', 'demoVault', 'practiceArena', 'practiceVault'];
+  const deploymentTxs = ['demoTx', 'practiceTx'];
+  const hasDeploymentEvidence = [...deploymentAddresses, ...deploymentTxs].some(key => config[key] != null);
+  if (hasDeploymentEvidence && (!deploymentAddresses.every(key => address(config[key]))
+    || !deploymentTxs.every(key => tx(config[key])))) return false;
+
+  const flowTxs = ['allowedTx', 'deniedTx', 'practiceProofTx'];
+  const hasFlowEvidence = flowTxs.some(key => config[key] != null) || config.practiceSolver != null;
+  if (hasFlowEvidence && (!flowTxs.every(key => tx(config[key])) || !address(config.practiceSolver))) return false;
+  return true;
 }

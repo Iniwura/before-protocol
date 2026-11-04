@@ -13,3 +13,10 @@ test('practice calldata uses correct dynamic array ABI',()=>{const data=encodePr
 test('practice array input is bounded',()=>{assert.throws(()=>encodePracticeProof([1n]));assert.throws(()=>encodePracticeProof(Array(9).fill(1n)));});
 test('ABI return values are strict',()=>{assert.equal(readBoolResult('0x'+encodeUint(1n)),true);assert.equal(readBoolResult('0x'+encodeUint(0n)),false);assert.throws(()=>readBoolResult('0x'+encodeUint(2n)));assert.equal(readAddressResult('0x'+encodeAddress(ADDR)),ADDR);assert.equal(readAddressResult('0x'+'0'.repeat(64)),null);});
 test('deployment manifest is fail-closed by default',()=>{assert.equal(deploymentReady(null),false);assert.equal(deploymentReady({...cfg,verified:false}),false);assert.equal(deploymentReady({...cfg,chainId:4663}),false);assert.equal(deploymentReady({...cfg,factoryTx:null}),false);assert.equal(deploymentReady({...cfg,challengeEscrowTx:null}),false);assert.equal(deploymentReady({...cfg,factory:'0x'+'0'.repeat(40)}),false);assert.equal(deploymentReady(cfg),true);});
+test('optional deployment and flow evidence must be complete',()=>{
+  const full={...cfg,deployer:ADDR,demoVault:ADDR,practiceArena:ADDR,practiceVault:ADDR,demoTx:TX,practiceTx:TX,allowedTx:TX,deniedTx:TX,practiceProofTx:TX,practiceSolver:ADDR};
+  assert.equal(deploymentReady(full),true);
+  assert.equal(deploymentReady({...full,practiceVault:null}),false);
+  assert.equal(deploymentReady({...full,practiceProofTx:null}),false);
+  assert.equal(deploymentReady({...cfg,demoVault:ADDR}),false);
+});

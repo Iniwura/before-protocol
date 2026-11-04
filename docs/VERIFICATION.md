@@ -5,7 +5,7 @@
 | Foundry build / Solc 0.8.36 | Passed | Local networked sandbox |
 | Solidity tests | 61 / 61 passed | Foundry local EVM, including escrow and reviewer-quorum tests |
 | Fuzz | 1,024 runs per fuzz test | Local EVM |
-| JavaScript policy, web and deployment checks | 50 / 50 passed | Does not run Solidity |
+| JavaScript policy, web and deployment checks | 51 / 51 passed | Does not run Solidity |
 | BeforeVault line coverage | 98.25% | Previous instrumented local coverage only |
 | BeforeVault branch coverage | 72.22% | Previous instrumented local coverage; open branches remain |
 | Browser QA | 12 / 12 viewport-screen audits, 4 success-path transactions, 2 failure paths | Chromium, axe-core, keyboard tab navigation, no horizontal overflow; GitHub Actions run [65](https://github.com/Iniwura/before-protocol/actions/runs/41914976553) passed |

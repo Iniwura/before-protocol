@@ -193,10 +193,34 @@ async function initializeOnchain() {
       rpc('eth_getCode',[config.challengeEscrow,'latest'])
     ]);
     if (!factoryCode || factoryCode==='0x' || !tokenCode || tokenCode==='0x' || !challengeCode || challengeCode==='0x') return;
+    const hasCreatedOutputs = config.demoVault && config.practiceArena && config.practiceVault;
+    if (hasCreatedOutputs) {
+      const outputCodes = await Promise.all([
+        rpc('eth_getCode',[config.demoVault,'latest']),
+        rpc('eth_getCode',[config.practiceArena,'latest']),
+        rpc('eth_getCode',[config.practiceVault,'latest'])
+      ]);
+      if (outputCodes.some(code => !code || code==='0x')) return;
+    }
     // The manifest is created only after manual explorer verification; the browser checks chain and existence.
     verifiedDemo = config;
     $('proof-escrow').textContent=compactAddress(config.challengeEscrow);
     $('proof-escrow').title=config.challengeEscrow;
+    if (config.demoVault) {
+      $('proof-demo-meta').hidden = false;
+      $('proof-demo').textContent=compactAddress(config.demoVault);
+      $('proof-demo').title=config.demoVault;
+      $('vault-address').value=config.demoVault;
+    }
+    if (config.practiceArena && config.practiceVault) {
+      $('proof-practice-meta').hidden = false;
+      $('proof-practice').textContent=compactAddress(config.practiceArena);
+      $('proof-practice').title=config.practiceArena;
+    }
+    if (config.allowedTx && config.deniedTx && config.practiceProofTx) {
+      $('proof-flow-meta').hidden = false;
+      $('proof-flow').textContent='3 receipts verified';
+    }
     $('onchain-protect').hidden = false;
     $('onchain-challenge').hidden = false;
   } catch {
