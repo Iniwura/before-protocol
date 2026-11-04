@@ -8,11 +8,11 @@
 | JavaScript policy, web and deployment checks | 46 / 46 passed | Does not run Solidity |
 | BeforeVault line coverage | 98.25% | Previous instrumented local coverage only |
 | BeforeVault branch coverage | 72.22% | Previous instrumented local coverage; open branches remain |
-| Browser QA | 12 / 12 viewport-screen audits, 4 mocked wallet flows | Chromium, axe-core, no horizontal overflow |
+| Browser QA | 12 / 12 viewport-screen audits, 4 mocked wallet flows | Chromium, axe-core, no horizontal overflow; GitHub Actions run [37](https://github.com/Iniwura/before-protocol/actions/runs/41904604895) passed |
 | Robinhood testnet chain ID | 46630 | Read-only RPC |
 | Testnet transactions / verified bytecode | Not done | No public proof yet; manifest remains fail-closed |
 | Independent audit / WIF reward | Not done | Escrow code is tested but not audited, funded or deployed |
 
 The local end-to-end test exercises mock funding, protected withdrawals, refused unauthorized actions, cumulative limits and a training split-bypass proof. The escrow suite independently exercises exact-token accounting, solver-bound commit/reveal, copied commitment rejection, verifier failure, invalid-proof slashing, expiry, cancellation and fee-token rejection. It does not settle WIF.
 
-This report is not a security audit. GitHub Actions should be checked separately against the repository commit once the workflow runs.
+This report is not a security audit. GitHub Actions run 37 passed both the contract and browser-quality jobs for the documented submission head; it does not establish testnet deployment or WIF custody.
