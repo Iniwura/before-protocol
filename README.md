@@ -62,6 +62,7 @@ The static website being live does not mean the contracts have been deployed. Te
 - src/TrainingVault.sol — deliberately vulnerable mock-only practice vault.
 - src/TrainingArena.sol — deterministic training proof verifier.
 - src/WifSecurityChallenge.sol — separate ERC-20 reward escrow with solver-bound commit/reveal and expiry paths.
+- src/ReviewedFindingVerifier.sol — fixed-quorum reviewer gate for exact challenge evidence; it is not an oracle.
 - src/mocks — purpose-built test tokens, including adversarial mocks.
 - test — Solidity unit, fuzz, negative-path, and end-to-end tests.
 - reference and checks — dependency-free policy model, not a replacement for Solidity execution.
@@ -80,7 +81,7 @@ See [Phase 3 implementation and deployment gates](docs/PHASE_3.md).
 
 ## WIF-funded security challenges
 
-`WifSecurityChallenge` is intentionally separate from the public BTEST exercise. A sponsor escrows a chosen ERC-20 reward, records a concrete target contract, its code hash and an immutable hash of the written challenge scope, sets an independently reviewed verifier and a maximum 30-day commit/reveal window, and requires each solver to post a bond. The verifier receives the challenge ID, solver, target and scope hash explicitly, alongside the revealed evidence. A solver commits a hash bound to their wallet, salt and evidence, then reveals after the commit window. Only a verifier-approved reveal receives the reward and bond; invalid evidence slashes the bond to the sponsor; expiry returns the reward and releases unanswered bonds. Settlement fails closed if the target, verifier or reward token code changes.
+`WifSecurityChallenge` is intentionally separate from the public BTEST exercise. A sponsor escrows a chosen ERC-20 reward, records a concrete target contract, its code hash and an immutable hash of the written challenge scope, sets an independently reviewed verifier and a maximum 30-day commit/reveal window, and requires each solver to post a bond. The verifier receives the challenge ID, solver, target and scope hash explicitly, alongside the revealed evidence. A solver commits a hash bound to their wallet, salt and evidence, then reveals after the commit window. Only a verifier-approved reveal receives the reward and bond; invalid evidence slashes the bond to the sponsor; expiry returns the reward and releases unanswered bonds. Settlement fails closed if the target, verifier or reward token code changes. `ReviewedFindingVerifier` provides a fixed reviewer set and threshold that must approve the exact evidence hash before settlement.
 
 The contract can hold WIF when configured with the intended Robinhood Chain WIF token, but this repository does not contain a WIF address, private key, funded challenge, or payout claim. The verifier is part of the trust boundary and must bind the supplied challenge ID, solver, target and scope, inspect the target, and receive independent review before any valuable funding.
 

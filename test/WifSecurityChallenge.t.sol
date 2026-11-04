@@ -5,6 +5,7 @@ import {IChallengeVerifier, WifSecurityChallenge} from "../src/WifSecurityChalle
 import {MockAccountingToken} from "../src/mocks/MockAccountingToken.sol";
 import {MockERC20} from "../src/mocks/MockERC20.sol";
 import {MockFeeToken} from "../src/mocks/MockFeeToken.sol";
+import {ReviewedFindingVerifier} from "../src/ReviewedFindingVerifier.sol";
 
 interface VmChallenge {
     function prank(address who) external;
@@ -169,6 +170,80 @@ contract WifSecurityChallengeTest {
         vm.prank(SOLVER);
         escrow.reveal(id, salt, evidence);
         require(reward.balanceOf(SOLVER) == 100 ether + REWARD, "bound verifier rejected context");
+    }
+
+    function testReviewedVerifierRequiresFixedQuorumForExactEvidence() public {
+        address reviewerA = address(0xA11CE);
+        address reviewerB = address(0xB0B0);
+        address[] memory reviewers = new address[](2);
+        reviewers[0] = reviewerA;
+        reviewers[1] = reviewerB;
+        ReviewedFindingVerifier reviewed = new ReviewedFindingVerifier(reviewers, 2);
+        bytes memory evidence = bytes("reviewed finding");
+        bytes32 scopeHash = keccak256("before-reviewed-scope-v1");
+        uint64 commitDeadline = uint64(block.timestamp + 1 days);
+        uint64 revealDeadline = uint64(block.timestamp + 2 days);
+        uint256 id = escrow.createChallenge(
+            _config(
+                address(reward),
+                REWARD,
+                BOND,
+                address(reviewed),
+                address(target),
+                scopeHash,
+                commitDeadline,
+                revealDeadline
+            )
+        );
+        bytes32 evidenceHash = keccak256(evidence);
+        vm.prank(reviewerA);
+        reviewed.approveFinding(id, SOLVER, address(target), scopeHash, evidenceHash);
+        require(
+            !reviewed.verify(id, SOLVER, address(target), scopeHash, evidence),
+            "one review met a two-review quorum"
+        );
+        vm.prank(reviewerB);
+        reviewed.approveFinding(id, SOLVER, address(target), scopeHash, evidenceHash);
+        require(
+            !reviewed.verify(id, SOLVER, address(target), scopeHash, bytes("tampered finding")),
+            "review was reused for different evidence"
+        );
+        bytes32 salt = bytes32(uint256(17));
+        bytes32 commitment = escrow.commitmentFor(id, SOLVER, salt, evidence);
+        vm.prank(SOLVER);
+        escrow.commit(id, commitment);
+        vm.warp(uint256(commitDeadline) + 1);
+        vm.prank(SOLVER);
+        escrow.reveal(id, salt, evidence);
+        require(reward.balanceOf(SOLVER) == 100 ether + REWARD, "reviewed finding was not paid");
+    }
+
+    function testReviewedVerifierRejectsUnauthorizedAndDuplicateApproval() public {
+        address reviewer = address(0xA11CE);
+        address[] memory reviewers = new address[](1);
+        reviewers[0] = reviewer;
+        ReviewedFindingVerifier reviewed = new ReviewedFindingVerifier(reviewers, 1);
+        bytes32 scopeHash = keccak256("before-reviewed-scope-v1");
+        bytes32 evidenceHash = keccak256(bytes("finding"));
+
+        vm.expectRevert(ReviewedFindingVerifier.NotReviewer.selector);
+        reviewed.approveFinding(1, SOLVER, address(target), scopeHash, evidenceHash);
+        vm.prank(reviewer);
+        reviewed.approveFinding(1, SOLVER, address(target), scopeHash, evidenceHash);
+        vm.expectRevert(ReviewedFindingVerifier.AlreadyApproved.selector);
+        vm.prank(reviewer);
+        reviewed.approveFinding(1, SOLVER, address(target), scopeHash, evidenceHash);
+    }
+
+    function testReviewedVerifierRejectsInvalidReviewerConfiguration() public {
+        address reviewer = address(0xA11CE);
+        address[] memory reviewers = new address[](1);
+        reviewers[0] = reviewer;
+        vm.expectRevert(ReviewedFindingVerifier.InvalidReviewers.selector);
+        new ReviewedFindingVerifier(reviewers, 2);
+        reviewers[0] = address(0);
+        vm.expectRevert(ReviewedFindingVerifier.InvalidReviewers.selector);
+        new ReviewedFindingVerifier(reviewers, 1);
     }
 
     function testCopiedCommitmentCannotBeRevealedByAnotherWallet() public {

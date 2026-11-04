@@ -3,7 +3,7 @@
 | Check | Result | Evidence scope |
 | --- | --- | --- |
 | Foundry build / Solc 0.8.36 | Passed | Local networked sandbox |
-| Solidity tests | 58 / 58 passed | Foundry local EVM, including escrow tests |
+| Solidity tests | 61 / 61 passed | Foundry local EVM, including escrow and reviewer-quorum tests |
 | Fuzz | 1,024 runs per fuzz test | Local EVM |
 | JavaScript policy, web and deployment checks | 46 / 46 passed | Does not run Solidity |
 | BeforeVault line coverage | 98.25% | Previous instrumented local coverage only |
@@ -13,6 +13,6 @@
 | Testnet transactions / verified bytecode | Not done | No public proof yet; manifest remains fail-closed |
 | Independent audit / WIF reward | Not done | Escrow code is tested but not audited, funded or deployed |
 
-The local end-to-end test exercises mock funding, protected withdrawals, refused unauthorized actions, cumulative limits and a training split-bypass proof. The escrow suite independently exercises exact source-and-recipient token accounting, solver-bound commit/reveal, copied commitment rejection, verifier failure, invalid-proof slashing, expiry, cancellation, fee-token rejection and a token that mints without debiting its source. It does not settle WIF.
+The local end-to-end test exercises mock funding, protected withdrawals, refused unauthorized actions, cumulative limits and a training split-bypass proof. The escrow suite independently exercises exact source-and-recipient token accounting, solver-bound commit/reveal, copied commitment rejection, verifier failure, invalid-proof slashing, expiry, cancellation, fee-token rejection, a token that mints without debiting its source, and a fixed-quorum reviewer verifier. It does not settle WIF.
 
 This report is not a security audit. GitHub Actions run 43 passed both the contract and browser-quality jobs for the documented code checkpoint; it does not establish testnet deployment or WIF custody.

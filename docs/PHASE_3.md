@@ -10,6 +10,7 @@ BEFORE's next milestone is a **self-service, one-transaction demo vault** and a 
 - `createPractice(mockToken)` makes a fresh, 150-BTEST **intentionally vulnerable** practice arena for public demonstration. It pays no rewards.
 - `isVault`, `isPractice`, `latestVaultOf`, `latestPracticeOf` and creation events allow independent provenance checks.
 - `WifSecurityChallenge` is a separate, empty ERC-20 escrow deployment target. The deployment script does not fund it or configure a WIF challenge.
+- `ReviewedFindingVerifier` provides an immutable reviewer set and threshold for approving the exact challenge context and evidence hash before an escrow can settle.
 
 The mock token and testnet native ETH have **no monetary value**. This is not a usable mainnet custody product or an independent security audit.
 
