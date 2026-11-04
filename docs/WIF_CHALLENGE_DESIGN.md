@@ -15,6 +15,8 @@
 
 The evidence must show the target address, target runtime code hash, token address, calldata, transaction receipts, and before/after token balances. A finding must be reproducible against the pinned deployment and must identify the exact violated property. The mock-only `TrainingVault` and `TrainingArena` are explicitly out of scope and never receive a WIF reward.
 
+The first live target should be non-upgradeable. A proxy runtime hash alone is not sufficient: if a proxy is ever in scope, the written scope and verifier must also pin and inspect its implementation address, implementation code hash and upgrade authority.
+
 ## Settlement boundary
 
 Before funding, the sponsor publishes a scope document and its `scopeHash`, selects a target and code hash, deploys or selects a fixed reviewer quorum, and chooses a reward and solver bond. Reviewers approve the exact escrow, challenge ID, solver, target, scope hash and evidence hash. The escrow then enforces:
