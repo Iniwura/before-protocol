@@ -13,7 +13,10 @@ const deployer='0x'+'4'.repeat(40), demoVault='0x'+'5'.repeat(40), practiceArena
 const txD='0x'+'d'.repeat(64), txE='0x'+'e'.repeat(64);
 const params=['script/verify-testnet.mjs',factory,txA,token,txB];
 const word=address=>'0x'+'0'.repeat(24)+address.slice(2);
+const words=(...values)=>'0x'+values.map(value=>typeof value==='string'?value.replace(/^0x/,'').padStart(64,'0'):BigInt(value).toString(16).padStart(64,'0')).join('');
 const amount150='0x'+(150n*10n**18n).toString(16).padStart(64,'0');
+const vaultEvent='0x12cd41479914d3ffb29c1abbe7cef9f1c4d3a03603eafa901c21e4b0c826955a';
+const practiceEvent='0x8a0923f7b9bc4930ee8c8e7773325c8ecead718d54032c702b2690438c0b3a1e';
 function launchCLI(url,cliParams=params) {
   return new Promise((resolve,reject)=>{
     let stdout='',stderr='';
@@ -114,8 +117,8 @@ test('eight-argument proof verifies factory interactions and created demo output
         [txA]:{status:'0x1',contractAddress:factory,transactionHash:txA,to:null},
         [txB]:{status:'0x1',contractAddress:token,transactionHash:txB,to:null},
         [txC]:{status:'0x1',contractAddress:escrow,transactionHash:txC,to:null},
-        [txD]:{status:'0x1',transactionHash:txD,to:factory},
-        [txE]:{status:'0x1',transactionHash:txE,to:factory},
+        [txD]:{status:'0x1',transactionHash:txD,to:factory,logs:[{address:factory,topics:[vaultEvent,word(deployer),word(demoVault),word(token)],data:words(deployer,60n*10n**18n,100n*10n**18n,1n)}]},
+        [txE]:{status:'0x1',transactionHash:txE,to:factory,logs:[{address:factory,topics:[practiceEvent,word(deployer),word(practiceArena),word(token)],data:'0x'}]},
       };
       result=entries[q.params[0]]?{...entries[q.params[0]],blockNumber:'0x1f0'}:null;
     }

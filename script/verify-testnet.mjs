@@ -4,7 +4,7 @@ import {readFile,writeFile} from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';
 import path from 'node:path';
 import {isAddress,isTxHash,parseHexUint,CHAIN_ID,RPC_URL} from '../web/core.mjs';
-import {attestContract,attestFactoryInteraction,attestRuntime} from '../checks/deployment-proof.mjs';
+import {attestContract,attestFactoryEvent,attestFactoryInteraction,attestRuntime} from '../checks/deployment-proof.mjs';
 
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const argv=process.argv.slice(2);
@@ -47,7 +47,12 @@ const SELECTORS={
   token:'0xfc0c546a',
   balanceOf:'0x70a08231',
 };
+const EVENTS={
+  vaultCreated:'0x12cd41479914d3ffb29c1abbe7cef9f1c4d3a03603eafa901c21e4b0c826955a',
+  practiceCreated:'0x8a0923f7b9bc4930ee8c8e7773325c8ecead718d54032c702b2690438c0b3a1e',
+};
 const addressCall=(selector,address)=>selector+address.slice(2).toLowerCase().padStart(64,'0');
+const words=(...values)=>'0x'+values.map(value=>typeof value==='string'?value.replace(/^0x/,'').padStart(64,'0'):BigInt(value).toString(16).padStart(64,'0')).join('');
 const decodeAddressResult=(value,label)=>{
   if(typeof value!=='string'||!/^0x[0-9a-fA-F]{64}$/.test(value))throw new Error(label+': malformed address result.');
   const address='0x'+value.slice(-40);
@@ -84,8 +89,18 @@ try{
     const practice=attestFactoryInteraction({label:'PracticeFactoryCall',txHash:practiceTx,transaction:practiceTransaction,receipt:practiceReceipt,factory,mockToken,selector:SELECTORS.createPractice,headBlock:head});
     if(demo.from.toLowerCase()!==practice.from.toLowerCase())throw new Error('Factory interactions were not sent by the same deployer.');
     const deployer=demo.from;
-    const demoVault=decodeAddressResult(await rpc('eth_call',[{to:factory,data:addressCall(SELECTORS.latestVaultOf,deployer)},'latest']),'DemoVault registry');
-    const practiceArena=decodeAddressResult(await rpc('eth_call',[{to:factory,data:addressCall(SELECTORS.latestPracticeOf,deployer)},'latest']),'PracticeArena registry');
+    const demoEvent=attestFactoryEvent({label:'DemoVault',receipt:demoReceipt,factory,eventTopic:EVENTS.vaultCreated,indexedAddresses:{1:deployer,3:mockToken}});
+    if (demoEvent.topics.length!==4 || demoEvent.data?.toLowerCase()!==words(deployer,60n*10n**18n,100n*10n**18n,1n)) throw new Error('DemoVault: factory event does not prove the expected owner, limits, recipient and funding mode.');
+    const practiceEvent=attestFactoryEvent({label:'PracticeArena',receipt:practiceReceipt,factory,eventTopic:EVENTS.practiceCreated,indexedAddresses:{1:deployer,3:mockToken}});
+    if (practiceEvent.topics.length!==4 || practiceEvent.data?.toLowerCase()!=='0x') throw new Error('PracticeArena: factory event data is malformed.');
+    const demoVault=decodeAddressResult(demoEvent.topics[2],'DemoVault event');
+    const practiceArena=decodeAddressResult(practiceEvent.topics[2],'PracticeArena event');
+    const [registeredDemoVault,registeredPracticeArena]=await Promise.all([
+      rpc('eth_call',[{to:factory,data:addressCall(SELECTORS.latestVaultOf,deployer)},'latest']),
+      rpc('eth_call',[{to:factory,data:addressCall(SELECTORS.latestPracticeOf,deployer)},'latest']),
+    ]);
+    if (decodeAddressResult(registeredDemoVault,'DemoVault registry').toLowerCase()!==demoVault.toLowerCase()) throw new Error('DemoVault registry does not match the factory creation event.');
+    if (decodeAddressResult(registeredPracticeArena,'PracticeArena registry').toLowerCase()!==practiceArena.toLowerCase()) throw new Error('PracticeArena registry does not match the factory creation event.');
     const practiceVault=decodeAddressResult(await rpc('eth_call',[{to:practiceArena,data:SELECTORS.arenaVault},'latest']),'PracticeVault registry');
     const [beforeVaultCode,arenaCode,trainingVaultCode]=await Promise.all([
       rpc('eth_getCode',[demoVault,'latest']),

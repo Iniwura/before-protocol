@@ -39,7 +39,7 @@ forge script script/DeployBefore.s.sol:DeployBefore \
 ~~~
 
 6. The script deploys `MockERC20`, `BeforeFactory` and an **empty** `WifSecurityChallenge`, then creates only the BTEST demo vault and unpaid practice arena. It never accepts a WIF address and never funds a reward.
-7. Verify chain ID, direct creation transaction hashes, deployed bytecode and source code before claiming testnet proof. Pass the two factory-call hashes as the optional final arguments so the verifier also checks exact calldata, deployer-owned registry outputs, created vault/arena runtime code and 150-BTEST balances.
+7. Verify chain ID, direct creation transaction hashes, deployed bytecode and source code before claiming testnet proof. Pass the two factory-call hashes as the optional final arguments so the verifier also checks exact calldata and factory event data, deployer-owned registry outputs, created vault/arena runtime code and 150-BTEST balances.
 
 The script restricts itself to chain IDs 31337 and 46630. No public testnet transaction is claimed at this checkpoint. Do not attempt mainnet with this script.
 

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {normalizedBytecode,attestContract} from './deployment-proof.mjs';
+import {normalizedBytecode,attestContract,attestFactoryEvent} from './deployment-proof.mjs';
 
 const contract='0x'+'1'.repeat(40);
 const tx='0x'+'a'.repeat(64);
@@ -19,3 +19,10 @@ test('insufficient confirmation depth fails',()=>assert.throws(()=>attestContrac
 test('future receipt block fails',()=>assert.throws(()=>attestContract({...valid,headBlock:'0x01'}),/exceeds chain head/));
 test('invalid bytecode representations fail',()=>{for(const code of ['0x','0x1','0xnothex',null,''])assert.throws(()=>normalizedBytecode(code));});
 test('zero contract address rejected',()=>assert.throws(()=>attestContract({...valid,address:'0x'+'0'.repeat(40)}),/invalid contract address/));
+test('factory event is bound to the factory and indexed context',()=>{
+  const event='0x'+'e'.repeat(64), owner='0x'+'2'.repeat(40), token='0x'+'3'.repeat(40);
+  const padded=value=>'0x'+'0'.repeat(24)+value.slice(2);
+  const receipt={logs:[{address:contract,topics:[event,padded(owner),'0x'+'0'.repeat(24)+'4'.repeat(40),padded(token)],data:'0x'}]};
+  assert.equal(attestFactoryEvent({label:'FactoryEvent',receipt,factory:contract,eventTopic:event,indexedAddresses:{1:owner,3:token}}).topics[2].slice(-40),'4'.repeat(40));
+  assert.throws(()=>attestFactoryEvent({label:'FactoryEvent',receipt,factory:'0x'+'9'.repeat(40),eventTopic:event}),/exactly one/);
+});

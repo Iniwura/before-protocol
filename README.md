@@ -87,7 +87,7 @@ The contract can hold WIF when configured with the intended Robinhood Chain WIF 
 
 ## Proving a testnet deployment
 
-After a mock-only testnet deployment, `script/verify-testnet.mjs` can check the actual factory, test-token and empty escrow creation receipts, their contract addresses, 12 confirmation blocks, and byte-for-byte runtime code against Foundry artifacts. Its optional interaction mode also checks the two factory-call receipts, exact calldata, deployer-owned registry outputs, created vault/arena runtime code and 150-BTEST balances. It is read-only and cannot make a false testnet claim from only a pasted address.
+After a mock-only testnet deployment, `script/verify-testnet.mjs` can check the actual factory, test-token and empty escrow creation receipts, their contract addresses, 12 confirmation blocks, and byte-for-byte runtime code against Foundry artifacts. Its optional interaction mode also checks the two factory-call receipts, exact calldata and factory event data, deployer-owned registry outputs, created vault/arena runtime code and 150-BTEST balances. It is read-only and cannot make a false testnet claim from only a pasted address.
 
 **No testnet deployment is claimed here.** Verified metadata remains `false` until evidence passes.
 

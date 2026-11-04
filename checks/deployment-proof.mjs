@@ -63,3 +63,16 @@ export function attestFactoryInteraction({
   if (confirmations < BigInt(minConfirmations)) throw new Error(label+': interaction needs more confirmations.');
   return {label,txHash,from:transaction.from,confirmations:Number(confirmations)};
 }
+
+export function attestFactoryEvent({label,receipt,factory,eventTopic,indexedAddresses={}}) {
+  const logs=Array.isArray(receipt?.logs)?receipt.logs:[];
+  const matches=logs.filter(log=>{
+    if (log?.address?.toLowerCase()!==factory.toLowerCase()) return false;
+    if (!Array.isArray(log.topics)||log.topics[0]?.toLowerCase()!==eventTopic.toLowerCase()) return false;
+    return Object.entries(indexedAddresses).every(([index,address])=>
+      log.topics[Number(index)]?.toLowerCase()===('0x'+'0'.repeat(24)+address.slice(2).toLowerCase())
+    );
+  });
+  if (matches.length!==1) throw new Error(label+': receipt does not contain exactly one matching factory event.');
+  return matches[0];
+}
