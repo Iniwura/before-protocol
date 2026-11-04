@@ -19,7 +19,7 @@ PLAYWRIGHT_BROWSERS_PATH=/tmp/before-browsers node qa/verify.mjs
 node script/check-chain.mjs
 ~~~
 
-The current local checkpoint is 61 Solidity tests, 46 JavaScript checks, 12 accessibility viewport/screen audits, four mocked wallet flows and zero horizontal-overflow failures. Mocked wallet results are not blockchain broadcasts.
+The current local checkpoint is 61 Solidity tests, 46 JavaScript checks, 12 accessibility viewport/screen audits, four mocked success-path wallet transactions, two wallet failure paths and zero horizontal-overflow failures. Mocked wallet results are not blockchain broadcasts.
 
 The deployment verifier is read-only. Given direct creation receipts, it checks chain ID 46630, receipt success, address/hash correspondence, confirmation depth and exact runtime bytecode for `BeforeFactory`, `MockERC20` and `WifSecurityChallenge`:
 

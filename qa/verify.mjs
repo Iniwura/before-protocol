@@ -24,15 +24,15 @@ const base='http://127.0.0.1:'+server.address().port;
 const browser=await chromium.launch({headless:true});
 const fixture={owner:'0x'+'3'.repeat(40),factory:'0x'+'1'.repeat(40),mockToken:'0x'+'2'.repeat(40),challengeEscrow:'0x'+'6'.repeat(40),vault:'0x'+'4'.repeat(40),arena:'0x'+'5'.repeat(40),tx:'0x'+'a'.repeat(64)};
 const padding=addr=>'0x'+'0'.repeat(24)+addr.slice(2);
-function routeRPC(page) {
+function routeRPC(page,{code='0x60016000',receiptStatus='0x1'}={}) {
   return page.route('https://rpc.testnet.chain.robinhood.com/**', route=>{
     const request=JSON.parse(route.request().postData()||'{}');
     let result=null;
     switch(request.method) {
       case 'eth_chainId':result='0xb626';break;
       case 'eth_blockNumber':result='0x10';break;
-      case 'eth_getCode':result='0x60016000';break;
-      case 'eth_getTransactionReceipt':result={status:'0x1',blockNumber:'0x10',transactionHash:fixture.tx,from:fixture.owner,to:fixture.factory};break;
+      case 'eth_getCode':result=code;break;
+      case 'eth_getTransactionReceipt':result={status:receiptStatus,blockNumber:'0x10',transactionHash:fixture.tx,from:fixture.owner,to:fixture.factory};break;
       case 'eth_call':{
         const selector=request.params?.[0]?.data?.slice(0,10);
         result=selector==='0xee643f9e'?padding(fixture.vault):selector==='0x7f81587e'?padding(fixture.arena):'0x'+'0'.repeat(63)+'1';
@@ -66,6 +66,13 @@ try {
     assert.equal(await page.locator('#onchain-protect').isHidden(),true,'Unverified deployment must not unlock transactions');
     assert.equal(await page.locator('#onchain-challenge').isHidden(),true,'Unverified deployment must not unlock challenges');
     if (width===1280) {
+      await page.locator('#tab-protect').focus();
+      await page.keyboard.press('ArrowRight');
+      assert.equal(await page.evaluate(()=>document.activeElement?.id),'tab-challenge');
+      await page.keyboard.press('End');
+      assert.equal(await page.evaluate(()=>document.activeElement?.id),'tab-proof');
+      await page.keyboard.press('Home');
+      assert.equal(await page.evaluate(()=>document.activeElement?.id),'tab-protect');
       await page.locator('#tab-protect').click();
       await page.locator('#protect-amount').fill('20');
       await page.locator('#protect-spent').fill('40');
@@ -84,6 +91,58 @@ try {
     }
     await context.close();
   }
+  const missingCodeContext=await browser.newContext({viewport:{width:1280,height:850},reducedMotion:'reduce'});
+  const missingCodePage=await missingCodeContext.newPage();
+  await routeRPC(missingCodePage,{code:'0x'});
+  await missingCodePage.route('**/deployment.json',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({chainId:46630,factory:fixture.factory,mockToken:fixture.mockToken,challengeEscrow:fixture.challengeEscrow,factoryTx:fixture.tx,mockTokenTx:fixture.tx,challengeEscrowTx:fixture.tx,verified:true})}));
+  await missingCodePage.goto(base,{waitUntil:'domcontentloaded'});
+  await missingCodePage.waitForTimeout(100);
+  assert.equal(await missingCodePage.locator('#onchain-protect').isHidden(),true,'Missing runtime code must keep wallet actions hidden');
+  assert.equal(await missingCodePage.locator('#onchain-challenge').isHidden(),true,'Missing runtime code must keep challenge actions hidden');
+  assert.equal(await missingCodePage.locator('#proof-escrow').innerText(),'Not configured','Missing runtime code must not display escrow as live');
+  await missingCodeContext.close();
+
+  const rejectedContext=await browser.newContext({viewport:{width:1280,height:850},reducedMotion:'reduce'});
+  const rejectedPage=await rejectedContext.newPage();
+  await routeRPC(rejectedPage);
+  await rejectedPage.route('**/deployment.json',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({chainId:46630,factory:fixture.factory,mockToken:fixture.mockToken,challengeEscrow:fixture.challengeEscrow,factoryTx:fixture.tx,mockTokenTx:fixture.tx,challengeEscrowTx:fixture.tx,verified:true})}));
+  await rejectedPage.addInitScript(({owner})=>{
+    window.ethereum={request:async({method})=>{
+      if(method==='eth_requestAccounts')return [owner];
+      if(method==='eth_chainId')return '0xb626';
+      if(method==='eth_sendTransaction'){const error=new Error('User rejected the request');error.code=4001;throw error;}
+      throw Error('Unexpected wallet method '+method);
+    }};
+  },{owner:fixture.owner});
+  await rejectedPage.goto(base,{waitUntil:'domcontentloaded'});
+  await rejectedPage.locator('#onchain-protect').waitFor({state:'visible'});
+  await rejectedPage.locator('#create-demo-vault').click();
+  await rejectedPage.waitForFunction(()=>document.querySelector('#onchain-protect-status').textContent.includes('User rejected'));
+  assert.equal(await rejectedPage.locator('#create-demo-vault').isDisabled(),false,'Rejected wallet action must be retryable');
+  assert.doesNotMatch(await rejectedPage.locator('#onchain-protect-status').innerText(),/Vault registered/,'Rejected wallet action must not claim success');
+  await rejectedContext.close();
+
+  const revertedContext=await browser.newContext({viewport:{width:1280,height:850},reducedMotion:'reduce'});
+  const revertedPage=await revertedContext.newPage();
+  await routeRPC(revertedPage,{receiptStatus:'0x0'});
+  await revertedPage.route('**/deployment.json',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({chainId:46630,factory:fixture.factory,mockToken:fixture.mockToken,challengeEscrow:fixture.challengeEscrow,factoryTx:fixture.tx,mockTokenTx:fixture.tx,challengeEscrowTx:fixture.tx,verified:true})}));
+  await revertedPage.addInitScript(({owner,tx})=>{
+    window.__transactions=[];
+    window.ethereum={request:async({method,params})=>{
+      if(method==='eth_requestAccounts')return [owner];
+      if(method==='eth_chainId')return '0xb626';
+      if(method==='eth_sendTransaction'){window.__transactions.push(params[0]);return tx;}
+      throw Error('Unexpected wallet method '+method);
+    }};
+  },{owner:fixture.owner,tx:fixture.tx});
+  await revertedPage.goto(base,{waitUntil:'domcontentloaded'});
+  await revertedPage.locator('#onchain-protect').waitFor({state:'visible'});
+  await revertedPage.locator('#create-demo-vault').click();
+  await revertedPage.waitForFunction(()=>document.querySelector('#onchain-protect-status').textContent.includes('Transaction reverted'));
+  assert.doesNotMatch(await revertedPage.locator('#onchain-protect-status').innerText(),/Vault registered/,'Reverted wallet action must not claim success');
+  assert.equal((await revertedPage.evaluate(()=>window.__transactions)).length,1);
+  await revertedContext.close();
+
   const context=await browser.newContext({viewport:{width:1280,height:850},reducedMotion:'reduce'});
   const page=await context.newPage();
   page.on('pageerror',error=>problems.push('mock wallet browser: '+error.message));
@@ -117,7 +176,7 @@ try {
   for(const entry of tx)assert.equal(entry.value,'0x0','Must never send native ETH');
   await context.close();
   assert.equal(problems.length,0,problems.join('\n'));
-  console.log(JSON.stringify({viewportWidths:[320,375,768,1280],wcagAudits:audited,detectedViolations:0,mockedWalletTransactions:tx.length,layout:'no horizontal overflow',results:'PASS'},null,2));
+  console.log(JSON.stringify({viewportWidths:[320,375,768,1280],wcagAudits:audited,detectedViolations:0,mockedWalletTransactions:tx.length,mockedWalletFailurePaths:2,layout:'no horizontal overflow',results:'PASS'},null,2));
 } finally {
   await browser.close();
   await new Promise(resolve=>server.close(resolve));

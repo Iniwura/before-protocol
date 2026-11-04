@@ -15,7 +15,9 @@ The browser quality suite lives at `qa/verify.mjs`. It runs on each pull request
 ## Verified locally
 
 - 12/12 accessibility screen-width combinations passed without reported violations.
-- 4/4 wallet flows passed with simulated provider responses; not an onchain broadcast.
+- 4/4 success-path wallet transactions passed with simulated provider responses; two additional failure paths cover user rejection and reverted receipts. None is an onchain broadcast.
+- Keyboard tab navigation (ArrowRight, Home, End) preserves the roving tab focus model.
+- A manifest marked verified still keeps wallet actions hidden when any deployed runtime code is missing.
 - All four widths showed no horizontal scrolling.
 - The current branch preserves the approved minimal Protect / Challenge / Proof layout while adding the fail-closed deployment gate and explicit testnet disclosures.
 - GitHub Actions run [51](https://github.com/Iniwura/before-protocol/actions/runs/41909010933) independently passed both browser-quality and contract checks.
