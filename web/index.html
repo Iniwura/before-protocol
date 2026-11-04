@@ -30,13 +30,22 @@
 <button class="primary-button" type="submit">Check rules <span aria-hidden="true">→</span></button>
 </form></div>
 <div class="result-panel" id="protect-result" aria-live="polite"><div class="result-topline"><span>POLICY CHECK</span><span>LOCAL / NO TRANSACTION</span></div><div class="result-center"><div class="result-symbol" id="protect-symbol">×</div><div class="result-tag" id="protect-tag">BLOCKED</div><h3 id="protect-result-title">Transfer denied.</h3><p id="protect-result-text">Transfer exceeds the 60-token limit.</p></div><div class="result-footer">Enforced by the vault contract when deployed <span aria-hidden="true">↗</span></div></div>
-</div><div class="disclosure"><span class="disclosure-mark">i</span> Browser-only policy check. No assets move or onchain result is claimed.</div>
+</div><div id="onchain-protect" class="onchain-card" hidden>
+  <div><strong>Try with testnet tokens</strong><p>A real vault owned by your wallet. 150 freely mintable BTEST; test ETH gas required.</p></div>
+  <div class="onchain-buttons"><button id="create-demo-vault" type="button" class="secondary-button">Create test vault ↗</button><button id="demo-withdraw" type="button" class="secondary-button" hidden>Withdraw 20 BTEST ↗</button></div>
+  <div id="onchain-protect-status" class="onchain-status" role="status" aria-live="polite"></div>
+</div>
+<div class="disclosure"><span class="disclosure-mark">i</span> Browser-only policy check. No assets move or onchain result is claimed.</div>
 </section>
 <section class="view" role="tabpanel" id="panel-challenge" aria-labelledby="tab-challenge" hidden>
 <div class="view-heading"><div><h2>Challenge</h2><p>Find the missing rule in an intentionally flawed vault.</p></div><span class="mode-pill">● Mock-token practice</span></div>
 <div class="challenge-layout"><div class="panel challenge-panel"><div class="panel-overline">The flaw</div><h3>Two valid transfers.<br><span>One invalid outcome.</span></h3><p>The practice vault checks each transfer, but never totals daily spend.</p>
 <form id="challenge-form" novalidate><div class="two-inputs"><div><label class="input-label" for="challenge-a">First transfer</label><div class="input-unit"><input id="challenge-a" type="text" inputmode="numeric" value="60"><span>mock</span></div></div><div><label class="input-label" for="challenge-b">Second transfer</label><div class="input-unit"><input id="challenge-b" type="text" inputmode="numeric" value="50"><span>mock</span></div></div></div><button class="primary-button" type="submit">Verify bypass <span aria-hidden="true">→</span></button></form></div>
-<div class="challenge-result panel"><div class="panel-overline">Local evaluation</div><div class="test-track"><div class="test-step"><span class="test-icon" id="challenge-first-icon">✓</span><div><strong>Per-transfer check</strong><span>Each transfer must be ≤60</span></div></div><div class="test-step"><span class="test-icon" id="challenge-total-icon">!</span><div><strong>Daily spend check</strong><span id="challenge-total-label">110 total vs 100 allowed</span></div></div></div><div class="challenge-verdict" id="challenge-verdict" aria-live="polite">The flawed vault would allow an invalid daily total.</div><div class="small-disclosure">Local model of an intentional vulnerability. No onchain exploit or reward has occurred.</div></div></div></section>
+<div class="challenge-result panel"><div class="panel-overline">Local evaluation</div><div class="test-track"><div class="test-step"><span class="test-icon" id="challenge-first-icon">✓</span><div><strong>Per-transfer check</strong><span>Each transfer must be ≤60</span></div></div><div class="test-step"><span class="test-icon" id="challenge-total-icon">!</span><div><strong>Daily spend check</strong><span id="challenge-total-label">110 total vs 100 allowed</span></div></div></div><div class="challenge-verdict" id="challenge-verdict" aria-live="polite">The flawed vault would allow an invalid daily total.</div><div class="small-disclosure">Local model of an intentional vulnerability. No onchain exploit or reward has occurred.</div></div></div><div id="onchain-challenge" class="onchain-card" hidden>
+  <div><strong>Run the practice onchain</strong><p>Each attempt gets an isolated vault containing only valueless BTEST. No reward is paid.</p></div>
+  <div class="onchain-buttons"><button id="create-practice" type="button" class="secondary-button">Create practice ↗</button><button id="solve-practice" type="button" class="secondary-button" hidden>Submit 60 + 50 proof ↗</button></div>
+  <div id="onchain-challenge-status" class="onchain-status" role="status" aria-live="polite"></div>
+</div></section>
 <section class="view" role="tabpanel" id="panel-proof" aria-labelledby="tab-proof" hidden>
 <div class="view-heading"><div><h2>Proof</h2><p>Inspect real testnet data without connecting a wallet.</p></div><span class="mode-pill">● Read-only RPC</span></div>
 <div class="proof-grid">
