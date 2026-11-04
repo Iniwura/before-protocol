@@ -3,7 +3,7 @@
 | Check | Result | Evidence scope |
 | --- | --- | --- |
 | Foundry build / Solc 0.8.36 | Passed | Local networked sandbox |
-| Solidity tests | 55 / 55 passed | Foundry local EVM, including escrow tests |
+| Solidity tests | 56 / 56 passed | Foundry local EVM, including escrow tests |
 | Fuzz | 1,024 runs per fuzz test | Local EVM |
 | JavaScript policy, web and deployment checks | 46 / 46 passed | Does not run Solidity |
 | BeforeVault line coverage | 98.25% | Previous instrumented local coverage only |

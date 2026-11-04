@@ -3,11 +3,14 @@ pragma solidity ^0.8.24;
 
 interface IChallengeVerifier {
     /// @notice Return true only when evidence proves the challenge's stated finding.
-    /// @dev The verifier must be independently reviewed and should bind challengeId and solver.
-    function verify(uint256 challengeId, address solver, bytes calldata evidence)
-        external
-        view
-        returns (bool);
+    /// @dev The verifier must independently bind every context value and inspect the target.
+    function verify(
+        uint256 challengeId,
+        address solver,
+        address target,
+        bytes32 scopeHash,
+        bytes calldata evidence
+    ) external view returns (bool);
 }
 
 interface IERC20Challenge {
@@ -257,7 +260,9 @@ contract WifSecurityChallenge {
 
         bool valid = false;
         try IChallengeVerifier(challenge.verifier)
-            .verify(challengeId, msg.sender, evidence) returns (
+            .verify(
+                challengeId, msg.sender, challenge.target, scopeHashes[challengeId], evidence
+            ) returns (
             bool result
         ) {
             valid = result;

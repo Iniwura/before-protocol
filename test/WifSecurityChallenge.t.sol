@@ -21,14 +21,55 @@ contract FixedEvidenceVerifier is IChallengeVerifier {
         _accept = accept_;
     }
 
-    function verify(uint256, address, bytes calldata evidence) external view returns (bool) {
+    function verify(uint256, address, address, bytes32, bytes calldata evidence)
+        external
+        view
+        returns (bool)
+    {
         return _accept && keccak256(evidence) == _expected;
     }
 }
 
 contract RevertingVerifier is IChallengeVerifier {
-    function verify(uint256, address, bytes calldata) external pure returns (bool) {
+    function verify(uint256, address, address, bytes32, bytes calldata)
+        external
+        pure
+        returns (bool)
+    {
         revert("verifier unavailable");
+    }
+}
+
+contract BindingVerifier is IChallengeVerifier {
+    uint256 private immutable _challengeId;
+    address private immutable _solver;
+    address private immutable _target;
+    bytes32 private immutable _scopeHash;
+    bytes32 private immutable _evidenceHash;
+
+    constructor(
+        uint256 challengeId,
+        address solver,
+        address target,
+        bytes32 scopeHash,
+        bytes memory evidence
+    ) {
+        _challengeId = challengeId;
+        _solver = solver;
+        _target = target;
+        _scopeHash = scopeHash;
+        _evidenceHash = keccak256(evidence);
+    }
+
+    function verify(
+        uint256 challengeId,
+        address solver,
+        address target,
+        bytes32 scopeHash,
+        bytes calldata evidence
+    ) external view returns (bool) {
+        return challengeId == _challengeId && solver == _solver && target == _target
+            && scopeHash == _scopeHash && keccak256(evidence) == _evidenceHash;
     }
 }
 
@@ -98,6 +139,35 @@ contract WifSecurityChallengeTest {
         require(reward.balanceOf(address(escrow)) == 0, "escrow not settled");
         (,, WifSecurityChallenge.CommitmentStatus settledStatus) = escrow.commitments(id, SOLVER);
         require(settledStatus == WifSecurityChallenge.CommitmentStatus.Settled, "not settled");
+    }
+
+    function testVerifierReceivesBoundChallengeContext() public {
+        bytes memory evidence = bytes("bound");
+        bytes32 scopeHash = keccak256("before-bound-scope-v1");
+        BindingVerifier binding =
+            new BindingVerifier(1, SOLVER, address(target), scopeHash, evidence);
+        uint64 commitDeadline = uint64(block.timestamp + 1 days);
+        uint64 revealDeadline = uint64(block.timestamp + 2 days);
+        uint256 id = escrow.createChallenge(
+            _config(
+                address(reward),
+                REWARD,
+                BOND,
+                address(binding),
+                address(target),
+                scopeHash,
+                commitDeadline,
+                revealDeadline
+            )
+        );
+        bytes32 salt = bytes32(uint256(16));
+        bytes32 digest = escrow.commitmentFor(id, SOLVER, salt, evidence);
+        vm.prank(SOLVER);
+        escrow.commit(id, digest);
+        vm.warp(uint256(commitDeadline) + 1);
+        vm.prank(SOLVER);
+        escrow.reveal(id, salt, evidence);
+        require(reward.balanceOf(SOLVER) == 100 ether + REWARD, "bound verifier rejected context");
     }
 
     function testCopiedCommitmentCannotBeRevealedByAnotherWallet() public {
