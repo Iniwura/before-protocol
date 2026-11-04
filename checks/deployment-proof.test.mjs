@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {normalizedBytecode,attestContract,attestFactoryEvent} from './deployment-proof.mjs';
+import {normalizedBytecode,attestCall,attestContract,attestFactoryEvent} from './deployment-proof.mjs';
 
 const contract='0x'+'1'.repeat(40);
 const tx='0x'+'a'.repeat(64);
@@ -25,4 +25,11 @@ test('factory event is bound to the factory and indexed context',()=>{
   const receipt={logs:[{address:contract,topics:[event,padded(owner),'0x'+'0'.repeat(24)+'4'.repeat(40),padded(token)],data:'0x'}]};
   assert.equal(attestFactoryEvent({label:'FactoryEvent',receipt,factory:contract,eventTopic:event,indexedAddresses:{1:owner,3:token}}).topics[2].slice(-40),'4'.repeat(40));
   assert.throws(()=>attestFactoryEvent({label:'FactoryEvent',receipt,factory:'0x'+'9'.repeat(40),eventTopic:event}),/exactly one/);
+});
+test('call proof binds sender, calldata, status and confirmations',()=>{
+  const from='0x'+'2'.repeat(40), to='0x'+'3'.repeat(40), call='0x12345678'+'0'.repeat(64), flowTx='0x'+'c'.repeat(64);
+  const transaction={hash:flowTx,from,to,input:call};
+  const receipt={status:'0x1',transactionHash:flowTx,to,blockNumber:'0x64'};
+  assert.equal(attestCall({label:'Flow',txHash:flowTx,transaction,receipt,to,from,input:call,headBlock:'0x6f'}).confirmations,12);
+  assert.throws(()=>attestCall({label:'Flow',txHash:flowTx,transaction,receipt:{...receipt,status:'0x0'},to,from,input:call,headBlock:'0x6f'}),/unexpected interaction receipt status/);
 });

@@ -64,10 +64,10 @@ export function attestFactoryInteraction({
   return {label,txHash,from:transaction.from,confirmations:Number(confirmations)};
 }
 
-export function attestFactoryEvent({label,receipt,factory,eventTopic,indexedAddresses={}}) {
+export function attestEvent({label,receipt,address,eventTopic,indexedAddresses={}}) {
   const logs=Array.isArray(receipt?.logs)?receipt.logs:[];
   const matches=logs.filter(log=>{
-    if (log?.address?.toLowerCase()!==factory.toLowerCase()) return false;
+    if (log?.address?.toLowerCase()!==address.toLowerCase()) return false;
     if (!Array.isArray(log.topics)||log.topics[0]?.toLowerCase()!==eventTopic.toLowerCase()) return false;
     return Object.entries(indexedAddresses).every(([index,address])=>
       log.topics[Number(index)]?.toLowerCase()===('0x'+'0'.repeat(24)+address.slice(2).toLowerCase())
@@ -75,4 +75,38 @@ export function attestFactoryEvent({label,receipt,factory,eventTopic,indexedAddr
   });
   if (matches.length!==1) throw new Error(label+': receipt does not contain exactly one matching factory event.');
   return matches[0];
+}
+
+export function attestFactoryEvent({label,receipt,factory,eventTopic,indexedAddresses={}}) {
+  return attestEvent({label,receipt,address:factory,eventTopic,indexedAddresses});
+}
+
+export function attestCall({
+  label,
+  txHash,
+  transaction,
+  receipt,
+  to,
+  from,
+  input,
+  headBlock,
+  status='0x1',
+  minConfirmations=12,
+}) {
+  if (!isTxHash(txHash)) throw new Error(label+': invalid interaction transaction hash.');
+  if (!transaction) throw new Error(label+': missing interaction transaction.');
+  if (transaction.hash?.toLowerCase()!==txHash.toLowerCase()) throw new Error(label+': transaction hash does not match.');
+  if (!isAddress(transaction.from)) throw new Error(label+': interaction sender is missing or malformed.');
+  if (from && transaction.from.toLowerCase()!==from.toLowerCase()) throw new Error(label+': interaction sender does not match the expected wallet.');
+  if (transaction.to?.toLowerCase()!==to.toLowerCase()) throw new Error(label+': interaction target does not match.');
+  if (transaction.input?.toLowerCase()!==input.toLowerCase()) throw new Error(label+': calldata does not match the expected user flow.');
+  if (!receipt || receipt.status!==status) throw new Error(label+': missing or unexpected interaction receipt status.');
+  if (receipt.transactionHash?.toLowerCase()!==txHash.toLowerCase()) throw new Error(label+': interaction receipt hash does not match.');
+  if (receipt.to?.toLowerCase()!==to.toLowerCase()) throw new Error(label+': interaction receipt target does not match.');
+  const height=typeof headBlock==='bigint'?headBlock:parseHexUint(headBlock);
+  const mined=parseHexUint(receipt.blockNumber);
+  if (mined > height) throw new Error(label+': receipt block exceeds chain head.');
+  const confirmations=height-mined+1n;
+  if (confirmations < BigInt(minConfirmations)) throw new Error(label+': interaction needs more confirmations.');
+  return {label,txHash,from:transaction.from,confirmations:Number(confirmations)};
 }

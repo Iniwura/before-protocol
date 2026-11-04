@@ -11,12 +11,16 @@ const factory='0x'+'1'.repeat(40), token='0x'+'2'.repeat(40), escrow='0x'+'3'.re
 const txA='0x'+'a'.repeat(64), txB='0x'+'b'.repeat(64), txC='0x'+'c'.repeat(64);
 const deployer='0x'+'4'.repeat(40), demoVault='0x'+'5'.repeat(40), practiceArena='0x'+'6'.repeat(40), practiceVault='0x'+'7'.repeat(40);
 const txD='0x'+'d'.repeat(64), txE='0x'+'e'.repeat(64);
+const allowedTx='0x'+'8'.repeat(64), deniedTx='0x'+'9'.repeat(64), proofTx='0x'+'f'.repeat(64);
 const params=['script/verify-testnet.mjs',factory,txA,token,txB];
 const word=address=>'0x'+'0'.repeat(24)+address.slice(2);
 const words=(...values)=>'0x'+values.map(value=>typeof value==='string'?value.replace(/^0x/,'').padStart(64,'0'):BigInt(value).toString(16).padStart(64,'0')).join('');
 const amount150='0x'+(150n*10n**18n).toString(16).padStart(64,'0');
 const vaultEvent='0x12cd41479914d3ffb29c1abbe7cef9f1c4d3a03603eafa901c21e4b0c826955a';
 const practiceEvent='0x8a0923f7b9bc4930ee8c8e7773325c8ecead718d54032c702b2690438c0b3a1e';
+const withdrawalEvent='0x75e161b3e824b114fc1a33274bd7091918dd4e639cede50b78b15a4eea956a21';
+const proofEvent='0x9f9d7c25919433aa3abd6a8bd1e610f30294b74f06edd9d104809ac2d72c9db9';
+const proofInput='0x3b1bf525'+words(32n,2n,60n*10n**18n,50n*10n**18n).slice(2);
 function launchCLI(url,cliParams=params) {
   return new Promise((resolve,reject)=>{
     let stdout='',stderr='';
@@ -158,6 +162,72 @@ test('eight-argument proof verifies factory interactions and created demo output
     const bad=await launchCLI(url,args);
     assert.equal(bad.code,1,bad.stdout+bad.stderr);
     assert.match(bad.stderr,/calldata does not match/);
+  } finally {
+    await new Promise(resolve=>server.close(resolve));
+  }
+});
+
+test('eleven-argument proof verifies the public Protect and Challenge flow',async()=>{
+  const artifact=async(name)=>JSON.parse(await readFile(path.join(root,'out',name+'.sol',name+'.json'),'utf8'));
+  const [f,t,e,v,a,p]=await Promise.all([
+    artifact('BeforeFactory'),artifact('MockERC20'),artifact('WifSecurityChallenge'),
+    artifact('BeforeVault'),artifact('TrainingArena'),artifact('TrainingVault'),
+  ]);
+  const server=createServer(async(req,res)=>{
+    const chunks=[];
+    for await(const data of req)chunks.push(data);
+    const q=JSON.parse(Buffer.concat(chunks).toString());
+    let result=null;
+    if(q.method==='eth_chainId')result='0xb626';
+    if(q.method==='eth_blockNumber')result='0x200';
+    if(q.method==='eth_getTransactionReceipt'){
+      const entries={
+        [txA]:{status:'0x1',contractAddress:factory,transactionHash:txA,to:null},
+        [txB]:{status:'0x1',contractAddress:token,transactionHash:txB,to:null},
+        [txC]:{status:'0x1',contractAddress:escrow,transactionHash:txC,to:null},
+        [txD]:{status:'0x1',transactionHash:txD,to:factory,logs:[{address:factory,topics:[vaultEvent,word(deployer),word(demoVault),word(token)],data:words(deployer,60n*10n**18n,100n*10n**18n,1n)}]},
+        [txE]:{status:'0x1',transactionHash:txE,to:factory,logs:[{address:factory,topics:[practiceEvent,word(deployer),word(practiceArena),word(token)],data:'0x'}]},
+        [allowedTx]:{status:'0x1',transactionHash:allowedTx,to:demoVault,logs:[{address:demoVault,topics:[withdrawalEvent,word(deployer),words(1n)],data:words(20n*10n**18n,20n*10n**18n)}]},
+        [deniedTx]:{status:'0x0',transactionHash:deniedTx,to:demoVault,logs:[]},
+        [proofTx]:{status:'0x1',transactionHash:proofTx,to:practiceArena,logs:[{address:practiceArena,topics:[proofEvent,word(deployer)],data:words(110n*10n**18n,100n*10n**18n)}]},
+      };
+      result=entries[q.params[0]]?{...entries[q.params[0]],blockNumber:'0x1f0'}:null;
+    }
+    if(q.method==='eth_getTransactionByHash'){
+      const entries={
+        [txD]:{hash:txD,from:deployer,to:factory,input:'0x4e6a5acd'+token.slice(2).padStart(64,'0')},
+        [txE]:{hash:txE,from:deployer,to:factory,input:'0x1ce59d6c'+token.slice(2).padStart(64,'0')},
+        [allowedTx]:{hash:allowedTx,from:deployer,to:demoVault,input:'0xf3fef3a3'+word(deployer).slice(2)+words(20n*10n**18n).slice(2)},
+        [deniedTx]:{hash:deniedTx,from:deployer,to:demoVault,input:'0xf3fef3a3'+word(deployer).slice(2)+words(75n*10n**18n).slice(2)},
+        [proofTx]:{hash:proofTx,from:deployer,to:practiceArena,input:proofInput},
+      };
+      result=entries[q.params[0]]||null;
+    }
+    if(q.method==='eth_getCode'){
+      const entries=[[factory,f.deployedBytecode.object],[token,t.deployedBytecode.object],[escrow,e.deployedBytecode.object],[demoVault,v.deployedBytecode.object],[practiceArena,a.deployedBytecode.object],[practiceVault,p.deployedBytecode.object]];
+      result=entries.find(([address])=>q.params[0]===address)?.[1]||'0x';
+    }
+    if(q.method==='eth_call'){
+      const call=q.params[0], selector=call.data.slice(0,10), address=call.to;
+      if(selector==='0xee643f9e')result=word(demoVault);
+      if(selector==='0x7f81587e')result=word(practiceArena);
+      if(selector==='0xfbfa77cf')result=word(practiceVault);
+      if(selector==='0x8da5cb5b'&&address===demoVault)result=word(deployer);
+      if(selector==='0xcb943a37'&&address===demoVault)result=word(deployer);
+      if(selector==='0xfc0c546a'&&(address===demoVault||address===practiceArena))result=word(token);
+      if(selector==='0x70a08231')result=amount150;
+      if(selector==='0x799320bb'&&address===practiceArena)result=words(1n);
+    }
+    res.writeHead(200,{'Content-Type':'application/json'});
+    res.end(JSON.stringify({jsonrpc:'2.0',id:1,result}));
+  });
+  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
+  const url='http://127.0.0.1:'+server.address().port;
+  try {
+    const valid=await launchCLI(url,['script/verify-testnet.mjs',factory,txA,token,txB,escrow,txC,txD,txE,allowedTx,deniedTx,proofTx]);
+    assert.equal(valid.code,0,valid.stderr);
+    assert.match(valid.stdout,/public Protect and Challenge receipts/);
+    assert.match(valid.stdout,/practiceProofTx/);
   } finally {
     await new Promise(resolve=>server.close(resolve));
   }
