@@ -348,6 +348,36 @@ contract WifSecurityChallengeTest {
         escrow.reveal(id, salt, evidence);
     }
 
+    function testVerifierCodeChangeFailsClosed() public {
+        (uint256 id, uint64 commitDeadline,) = _create(verifier);
+        bytes memory evidence = bytes("valid");
+        bytes32 salt = bytes32(uint256(18));
+        bytes32 digest = escrow.commitmentFor(id, SOLVER, salt, evidence);
+        vm.prank(SOLVER);
+        escrow.commit(id, digest);
+
+        vm.etch(address(verifier), hex"6000");
+        vm.warp(uint256(commitDeadline) + 1);
+        vm.expectRevert(WifSecurityChallenge.VerifierChanged.selector);
+        vm.prank(SOLVER);
+        escrow.reveal(id, salt, evidence);
+    }
+
+    function testRewardTokenCodeChangeFailsClosed() public {
+        (uint256 id, uint64 commitDeadline,) = _create(verifier);
+        bytes memory evidence = bytes("valid");
+        bytes32 salt = bytes32(uint256(19));
+        bytes32 digest = escrow.commitmentFor(id, SOLVER, salt, evidence);
+        vm.prank(SOLVER);
+        escrow.commit(id, digest);
+
+        vm.etch(address(reward), hex"6000");
+        vm.warp(uint256(commitDeadline) + 1);
+        vm.expectRevert(WifSecurityChallenge.UnsupportedToken.selector);
+        vm.prank(SOLVER);
+        escrow.reveal(id, salt, evidence);
+    }
+
     function testExpiryRefundsRewardAndLeavesPendingBondsClaimable() public {
         (uint256 id,, uint64 revealDeadline) = _create(verifier);
         bytes memory evidence = bytes("valid");
