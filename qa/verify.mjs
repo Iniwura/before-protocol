@@ -22,16 +22,16 @@ const server = createServer(async(req,res)=>{
 await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
 const base='http://127.0.0.1:'+server.address().port;
 const browser=await chromium.launch({headless:true});
-const fixture={owner:'0x'+'3'.repeat(40),factory:'0x'+'1'.repeat(40),mockToken:'0x'+'2'.repeat(40),challengeEscrow:'0x'+'6'.repeat(40),vault:'0x'+'4'.repeat(40),arena:'0x'+'5'.repeat(40),tx:'0x'+'a'.repeat(64)};
+const fixture={owner:'0x'+'3'.repeat(40),factory:'0x'+'1'.repeat(40),mockToken:'0x'+'2'.repeat(40),challengeEscrow:'0x'+'6'.repeat(40),vault:'0x'+'4'.repeat(40),arena:'0x'+'5'.repeat(40),practiceVault:'0x'+'7'.repeat(40),tx:'0x'+'a'.repeat(64),demoTx:'0x'+'b'.repeat(64),practiceTx:'0x'+'c'.repeat(64),allowedTx:'0x'+'d'.repeat(64),deniedTx:'0x'+'e'.repeat(64),practiceProofTx:'0x'+'f'.repeat(64)};
 const padding=addr=>'0x'+'0'.repeat(24)+addr.slice(2);
-function routeRPC(page,{code='0x60016000',receiptStatus='0x1'}={}) {
+function routeRPC(page,{code='0x60016000',codeByAddress={},receiptStatus='0x1'}={}) {
   return page.route('https://rpc.testnet.chain.robinhood.com/**', route=>{
     const request=JSON.parse(route.request().postData()||'{}');
     let result=null;
     switch(request.method) {
       case 'eth_chainId':result='0xb626';break;
       case 'eth_blockNumber':result='0x10';break;
-      case 'eth_getCode':result=code;break;
+      case 'eth_getCode':result=codeByAddress[request.params?.[0]?.toLowerCase()]??code;break;
       case 'eth_getTransactionReceipt':result={status:receiptStatus,blockNumber:'0x10',transactionHash:fixture.tx,from:fixture.owner,to:fixture.factory};break;
       case 'eth_call':{
         const selector=request.params?.[0]?.data?.slice(0,10);
@@ -101,6 +101,29 @@ try {
   assert.equal(await missingCodePage.locator('#onchain-challenge').isHidden(),true,'Missing runtime code must keep challenge actions hidden');
   assert.equal(await missingCodePage.locator('#proof-escrow').innerText(),'Not configured','Missing runtime code must not display escrow as live');
   await missingCodeContext.close();
+
+  const fullManifestContext=await browser.newContext({viewport:{width:1280,height:850},reducedMotion:'reduce'});
+  const fullManifestPage=await fullManifestContext.newPage();
+  await routeRPC(fullManifestPage);
+  await fullManifestPage.route('**/deployment.json',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({
+    chainId:46630,factory:fixture.factory,mockToken:fixture.mockToken,challengeEscrow:fixture.challengeEscrow,
+    factoryTx:fixture.tx,mockTokenTx:fixture.tx,challengeEscrowTx:fixture.tx,verified:true,
+    deployer:fixture.owner,demoVault:fixture.vault,practiceArena:fixture.arena,practiceVault:fixture.practiceVault,
+    demoTx:fixture.demoTx,practiceTx:fixture.practiceTx,allowedTx:fixture.allowedTx,deniedTx:fixture.deniedTx,
+    practiceProofTx:fixture.practiceProofTx,practiceSolver:fixture.owner
+  })}));
+  await fullManifestPage.goto(base,{waitUntil:'domcontentloaded'});
+  await fullManifestPage.locator('#tab-proof').click();
+  await fullManifestPage.locator('#proof-demo-meta').waitFor({state:'visible'});
+  assert.equal(await fullManifestPage.locator('#proof-demo').innerText(),fixture.vault.slice(0,6)+'…'+fixture.vault.slice(-4));
+  assert.equal(await fullManifestPage.locator('#proof-practice').innerText(),fixture.arena.slice(0,6)+'…'+fixture.arena.slice(-4));
+  assert.equal(await fullManifestPage.locator('#proof-flow').innerText(),'3 receipts verified');
+  assert.equal(await fullManifestPage.locator('#vault-address').inputValue(),fixture.vault,'Verified demo vault should seed the inspector');
+  await fullManifestPage.locator('#tab-protect').click();
+  assert.equal(await fullManifestPage.locator('#onchain-protect').isHidden(),false,'Complete manifest should unlock testnet Protect actions');
+  await fullManifestPage.locator('#tab-challenge').click();
+  assert.equal(await fullManifestPage.locator('#onchain-challenge').isHidden(),false,'Complete manifest should unlock testnet Challenge actions');
+  await fullManifestContext.close();
 
   const rejectedContext=await browser.newContext({viewport:{width:1280,height:850},reducedMotion:'reduce'});
   const rejectedPage=await rejectedContext.newPage();
@@ -176,7 +199,7 @@ try {
   for(const entry of tx)assert.equal(entry.value,'0x0','Must never send native ETH');
   await context.close();
   assert.equal(problems.length,0,problems.join('\n'));
-  console.log(JSON.stringify({viewportWidths:[320,375,768,1280],wcagAudits:audited,detectedViolations:0,mockedWalletTransactions:tx.length,mockedWalletFailurePaths:2,layout:'no horizontal overflow',results:'PASS'},null,2));
+  console.log(JSON.stringify({viewportWidths:[320,375,768,1280],wcagAudits:audited,detectedViolations:0,fullManifestProof:true,mockedWalletTransactions:tx.length,mockedWalletFailurePaths:2,layout:'no horizontal overflow',results:'PASS'},null,2));
 } finally {
   await browser.close();
   await new Promise(resolve=>server.close(resolve));

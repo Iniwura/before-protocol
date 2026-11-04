@@ -18,6 +18,7 @@ The browser quality suite lives at `qa/verify.mjs`. It runs on each pull request
 - 4/4 success-path wallet transactions passed with simulated provider responses; two additional failure paths cover user rejection and reverted receipts. None is an onchain broadcast.
 - Keyboard tab navigation (ArrowRight, Home, End) preserves the roving tab focus model.
 - A manifest marked verified still keeps wallet actions hidden when any deployed runtime code is missing.
+- A complete verified manifest surfaces the demo vault, practice arena and three public-flow receipt markers in Proof, seeds the vault inspector, and unlocks only the testnet Protect / Challenge cards.
 - All four widths showed no horizontal scrolling.
 - The current branch preserves the approved minimal Protect / Challenge / Proof layout while adding the fail-closed deployment gate and explicit testnet disclosures.
 - GitHub Actions run [75](https://github.com/Iniwura/before-protocol/actions/runs/41918151927) independently passed both browser-quality and contract checks for the current code checkpoint.
