@@ -28,7 +28,7 @@ The production mechanism is a separate ERC-20 escrow for meaningful security fin
 
 ## Evidence checkpoint
 
-- 64 Solidity tests, including adversarial accounting, replay, expiry, verifier quorum, code-pinning and transfer-callback mutation cases.
+- 65 Solidity tests, including adversarial accounting, replay, expiry, verifier quorum, code-pinning, transfer-callback mutation and empty-evidence cases.
 - 55 JavaScript checks, including exact deployment receipt/event/runtime proof and public broadcast extraction checks.
 - Browser QA: 12 responsive/accessibility audits plus 3 complete-manifest accessibility states, zero violations, no horizontal overflow, mocked wallet success and failure paths.
 - [CI run 96](https://github.com/Iniwura/before-protocol/actions/runs/41923474256) passed both jobs for the documented security-hardening head `d344799`.

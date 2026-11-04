@@ -267,15 +267,17 @@ contract WifSecurityChallenge {
         }
 
         bool valid = false;
-        try IChallengeVerifier(challenge.verifier)
-            .verify(
-                challengeId, msg.sender, challenge.target, scopeHashes[challengeId], evidence
-            ) returns (
-            bool result
-        ) {
-            valid = result;
-        } catch {
-            revert VerifierFailed();
+        if (evidence.length != 0) {
+            try IChallengeVerifier(challenge.verifier)
+                .verify(
+                    challengeId, msg.sender, challenge.target, scopeHashes[challengeId], evidence
+                ) returns (
+                bool result
+            ) {
+                valid = result;
+            } catch {
+                revert VerifierFailed();
+            }
         }
 
         current.status = valid ? CommitmentStatus.Settled : CommitmentStatus.Slashed;

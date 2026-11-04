@@ -3,7 +3,7 @@
 | Check | Result | Evidence scope |
 | --- | --- | --- |
 | Foundry build / Solc 0.8.36 | Passed | Local networked sandbox |
-| Solidity tests | 64 / 64 passed | Foundry local EVM, including escrow code-pinning, reviewer-quorum and transfer-callback mutation tests |
+| Solidity tests | 65 / 65 passed | Foundry local EVM, including escrow code-pinning, reviewer-quorum, transfer-callback mutation and empty-evidence tests |
 | Fuzz | 1,024 runs per fuzz test | Local EVM |
 | JavaScript policy, web and deployment checks | 55 / 55 passed | Does not run Solidity |
 | BeforeVault line coverage | 98.25% | Previous instrumented local coverage only |

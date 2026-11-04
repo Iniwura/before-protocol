@@ -377,6 +377,22 @@ contract WifSecurityChallengeTest {
         require(slashedStatus == WifSecurityChallenge.CommitmentStatus.Slashed, "not slashed");
     }
 
+    function testEmptyEvidenceIsInvalidEvenForPermissiveVerifier() public {
+        FixedEvidenceVerifier acceptsEmpty = new FixedEvidenceVerifier(bytes(""), true);
+        (uint256 id, uint64 commitDeadline,) = _create(acceptsEmpty);
+        bytes32 salt = bytes32(uint256(20));
+        bytes32 digest = escrow.commitmentFor(id, SOLVER, salt, bytes(""));
+        vm.prank(SOLVER);
+        escrow.commit(id, digest);
+
+        vm.warp(uint256(commitDeadline) + 1);
+        vm.prank(SOLVER);
+        escrow.reveal(id, salt, bytes(""));
+
+        require(reward.balanceOf(SOLVER) == 100 ether - BOND, "empty evidence was paid");
+        require(reward.balanceOf(address(this)) == 900 ether + BOND, "empty bond was not slashed");
+    }
+
     function testVerifierFailureDoesNotSlashAndBondCanExpire() public {
         RevertingVerifier unavailable = new RevertingVerifier();
         (uint256 id, uint64 commitDeadline, uint64 revealDeadline) = _create(unavailable);
