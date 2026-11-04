@@ -14,7 +14,7 @@ Copy-ready material for the [World Is Flat hackathon](https://worldisflat.fun/bu
 
 The production mechanism is a separate ERC-20 escrow for meaningful security findings. A sponsor pins the target contract, runtime code, written scope, verifier and reward token. Solvers use a wallet-bound commit/reveal and bond; a fixed reviewer quorum approves the exact evidence before settlement. Invalid evidence loses only the bond, expiry returns funds, and code changes fail closed.
 
-**Product:** https://before-dybxz0ach-iniwura-akurus-projects.vercel.app
+**Product:** https://before-c7sv8zw4h-iniwura-akurus-projects.vercel.app
 
 **Source:** https://github.com/Iniwura/before-protocol
 
@@ -31,7 +31,7 @@ The production mechanism is a separate ERC-20 escrow for meaningful security fin
 - 63 Solidity tests, including adversarial accounting, replay, expiry, verifier quorum and code-pinning cases.
 - 55 JavaScript checks, including exact deployment receipt/event/runtime proof and public broadcast extraction checks.
 - Browser QA: 12 responsive/accessibility audits plus 3 complete-manifest accessibility states, zero violations, no horizontal overflow, mocked wallet success and failure paths.
-- [CI run 85](https://github.com/Iniwura/before-protocol/actions/runs/41920124848) passed both jobs for the documented head.
+- [CI run 92](https://github.com/Iniwura/before-protocol/actions/runs/41922339118) passed both jobs for the documented head `dc11720`.
 - Robinhood Chain read-only RPC confirms chain ID 46630.
 
 ## Claim boundary
