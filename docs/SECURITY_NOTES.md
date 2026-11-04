@@ -6,7 +6,7 @@ BeforeVault enforces a fixed recipient, owner and spending policy on its own tok
 
 The aggregate daily limit is a fixed epoch computed from block.timestamp / 86400, not a sliding 24-hour window. Spending close to midnight UTC can result in more transfers across adjacent epochs than a user might intuit. This design requires explicit UX disclosure.
 
-Unusual ERC-20 behaviors are outside the supported production scope. The prototype checks balance deltas and tests fee-on-transfer failure and reentrancy, but rebasing, malicious token code, false balance reporting and other edge cases need independent evaluation.
+Unusual ERC-20 behaviors are outside the supported production scope. The prototype checks exact source-and-recipient balance deltas and tests fee-on-transfer failure, source-side minting and reentrancy, but rebasing, malicious token code, false balance reporting and other edge cases need independent evaluation.
 
 TrainingVault is **intentionally vulnerable**. It omits the aggregate daily cap. TrainingArena and the training vault restrict network and mock-token runtime code as defense in depth; they must never custody valuable tokens. The attack is public and trivial, so it cannot support economically meaningful rewards.
 

@@ -2,6 +2,7 @@
 pragma solidity ^0.8.24;
 
 import {IChallengeVerifier, WifSecurityChallenge} from "../src/WifSecurityChallenge.sol";
+import {MockAccountingToken} from "../src/mocks/MockAccountingToken.sol";
 import {MockERC20} from "../src/mocks/MockERC20.sol";
 import {MockFeeToken} from "../src/mocks/MockFeeToken.sol";
 
@@ -318,6 +319,49 @@ contract WifSecurityChallengeTest {
                 uint64(block.timestamp + 2 days)
             )
         );
+    }
+
+    function testInflatingTokenCannotBeEscrowed() public {
+        MockAccountingToken inflation = new MockAccountingToken();
+        inflation.mint(address(this), REWARD);
+        inflation.approve(address(escrow), REWARD);
+        inflation.setMode(1);
+        vm.expectRevert(WifSecurityChallenge.UnsupportedToken.selector);
+        escrow.createChallenge(
+            _config(
+                address(inflation),
+                REWARD,
+                BOND,
+                address(verifier),
+                address(target),
+                bytes32(uint256(1)),
+                uint64(block.timestamp + 1 days),
+                uint64(block.timestamp + 2 days)
+            )
+        );
+    }
+
+    function testInflatingTokenCannotReleaseEscrowedReward() public {
+        MockAccountingToken accounting = new MockAccountingToken();
+        accounting.mint(address(this), REWARD);
+        accounting.approve(address(escrow), REWARD);
+        uint256 id = escrow.createChallenge(
+            _config(
+                address(accounting),
+                REWARD,
+                BOND,
+                address(verifier),
+                address(target),
+                bytes32(uint256(1)),
+                uint64(block.timestamp + 1 days),
+                uint64(block.timestamp + 2 days)
+            )
+        );
+        accounting.setMode(1);
+        vm.warp(block.timestamp + 3 days);
+        vm.expectRevert(WifSecurityChallenge.UnsupportedToken.selector);
+        escrow.refundExpiredReward(id);
+        require(!escrow.challenges(id).rewardReleased, "failed transfer changed state");
     }
 
     function testInvalidWindowsAndMissingChallengeFailClosed() public {

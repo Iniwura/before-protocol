@@ -352,24 +352,34 @@ contract WifSecurityChallenge {
     }
 
     function _pullExact(address asset, address from, address to, uint256 amount) private {
-        uint256 beforeBalance = IERC20Challenge(asset).balanceOf(to);
+        uint256 beforeFrom = IERC20Challenge(asset).balanceOf(from);
+        uint256 beforeTo = IERC20Challenge(asset).balanceOf(to);
         (bool ok, bytes memory data) = asset.call(
             abi.encodeWithSignature("transferFrom(address,address,uint256)", from, to, amount)
         );
         if (!ok || !_accepted(data)) revert TransferFailed();
-        uint256 afterBalance = IERC20Challenge(asset).balanceOf(to);
-        if (afterBalance < beforeBalance || afterBalance - beforeBalance != amount) {
+        uint256 afterFrom = IERC20Challenge(asset).balanceOf(from);
+        uint256 afterTo = IERC20Challenge(asset).balanceOf(to);
+        if (
+            beforeFrom < afterFrom || beforeFrom - afterFrom != amount || afterTo < beforeTo
+                || afterTo - beforeTo != amount
+        ) {
             revert UnsupportedToken();
         }
     }
 
     function _pushExact(address asset, address to, uint256 amount) private {
-        uint256 beforeBalance = IERC20Challenge(asset).balanceOf(to);
+        uint256 beforeFrom = IERC20Challenge(asset).balanceOf(address(this));
+        uint256 beforeTo = IERC20Challenge(asset).balanceOf(to);
         (bool ok, bytes memory data) =
             asset.call(abi.encodeWithSignature("transfer(address,uint256)", to, amount));
         if (!ok || !_accepted(data)) revert TransferFailed();
-        uint256 afterBalance = IERC20Challenge(asset).balanceOf(to);
-        if (afterBalance < beforeBalance || afterBalance - beforeBalance != amount) {
+        uint256 afterFrom = IERC20Challenge(asset).balanceOf(address(this));
+        uint256 afterTo = IERC20Challenge(asset).balanceOf(to);
+        if (
+            beforeFrom < afterFrom || beforeFrom - afterFrom != amount || afterTo < beforeTo
+                || afterTo - beforeTo != amount
+        ) {
             revert UnsupportedToken();
         }
     }

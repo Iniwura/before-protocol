@@ -40,7 +40,7 @@ The network check is read-only; it requires internet access.
 - Robinhood Chain testnet public RPC returned chain ID 46630 in a read-only check.
 - **No chain deployment, audited security claim, real-token custody, or real WIF reward.**
 
-GitHub Actions run [37](https://github.com/Iniwura/before-protocol/actions/runs/41904604895) independently passed the contract and browser-quality jobs for this checkpoint. Neither local nor CI results establish testnet deployment, an audit or WIF custody.
+GitHub Actions run [41](https://github.com/Iniwura/before-protocol/actions/runs/41905059992) independently passed the contract and browser-quality jobs for the preceding checkpoint. The source-side token-accounting hardening added after that run is locally verified but awaits the next CI run. Neither local nor CI results establish testnet deployment, an audit or WIF custody.
 
 ## Live research prototype
 
