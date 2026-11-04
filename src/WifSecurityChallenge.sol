@@ -133,7 +133,7 @@ contract WifSecurityChallenge {
 
     /// @notice Escrow a reward and publish a bounded challenge window.
     /// @dev The verifier is part of the challenge's public trust boundary. Review its source
-    ///      and ensure it binds both challengeId and solver before funding a live challenge.
+    ///      and ensure it binds every supplied context value before funding a live challenge.
     function createChallenge(ChallengeConfig calldata config)
         external
         nonReentrant
