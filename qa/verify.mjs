@@ -42,6 +42,12 @@ function routeRPC(page,{code='0x60016000',codeByAddress={},receiptStatus='0x1'}=
     return route.fulfill({status:200,contentType:'application/json',headers:{'access-control-allow-origin':'*'},body:JSON.stringify({jsonrpc:'2.0',id:1,result})});
   });
 }
+async function axeViolations(page){
+  return page.evaluate(async()=>{
+    const {violations}=await axe.run(document,{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21aa']}});
+    return violations.map(v=>({id:v.id,impact:v.impact,nodes:v.nodes.length}));
+  });
+}
 const problems=[];
 let audited=0;
 try {
@@ -102,26 +108,41 @@ try {
   assert.equal(await missingCodePage.locator('#proof-escrow').innerText(),'Not configured','Missing runtime code must not display escrow as live');
   await missingCodeContext.close();
 
-  const fullManifestContext=await browser.newContext({viewport:{width:1280,height:850},reducedMotion:'reduce'});
-  const fullManifestPage=await fullManifestContext.newPage();
-  await routeRPC(fullManifestPage);
-  await fullManifestPage.route('**/deployment.json',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({
+  const completeManifest={
     chainId:46630,factory:fixture.factory,mockToken:fixture.mockToken,challengeEscrow:fixture.challengeEscrow,
     factoryTx:fixture.tx,mockTokenTx:fixture.tx,challengeEscrowTx:fixture.tx,verified:true,
     deployer:fixture.owner,demoVault:fixture.vault,practiceArena:fixture.arena,practiceVault:fixture.practiceVault,
     demoTx:fixture.demoTx,practiceTx:fixture.practiceTx,allowedTx:fixture.allowedTx,deniedTx:fixture.deniedTx,
     practiceProofTx:fixture.practiceProofTx,practiceSolver:fixture.owner
-  })}));
+  };
+  const missingOutputContext=await browser.newContext({viewport:{width:1280,height:850},reducedMotion:'reduce'});
+  const missingOutputPage=await missingOutputContext.newPage();
+  await routeRPC(missingOutputPage,{codeByAddress:{[fixture.vault.toLowerCase()]:'0x'}});
+  await missingOutputPage.route('**/deployment.json',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(completeManifest)}));
+  await missingOutputPage.goto(base,{waitUntil:'domcontentloaded'});
+  await missingOutputPage.waitForTimeout(150);
+  assert.equal(await missingOutputPage.locator('#onchain-protect').isHidden(),true,'Missing verified output code must keep wallet actions hidden');
+  assert.equal(await missingOutputPage.locator('#proof-demo-meta').getAttribute('hidden'),'','Missing verified output code must keep Proof evidence hidden');
+  await missingOutputContext.close();
+
+  const fullManifestContext=await browser.newContext({viewport:{width:1280,height:850},reducedMotion:'reduce'});
+  const fullManifestPage=await fullManifestContext.newPage();
+  await routeRPC(fullManifestPage);
+  await fullManifestPage.route('**/deployment.json',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(completeManifest)}));
   await fullManifestPage.goto(base,{waitUntil:'domcontentloaded'});
+  await fullManifestPage.addScriptTag({path:path.join(here,'node_modules/axe-core/axe.min.js')});
   await fullManifestPage.locator('#tab-proof').click();
   await fullManifestPage.locator('#proof-demo-meta').waitFor({state:'visible'});
   assert.equal(await fullManifestPage.locator('#proof-demo').innerText(),fixture.vault.slice(0,6)+'…'+fixture.vault.slice(-4));
   assert.equal(await fullManifestPage.locator('#proof-practice').innerText(),fixture.arena.slice(0,6)+'…'+fixture.arena.slice(-4));
   assert.equal(await fullManifestPage.locator('#proof-flow').innerText(),'3 receipts verified');
   assert.equal(await fullManifestPage.locator('#vault-address').inputValue(),fixture.vault,'Verified demo vault should seed the inspector');
+  assert.deepEqual(await axeViolations(fullManifestPage),[],'Complete-manifest Proof must remain accessible');
   await fullManifestPage.locator('#tab-protect').click();
+  assert.deepEqual(await axeViolations(fullManifestPage),[],'Complete-manifest Protect must remain accessible');
   assert.equal(await fullManifestPage.locator('#onchain-protect').isHidden(),false,'Complete manifest should unlock testnet Protect actions');
   await fullManifestPage.locator('#tab-challenge').click();
+  assert.deepEqual(await axeViolations(fullManifestPage),[],'Complete-manifest Challenge must remain accessible');
   assert.equal(await fullManifestPage.locator('#onchain-challenge').isHidden(),false,'Complete manifest should unlock testnet Challenge actions');
   await fullManifestContext.close();
 
@@ -199,7 +220,7 @@ try {
   for(const entry of tx)assert.equal(entry.value,'0x0','Must never send native ETH');
   await context.close();
   assert.equal(problems.length,0,problems.join('\n'));
-  console.log(JSON.stringify({viewportWidths:[320,375,768,1280],wcagAudits:audited,detectedViolations:0,fullManifestProof:true,mockedWalletTransactions:tx.length,mockedWalletFailurePaths:2,layout:'no horizontal overflow',results:'PASS'},null,2));
+  console.log(JSON.stringify({viewportWidths:[320,375,768,1280],wcagAudits:audited,fullManifestAudits:3,detectedViolations:0,fullManifestProof:true,mockedWalletTransactions:tx.length,mockedWalletFailurePaths:2,layout:'no horizontal overflow',results:'PASS'},null,2));
 } finally {
   await browser.close();
   await new Promise(resolve=>server.close(resolve));

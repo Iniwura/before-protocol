@@ -8,7 +8,7 @@
 | JavaScript policy, web and deployment checks | 52 / 52 passed | Does not run Solidity |
 | BeforeVault line coverage | 98.25% | Previous instrumented local coverage only |
 | BeforeVault branch coverage | 72.22% | Previous instrumented local coverage; open branches remain |
-| Browser QA | 12 / 12 viewport-screen audits, 4 success-path transactions, 2 failure paths | Chromium, axe-core, keyboard tab navigation, no horizontal overflow; GitHub Actions run [79](https://github.com/Iniwura/before-protocol/actions/runs/41919225335) passed |
+| Browser QA | 12 / 12 viewport-screen audits plus 3 complete-manifest state audits, 4 success-path transactions, 2 failure paths | Chromium, axe-core, keyboard tab navigation, no horizontal overflow; GitHub Actions run [79](https://github.com/Iniwura/before-protocol/actions/runs/41919225335) passed |
 | Robinhood testnet chain ID | 46630 | Read-only RPC |
 | Testnet transactions / verified bytecode | Not done | No public proof yet; manifest remains fail-closed |
 | Independent audit / WIF reward | Not done | Escrow code is tested but not audited, funded or deployed |

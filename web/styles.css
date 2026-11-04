@@ -4,7 +4,7 @@
 .onchain-card{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:18px;margin:20px 0 10px;padding:20px 25px;background:#fff;border:1px solid #e5e8ee;border-radius:12px}
 .onchain-card>div:first-child{flex:1;min-width:180px}
 .onchain-card strong{font-size:13px;letter-spacing:-.02em}
-.onchain-card p{color:#8993a2;font-size:11px;line-height:1.6;margin:6px 0 0;max-width:380px}
+.onchain-card p{color:#596476;font-size:11px;line-height:1.6;margin:6px 0 0;max-width:380px}
 .onchain-buttons{display:flex;flex-wrap:wrap;gap:9px}
 .onchain-status{flex-basis:100%;color:#647186;font-size:11px;line-height:1.5;overflow-wrap:anywhere}
 .onchain-status a{color:#365cf5;text-decoration:underline;text-underline-offset:3px}

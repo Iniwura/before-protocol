@@ -15,6 +15,7 @@ The browser quality suite lives at `qa/verify.mjs`. It runs on each pull request
 ## Verified locally
 
 - 12/12 accessibility screen-width combinations passed without reported violations.
+- 3 additional complete-manifest Proof / Protect / Challenge states passed without reported violations.
 - 4/4 success-path wallet transactions passed with simulated provider responses; two additional failure paths cover user rejection and reverted receipts. None is an onchain broadcast.
 - Keyboard tab navigation (ArrowRight, Home, End) preserves the roving tab focus model.
 - A manifest marked verified still keeps wallet actions hidden when any deployed runtime code is missing.
