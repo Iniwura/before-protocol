@@ -1,0 +1,21 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {normalizedBytecode,attestContract} from './deployment-proof.mjs';
+
+const contract='0x'+'1'.repeat(40);
+const tx='0x'+'a'.repeat(64);
+const receipt={status:'0x1',transactionHash:tx,contractAddress:contract,blockNumber:'0x64'};
+const valid={label:'Factory',address:contract,txHash:tx,receipt,actualCode:'0x60016002',artifactCode:'0x60016002',headBlock:'0x6f',minConfirmations:12};
+test('exact bytecode match and 12 confirmations',()=>assert.equal(attestContract(valid).confirmations,12));
+test('bytecode is compared case-insensitively',()=>assert.equal(normalizedBytecode('0xABcd'),'0xabcd'));
+test('wrong deployed runtime code fails',()=>assert.throws(()=>attestContract({...valid,actualCode:'0x60016003'}),/bytecode does not match/));
+test('reverted deployment fails',()=>assert.throws(()=>attestContract({...valid,receipt:{...receipt,status:'0x0'}}),/unsuccessful/));
+test('no mined receipt fails',()=>assert.throws(()=>attestContract({...valid,receipt:null}),/missing/));
+test('malformed or unrelated transaction fails',()=>assert.throws(()=>attestContract({...valid,txHash:'0x1234'}),/transaction hash/));
+test('mismatched receipt transaction fails',()=>assert.throws(()=>attestContract({...valid,receipt:{...receipt,transactionHash:'0x'+'b'.repeat(64)}}),/hash does not match/));
+test('mismatched contract creation address fails',()=>assert.throws(()=>attestContract({...valid,receipt:{...receipt,contractAddress:'0x'+'2'.repeat(40)}}),/did not deploy/));
+test('a transaction to an existing contract is not a deployment',()=>assert.throws(()=>attestContract({...valid,receipt:{...receipt,contractAddress:null}}),/did not deploy/));
+test('insufficient confirmation depth fails',()=>assert.throws(()=>attestContract({...valid,headBlock:'0x6e'}),/more confirmations/));
+test('future receipt block fails',()=>assert.throws(()=>attestContract({...valid,headBlock:'0x01'}),/exceeds chain head/));
+test('invalid bytecode representations fail',()=>{for(const code of ['0x','0x1','0xnothex',null,''])assert.throws(()=>normalizedBytecode(code));});
+test('zero contract address rejected',()=>assert.throws(()=>attestContract({...valid,address:'0x'+'0'.repeat(40)}),/invalid contract address/));

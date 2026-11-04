@@ -77,6 +77,14 @@ This is not a real-WIF bounty or a mainnet custody release.
 
 See [Phase 3 implementation and deployment gates](docs/PHASE_3.md).
 
+## Proving a testnet deployment
+
+After a mock-only testnet deployment, `script/verify-testnet.mjs` can check the actual factory and test-token creation receipts, their contract addresses, 12 confirmation blocks, and byte-for-byte runtime code against Foundry artifacts. It is read-only and cannot make a false testnet claim from only a pasted address.
+
+**No testnet deployment is claimed here.** Verified metadata remains `false` until evidence passes.
+
+[Read the testnet proof process](docs/TESTNET_PROOF.md).
+
 ## Next gates
 
 1. Confirm current competition rules and complete project registration.

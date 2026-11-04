@@ -17,11 +17,11 @@ jobs:
       - name: Unit, adversarial and fuzz tests
         run: forge test --fuzz-runs 1024 -vvv
       - name: Independent policy reference tests
-        run: node --test checks/reference.test.mjs
+        run: node --test checks/reference.test.mjs checks/deployment-proof.test.mjs checks/deployment-cli.test.mjs
       - name: Web policy and validation tests
         run: node --test web/test/core.test.mjs web/test/onchain.test.mjs
       - name: Browser source syntax
-        run: node --check web/app.js && node --check web/onchain.mjs
+        run: node --check web/app.js && node --check web/onchain.mjs && node --check script/verify-testnet.mjs
 
   browser-quality:
     runs-on: ubuntu-latest
