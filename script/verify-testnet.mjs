@@ -14,6 +14,10 @@ if(args.length!==4 && args.length!==6 && args.length!==8 && args.length!==11){
   console.error('Usage: node script/verify-testnet.mjs FACTORY_ADDRESS FACTORY_DEPLOY_TX MOCK_TOKEN_ADDRESS MOCK_TOKEN_DEPLOY_TX [CHALLENGE_ESCROW_ADDRESS CHALLENGE_ESCROW_DEPLOY_TX [DEMO_FACTORY_TX PRACTICE_FACTORY_TX [ALLOWED_WITHDRAWAL_TX DENIED_WITHDRAWAL_TX PRACTICE_PROOF_TX]]] [--write]');
   process.exit(2);
 }
+if(write && args.length!==11){
+  console.error('Refusing --write without complete deployment and public Protect/Challenge evidence (11 arguments required).');
+  process.exit(2);
+}
 const [factory,factoryTx,mockToken,mockTokenTx,challengeEscrow,challengeEscrowTx,demoTx,practiceTx,allowedTx,deniedTx,practiceProofTx]=args;
 if(!isAddress(factory)||!isAddress(mockToken)||!isTxHash(factoryTx)||!isTxHash(mockTokenTx)
   || (challengeEscrow !== undefined && (!isAddress(challengeEscrow)||!isTxHash(challengeEscrowTx)))

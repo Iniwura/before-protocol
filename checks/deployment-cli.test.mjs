@@ -102,6 +102,12 @@ test('three-contract proof includes the empty challenge escrow',async()=>{
   }
 });
 
+test('abbreviated proof can never write an enabled browser manifest',async()=>{
+  const result=await launchCLI('http://127.0.0.1:1',['script/verify-testnet.mjs',factory,txA,token,txB,escrow,txC,'--write']);
+  assert.equal(result.code,2);
+  assert.match(result.stderr,/complete deployment and public Protect\/Challenge evidence/);
+});
+
 test('eight-argument proof verifies factory interactions and created demo outputs',async()=>{
   const artifact=async(name)=>JSON.parse(await readFile(path.join(root,'out',name+'.sol',name+'.json'),'utf8'));
   const [f,t,e,v,a,p]=await Promise.all([
