@@ -4,6 +4,7 @@ import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import { chromium } from 'playwright';
+import {encodeDemoCreate,encodeDemoWithdraw,encodePracticeCreate,encodePracticeProof} from '../web/onchain.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(here, '../web');
@@ -24,7 +25,14 @@ const base='http://127.0.0.1:'+server.address().port;
 const browser=await chromium.launch({headless:true});
 const fixture={owner:'0x'+'3'.repeat(40),factory:'0x'+'1'.repeat(40),mockToken:'0x'+'2'.repeat(40),challengeEscrow:'0x'+'6'.repeat(40),vault:'0x'+'4'.repeat(40),arena:'0x'+'5'.repeat(40),practiceVault:'0x'+'7'.repeat(40),tx:'0x'+'a'.repeat(64),demoTx:'0x'+'b'.repeat(64),practiceTx:'0x'+'c'.repeat(64),allowedTx:'0x'+'d'.repeat(64),deniedTx:'0x'+'e'.repeat(64),practiceProofTx:'0x'+'f'.repeat(64)};
 const padding=addr=>'0x'+'0'.repeat(24)+addr.slice(2);
-function routeRPC(page,{code='0x60016000',codeByAddress={},receiptStatus='0x1',nextChallengeId='0x'+'0'.repeat(63)+'1'}={}) {
+const transactionRecord=(hash,to,input)=>({hash,from:fixture.owner,to,input,value:'0x0'});
+const walletTransactions={
+  [fixture.demoTx.toLowerCase()]:transactionRecord(fixture.demoTx,fixture.factory,encodeDemoCreate(fixture.mockToken)),
+  [fixture.allowedTx.toLowerCase()]:transactionRecord(fixture.allowedTx,fixture.vault,encodeDemoWithdraw(fixture.owner)),
+  [fixture.practiceTx.toLowerCase()]:transactionRecord(fixture.practiceTx,fixture.factory,encodePracticeCreate(fixture.mockToken)),
+  [fixture.practiceProofTx.toLowerCase()]:transactionRecord(fixture.practiceProofTx,fixture.arena,encodePracticeProof())
+};
+function routeRPC(page,{code='0x60016000',codeByAddress={},receiptStatus='0x1',nextChallengeId='0x'+'0'.repeat(63)+'1',transactions=walletTransactions}={}) {
   return page.route('https://rpc.testnet.chain.robinhood.com/**', route=>{
     const request=JSON.parse(route.request().postData()||'{}');
     let result=null;
@@ -32,7 +40,13 @@ function routeRPC(page,{code='0x60016000',codeByAddress={},receiptStatus='0x1',n
       case 'eth_chainId':result='0xb626';break;
       case 'eth_blockNumber':result='0x10';break;
       case 'eth_getCode':result=codeByAddress[request.params?.[0]?.toLowerCase()]??code;break;
-      case 'eth_getTransactionReceipt':result={status:receiptStatus,blockNumber:'0x10',transactionHash:fixture.tx,from:fixture.owner,to:fixture.factory};break;
+      case 'eth_getTransactionReceipt':{
+        const hash=request.params?.[0]?.toLowerCase();
+        const transaction=transactions[hash];
+        result=transaction?{status:receiptStatus,blockNumber:'0x10',transactionHash:transaction.hash,from:transaction.from,to:transaction.to}:null;
+        break;
+      }
+      case 'eth_getTransactionByHash':result=transactions[request.params?.[0]?.toLowerCase()]??null;break;
       case 'eth_call':{
         const selector=request.params?.[0]?.data?.slice(0,10);
         result=selector==='0xee643f9e'?padding(fixture.vault):selector==='0x7f81587e'?padding(fixture.arena):selector==='0xfc67aa50'?nextChallengeId:'0x'+'0'.repeat(63)+'1';
@@ -171,10 +185,13 @@ try {
 
   const revertedContext=await browser.newContext({viewport:{width:1280,height:850},reducedMotion:'reduce'});
   const revertedPage=await revertedContext.newPage();
-  await routeRPC(revertedPage,{receiptStatus:'0x0'});
+  await routeRPC(revertedPage,{receiptStatus:'0x0',transactions:{
+    [fixture.tx.toLowerCase()]:transactionRecord(fixture.tx,fixture.factory,encodeDemoCreate(fixture.mockToken))
+  }});
   await revertedPage.route('**/deployment.json',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({chainId:46630,factory:fixture.factory,mockToken:fixture.mockToken,challengeEscrow:fixture.challengeEscrow,factoryTx:fixture.tx,mockTokenTx:fixture.tx,challengeEscrowTx:fixture.tx,verified:true})}));
   await revertedPage.addInitScript(({owner,tx})=>{
     window.__transactions=[];
+    window.__transactionIndex=0;
     window.ethereum={request:async({method,params})=>{
       if(method==='eth_requestAccounts')return [owner];
       if(method==='eth_chainId')return '0xb626';
@@ -190,12 +207,13 @@ try {
   assert.equal((await revertedPage.evaluate(()=>window.__transactions)).length,1);
   await revertedContext.close();
 
-  const context=await browser.newContext({viewport:{width:1280,height:850},reducedMotion:'reduce'});
-  const page=await context.newPage();
-  page.on('pageerror',error=>problems.push('mock wallet browser: '+error.message));
-  await routeRPC(page);
-  await page.route('**/deployment.json',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({chainId:46630,factory:fixture.factory,mockToken:fixture.mockToken,challengeEscrow:fixture.challengeEscrow,factoryTx:fixture.tx,mockTokenTx:fixture.tx,challengeEscrowTx:fixture.tx,verified:true})}));
-  await page.addInitScript(({owner,tx})=>{
+  const mismatchContext=await browser.newContext({viewport:{width:1280,height:850},reducedMotion:'reduce'});
+  const mismatchPage=await mismatchContext.newPage();
+  await routeRPC(mismatchPage,{transactions:{
+    [fixture.tx.toLowerCase()]:transactionRecord(fixture.tx,fixture.mockToken,encodeDemoCreate(fixture.mockToken))
+  }});
+  await mismatchPage.route('**/deployment.json',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({chainId:46630,factory:fixture.factory,mockToken:fixture.mockToken,challengeEscrow:fixture.challengeEscrow,factoryTx:fixture.tx,mockTokenTx:fixture.tx,challengeEscrowTx:fixture.tx,verified:true})}));
+  await mismatchPage.addInitScript(({owner,tx})=>{
     window.__transactions=[];
     window.ethereum={request:async({method,params})=>{
       if(method==='eth_requestAccounts')return [owner];
@@ -204,6 +222,28 @@ try {
       throw Error('Unexpected wallet method '+method);
     }};
   },{owner:fixture.owner,tx:fixture.tx});
+  await mismatchPage.goto(base,{waitUntil:'domcontentloaded'});
+  await mismatchPage.locator('#onchain-protect').waitFor({state:'visible'});
+  await mismatchPage.locator('#create-demo-vault').click();
+  await mismatchPage.waitForFunction(()=>document.querySelector('#onchain-protect-status').textContent.includes('did not match'));
+  assert.doesNotMatch(await mismatchPage.locator('#onchain-protect-status').innerText(),/Vault registered/,'Mismatched wallet action must not claim success');
+  await mismatchContext.close();
+
+  const context=await browser.newContext({viewport:{width:1280,height:850},reducedMotion:'reduce'});
+  const page=await context.newPage();
+  page.on('pageerror',error=>problems.push('mock wallet browser: '+error.message));
+  await routeRPC(page);
+  await page.route('**/deployment.json',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({chainId:46630,factory:fixture.factory,mockToken:fixture.mockToken,challengeEscrow:fixture.challengeEscrow,factoryTx:fixture.tx,mockTokenTx:fixture.tx,challengeEscrowTx:fixture.tx,verified:true})}));
+  await page.addInitScript(({owner,txs})=>{
+    window.__transactions=[];
+    window.__transactionIndex=0;
+    window.ethereum={request:async({method,params})=>{
+      if(method==='eth_requestAccounts')return [owner];
+      if(method==='eth_chainId')return '0xb626';
+      if(method==='eth_sendTransaction'){window.__transactions.push(params[0]);return txs[window.__transactionIndex++];}
+      throw Error('Unexpected wallet method '+method);
+    }};
+  },{owner:fixture.owner,txs:[fixture.demoTx,fixture.allowedTx,fixture.practiceTx,fixture.practiceProofTx]});
   await page.goto(base,{waitUntil:'domcontentloaded'});
   await page.locator('#onchain-protect').waitFor({state:'visible'});
   await page.locator('#create-demo-vault').click();
@@ -223,7 +263,7 @@ try {
   for(const entry of tx)assert.equal(entry.value,'0x0','Must never send native ETH');
   await context.close();
   assert.equal(problems.length,0,problems.join('\n'));
-  console.log(JSON.stringify({viewportWidths:[320,375,768,1280],wcagAudits:audited,fullManifestAudits:3,detectedViolations:0,fullManifestProof:true,mockedWalletTransactions:tx.length,mockedWalletFailurePaths:2,layout:'no horizontal overflow',results:'PASS'},null,2));
+  console.log(JSON.stringify({viewportWidths:[320,375,768,1280],wcagAudits:audited,fullManifestAudits:3,detectedViolations:0,fullManifestProof:true,mockedWalletTransactions:tx.length,mockedWalletFailurePaths:3,layout:'no horizontal overflow',results:'PASS'},null,2));
 } finally {
   await browser.close();
   await new Promise(resolve=>server.close(resolve));

@@ -282,6 +282,21 @@ async function sendDemoTransaction({to,data,status,successText}) {
     showOnchainStatus(status,'Transaction submitted; receipt not yet confirmed.',hash);
     return null;
   }
+  const transaction=await rpc('eth_getTransactionByHash',[hash]);
+  const matchesRequest=transaction
+    && typeof transaction.hash==='string'
+    && transaction.hash.toLowerCase()===hash.toLowerCase()
+    && typeof transaction.from==='string'
+    && transaction.from.toLowerCase()===owner.toLowerCase()
+    && typeof transaction.to==='string'
+    && transaction.to.toLowerCase()===to.toLowerCase()
+    && typeof transaction.input==='string'
+    && transaction.input.toLowerCase()===data.toLowerCase()
+    && parseHexUint(transaction.value??'0x0')===0n;
+  if (!matchesRequest) {
+    showOnchainStatus(status,'The mined transaction did not match the requested call. No success is claimed.',hash);
+    return null;
+  }
   if (receipt.status!=='0x1') {
     showOnchainStatus(status,'Transaction reverted. No successful action is claimed.',hash);
     return null;
