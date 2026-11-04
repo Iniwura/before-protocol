@@ -27,11 +27,14 @@ Use `anvil --chain-id 31337` to validate the actual deployment script with a loc
 1. Create a disposable **testnet-only** wallet with an EVM wallet. Do not paste private keys into chats or repositories.
 2. Obtain test ETH from the [Robinhood Chain faucet](https://faucet.testnet.chain.robinhood.com/).
 3. Verify chain ID 46630 and your public wallet's gas balance using `node script/testnet-preflight.mjs 0xYOUR_PUBLIC_ADDRESS`.
-4. Set `BEFORE_TEST_DEPLOYER_KEY` in a **private local terminal session**, never in a committed file.
-5. Check the deployment with a no-broadcast Foundry simulation before committing any gas.
-6. Use:
+4. Import a disposable testnet key into a **local encrypted Foundry keystore** (never place the key in GitHub, chat, or Vercel environment variables).
+5. Simulate with the public address as sender, with **no** broadcast:
    ~~~sh
-   forge script script/DeployBefore.s.sol:DeployBefore --rpc-url https://rpc.testnet.chain.robinhood.com --broadcast -vvvv
+   forge script script/DeployBefore.s.sol:DeployBefore --sender 0xYOUR_PUBLIC_ADDRESS --rpc-url https://rpc.testnet.chain.robinhood.com -vvvv
+   ~~~
+6. Once simulation passes, explicitly broadcast with the local keystore signer:
+   ~~~sh
+   forge script script/DeployBefore.s.sol:DeployBefore --account before-testnet --rpc-url https://rpc.testnet.chain.robinhood.com --broadcast -vvvv
    ~~~
 7. Record **real** receipt hashes, factory, mock-token, vault and arena addresses, verified source, chain ID, and a public demo transaction in the deployment manifest.
 8. Update `web/deployment.json` only after independent explorer checks. An empty manifest keeps real-contract buttons hidden.

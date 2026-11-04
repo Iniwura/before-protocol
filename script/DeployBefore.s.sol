@@ -5,9 +5,7 @@ import {BeforeFactory} from "../src/BeforeFactory.sol";
 import {MockERC20} from "../src/mocks/MockERC20.sol";
 
 interface VmDeploy {
-    function envUint(string calldata name) external returns (uint256);
-    function addr(uint256 key) external returns (address);
-    function startBroadcast(uint256 key) external;
+    function startBroadcast() external;
     function stopBroadcast() external;
 }
 
@@ -18,11 +16,8 @@ contract DeployBefore {
 
     function run() external {
         require(block.chainid == 31337 || block.chainid == 46630, "local/testnet only");
-        uint256 key = vm.envUint("BEFORE_TEST_DEPLOYER_KEY");
-        address owner = vm.addr(key);
-        require(owner != address(0), "invalid deployer");
-
-        vm.startBroadcast(key);
+        // The CLI selects the sender. Use a local encrypted Foundry keystore for broadcast.
+        vm.startBroadcast();
         MockERC20 mock = new MockERC20();
         BeforeFactory factory = new BeforeFactory();
         // A real protected vault with 150 valueless BTEST and a fresh 150-BTEST practice arena.
