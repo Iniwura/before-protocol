@@ -77,6 +77,51 @@ contract BindingVerifier is IChallengeVerifier {
 
 contract ChallengeTarget {}
 
+contract CodeChangingToken {
+    address private constant VM = address(uint160(uint256(keccak256("hevm cheat code"))));
+
+    mapping(address => uint256) public balanceOf;
+    mapping(address => mapping(address => uint256)) public allowance;
+    address public codeTarget;
+
+    function setCodeTarget(address target) external {
+        codeTarget = target;
+    }
+
+    function mint(address to, uint256 amount) external {
+        balanceOf[to] += amount;
+    }
+
+    function approve(address spender, uint256 amount) external returns (bool) {
+        allowance[msg.sender][spender] = amount;
+        return true;
+    }
+
+    function transfer(address to, uint256 amount) external returns (bool) {
+        _transfer(msg.sender, to, amount);
+        return true;
+    }
+
+    function transferFrom(address from, address to, uint256 amount) external returns (bool) {
+        uint256 allowed = allowance[from][msg.sender];
+        if (allowed != type(uint256).max) allowance[from][msg.sender] = allowed - amount;
+        _etchTarget();
+        _transfer(from, to, amount);
+        return true;
+    }
+
+    function _etchTarget() private {
+        if (codeTarget == address(0)) return;
+        (bool ok,) = VM.call(abi.encodeWithSignature("etch(address,bytes)", codeTarget, hex"6000"));
+        require(ok, "etch failed");
+    }
+
+    function _transfer(address from, address to, uint256 amount) private {
+        balanceOf[from] -= amount;
+        balanceOf[to] += amount;
+    }
+}
+
 contract WifSecurityChallengeTest {
     VmChallenge private constant vm =
         VmChallenge(address(uint160(uint256(keccak256("hevm cheat code")))));
@@ -121,6 +166,27 @@ contract WifSecurityChallengeTest {
             "wrong initial state"
         );
         require(reward.balanceOf(address(escrow)) == REWARD, "reward not escrowed exactly");
+    }
+
+    function testCreateChallengeRejectsTrustBoundaryMutationDuringRewardTransfer() public {
+        CodeChangingToken changing = new CodeChangingToken();
+        changing.mint(address(this), REWARD);
+        changing.approve(address(escrow), REWARD);
+        changing.setCodeTarget(address(target));
+        vm.expectRevert(WifSecurityChallenge.InvalidTarget.selector);
+        escrow.createChallenge(
+            _config(
+                address(changing),
+                REWARD,
+                BOND,
+                address(verifier),
+                address(target),
+                bytes32(uint256(1)),
+                uint64(block.timestamp + 1 days),
+                uint64(block.timestamp + 2 days)
+            )
+        );
+        require(changing.balanceOf(address(escrow)) == 0, "mutated challenge escrowed a reward");
     }
 
     function testCommitRevealPaysFirstValidSolverAndBond() public {

@@ -156,7 +156,15 @@ contract WifSecurityChallenge {
                 || config.revealDeadline > block.timestamp + MAX_WINDOW
         ) revert InvalidWindow();
 
+        // Snapshot the complete trust boundary before the token callback. A malicious token
+        // must not be able to mutate the target or verifier while the reward is transferred.
+        bytes32 rewardTokenCodeHash = config.rewardToken.codehash;
+        bytes32 verifierCodeHash = config.verifier.codehash;
+        bytes32 targetCodeHash = config.target.codehash;
         _pullExact(config.rewardToken, msg.sender, address(this), config.rewardAmount);
+        if (config.rewardToken.codehash != rewardTokenCodeHash) revert UnsupportedToken();
+        if (config.verifier.codehash != verifierCodeHash) revert InvalidVerifier();
+        if (config.target.codehash != targetCodeHash) revert InvalidTarget();
 
         challengeId = nextChallengeId++;
         _challenges[challengeId] = Challenge({
@@ -164,8 +172,8 @@ contract WifSecurityChallenge {
             rewardToken: config.rewardToken,
             verifier: config.verifier,
             target: config.target,
-            rewardTokenCodeHash: config.rewardToken.codehash,
-            verifierCodeHash: config.verifier.codehash,
+            rewardTokenCodeHash: rewardTokenCodeHash,
+            verifierCodeHash: verifierCodeHash,
             rewardAmount: config.rewardAmount,
             bondAmount: config.bondAmount,
             commitDeadline: config.commitDeadline,
@@ -174,7 +182,7 @@ contract WifSecurityChallenge {
             rewardReleased: false,
             canceled: false
         });
-        targetCodeHashes[challengeId] = config.target.codehash;
+        targetCodeHashes[challengeId] = targetCodeHash;
         scopeHashes[challengeId] = config.scopeHash;
 
         emit ChallengeCreated(
