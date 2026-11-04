@@ -197,16 +197,24 @@ contract WifSecurityChallengeTest {
         );
         bytes32 evidenceHash = keccak256(evidence);
         vm.prank(reviewerA);
-        reviewed.approveFinding(id, SOLVER, address(target), scopeHash, evidenceHash);
+        reviewed.approveFinding(address(escrow), id, SOLVER, address(target), scopeHash, evidenceHash);
+        vm.prank(address(escrow));
         require(
             !reviewed.verify(id, SOLVER, address(target), scopeHash, evidence),
             "one review met a two-review quorum"
         );
         vm.prank(reviewerB);
-        reviewed.approveFinding(id, SOLVER, address(target), scopeHash, evidenceHash);
+        reviewed.approveFinding(address(escrow), id, SOLVER, address(target), scopeHash, evidenceHash);
+        vm.prank(address(escrow));
         require(
             !reviewed.verify(id, SOLVER, address(target), scopeHash, bytes("tampered finding")),
             "review was reused for different evidence"
+        );
+        WifSecurityChallenge otherEscrow = new WifSecurityChallenge();
+        vm.prank(address(otherEscrow));
+        require(
+            !reviewed.verify(id, SOLVER, address(target), scopeHash, evidence),
+            "review was replayed by another escrow"
         );
         bytes32 salt = bytes32(uint256(17));
         bytes32 commitment = escrow.commitmentFor(id, SOLVER, salt, evidence);
@@ -227,12 +235,12 @@ contract WifSecurityChallengeTest {
         bytes32 evidenceHash = keccak256(bytes("finding"));
 
         vm.expectRevert(ReviewedFindingVerifier.NotReviewer.selector);
-        reviewed.approveFinding(1, SOLVER, address(target), scopeHash, evidenceHash);
+        reviewed.approveFinding(address(escrow), 1, SOLVER, address(target), scopeHash, evidenceHash);
         vm.prank(reviewer);
-        reviewed.approveFinding(1, SOLVER, address(target), scopeHash, evidenceHash);
+        reviewed.approveFinding(address(escrow), 1, SOLVER, address(target), scopeHash, evidenceHash);
         vm.expectRevert(ReviewedFindingVerifier.AlreadyApproved.selector);
         vm.prank(reviewer);
-        reviewed.approveFinding(1, SOLVER, address(target), scopeHash, evidenceHash);
+        reviewed.approveFinding(address(escrow), 1, SOLVER, address(target), scopeHash, evidenceHash);
     }
 
     function testReviewedVerifierRejectsInvalidReviewerConfiguration() public {

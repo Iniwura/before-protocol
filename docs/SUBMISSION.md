@@ -43,7 +43,7 @@ Do not describe the local preview or mocked wallet run as a real transaction. Do
 
 ## WIF challenge gate
 
-`WifSecurityChallenge` is a separate reward escrow that can hold WIF when configured with the intended token address. Each challenge anchors a target contract, target code hash and immutable hash of the written scope. It uses exact source-and-recipient ERC-20 accounting, a solver-bound commit/reveal, a solver bond, a bounded 30-day window, verifier and target code-hash pinning, first-valid settlement, invalid-proof slashing, cancellation and expiry recovery. `ReviewedFindingVerifier` supplies a fixed reviewer quorum for exact evidence hashes.
+`WifSecurityChallenge` is a separate reward escrow that can hold WIF when configured with the intended token address. Each challenge anchors a target contract, target code hash and immutable hash of the written scope. It uses exact source-and-recipient ERC-20 accounting, a solver-bound commit/reveal, a solver bond, a bounded 30-day window, verifier and target code-hash pinning, first-valid settlement, invalid-proof slashing, cancellation and expiry recovery. `ReviewedFindingVerifier` supplies a fixed reviewer quorum for the exact escrow instance, context and evidence hash.
 
 It is not a security oracle. The verifier must bind the supplied challenge ID, solver, target and scope, inspect the intended target, and be independently reviewed. The current submission contains no WIF address, private key, funded challenge or payout claim. A disposable testnet broadcast still needs test ETH and a user-controlled signature; valuable challenge funding needs a separate explicit approval.
 

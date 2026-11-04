@@ -8,6 +8,7 @@ import {IChallengeVerifier} from "./WifSecurityChallenge.sol";
 ///      their approvals. The set and threshold are immutable; this contract is not an oracle.
 contract ReviewedFindingVerifier is IChallengeVerifier {
     error InvalidReviewers();
+    error InvalidEscrow();
     error NotReviewer();
     error AlreadyApproved();
 
@@ -34,6 +35,7 @@ contract ReviewedFindingVerifier is IChallengeVerifier {
 
     /// @notice Record one irreversible review of the exact public finding context.
     function approveFinding(
+        address escrow,
         uint256 challengeId,
         address solver,
         address target,
@@ -41,7 +43,8 @@ contract ReviewedFindingVerifier is IChallengeVerifier {
         bytes32 evidenceHash
     ) external {
         if (!isReviewer[msg.sender]) revert NotReviewer();
-        bytes32 key = findingKey(challengeId, solver, target, scopeHash, evidenceHash);
+        if (escrow == address(0) || escrow.code.length == 0) revert InvalidEscrow();
+        bytes32 key = findingKey(escrow, challengeId, solver, target, scopeHash, evidenceHash);
         if (approvedBy[key][msg.sender]) revert AlreadyApproved();
         approvedBy[key][msg.sender] = true;
         approvalCount[key] += 1;
@@ -56,12 +59,19 @@ contract ReviewedFindingVerifier is IChallengeVerifier {
         bytes32 scopeHash,
         bytes calldata evidence
     ) external view returns (bool) {
-        if (target.code.length == 0 || evidence.length == 0) return false;
-        bytes32 key = findingKey(challengeId, solver, target, scopeHash, keccak256(evidence));
+        // msg.sender is the escrow invoking the verifier; binding it prevents approvals from
+        // replaying across separate escrow deployments that reuse a challenge ID.
+        if (msg.sender.code.length == 0 || target.code.length == 0 || evidence.length == 0) {
+            return false;
+        }
+        bytes32 key = findingKey(
+            msg.sender, challengeId, solver, target, scopeHash, keccak256(evidence)
+        );
         return approvalCount[key] >= threshold;
     }
 
     function findingKey(
+        address escrow,
         uint256 challengeId,
         address solver,
         address target,
@@ -69,7 +79,9 @@ contract ReviewedFindingVerifier is IChallengeVerifier {
         bytes32 evidenceHash
     ) public view returns (bytes32) {
         return keccak256(
-            abi.encode(address(this), block.chainid, challengeId, solver, target, scopeHash, evidenceHash)
+            abi.encode(
+                address(this), block.chainid, escrow, challengeId, solver, target, scopeHash, evidenceHash
+            )
         );
     }
 }
