@@ -23,7 +23,7 @@ The production mechanism is a separate ERC-20 escrow for meaningful security fin
 ## Judge flow
 
 1. **Protect:** submit 75 with 40 already spent to see the 60-token transfer cap block the request; submit 20 to see an allowed local policy result.
-2. **Challenge:** submit 60 + 50. Each transfer is individually valid, but the combined amount exceeds the 100-token daily limit.
+2. **Challenge:** submit 60 + 50. Each transfer is individually valid, but the combined amount exceeds the 100-token daily limit. With a verified manifest, the screen also reads the actual security escrow's record count without creating or funding a WIF challenge.
 3. **Proof:** inspect the read-only network state, then use the verified manifest path to inspect the demo vault, practice arena and public receipt evidence.
 
 ## Evidence checkpoint

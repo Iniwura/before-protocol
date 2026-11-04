@@ -16,7 +16,7 @@ TrainingVault intentionally omits the aggregate daily limit. TrainingArena lets 
 
 ## Proof
 
-The exercise verifies token balance changes and a one-time solution state using contract execution, not an AI opinion. Public-chain receipts and verified source will be added after testnet deployment.
+The exercise verifies token balance changes and a one-time solution state using contract execution, not an AI opinion. When a deployment manifest is independently verified, the app also reads the actual challenge escrow's record count without enabling WIF funding. Public-chain receipts and verified source will be added after testnet deployment.
 
 ## Reproduce locally
 

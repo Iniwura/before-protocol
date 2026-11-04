@@ -38,8 +38,9 @@ Only after a human checks the explorer source and receipts should `--write` be u
 
 1. Open the deployed static site and start on **Protect**. Use the local policy preview to show a 75-token request being blocked, then show an approved 20-token request within the 60/100 policy.
 2. Open **Challenge** and submit 60 + 50. The browser explains that both individual transfers pass while the combined amount exceeds the intended daily cap.
-3. Open **Proof** and refresh the network. A connected testnet result is read-only; paste only a known public vault address or transaction hash.
-4. After verified testnet evidence is available, connect a disposable wallet with test ETH, create the BTEST demo vault, withdraw 20 BTEST, create a fresh practice arena and submit the 60 + 50 proof. Every wallet transaction sends zero native ETH value and the UI links to the receipt.
+3. If the deployment manifest is verified, **Challenge** also shows the actual security escrow's read-only record count. It does not create a challenge, fund WIF or imply a payout.
+4. Open **Proof** and refresh the network. A connected testnet result is read-only; paste only a known public vault address or transaction hash.
+5. After verified testnet evidence is available, connect a disposable wallet with test ETH, create the BTEST demo vault, withdraw 20 BTEST, create a fresh practice arena and submit the 60 + 50 proof. Every wallet transaction sends zero native ETH value and the UI links to the receipt.
 
 Do not describe the local preview or mocked wallet run as a real transaction. Do not present the practice arena as a paid bounty.
 

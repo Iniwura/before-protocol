@@ -9,6 +9,7 @@ export const SELECTORS = Object.freeze({
   isPractice: '0x5676bdbb',
   withdraw: '0xf3fef3a3',
   proveSplitBypass: '0x3b1bf525',
+  nextChallengeId: '0xfc67aa50',
 });
 
 export function encodeAddress(address) {
@@ -47,6 +48,10 @@ export function readBoolResult(hex) {
   const value = BigInt(hex);
   if (value !== 0n && value !== 1n) throw new Error('Malformed ABI boolean.');
   return value === 1n;
+}
+export function readUintResult(hex) {
+  if (!/^0x[0-9a-fA-F]{64}$/.test(hex)) throw new Error('Malformed ABI uint256.');
+  return BigInt(hex);
 }
 export function deploymentReady(config) {
   if (!config || config.chainId !== CHAIN_ID || config.verified !== true) return false;

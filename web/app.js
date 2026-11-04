@@ -1,5 +1,5 @@
 import {CHAIN_ID,RPC_URL,EXPLORER,isAddress,isTxHash,evaluateProtect,evaluateChallenge,parseHexUint,decodeAddress,format18} from './core.mjs';
-import {SELECTORS,encodeAddressCall,encodeDemoCreate,encodePracticeCreate,encodeDemoWithdraw,encodePracticeProof,readAddressResult,readBoolResult,deploymentReady} from './onchain.mjs';
+import {SELECTORS,encodeAddressCall,encodeDemoCreate,encodePracticeCreate,encodeDemoWithdraw,encodePracticeProof,readAddressResult,readBoolResult,readUintResult,deploymentReady} from './onchain.mjs';
 const $=(id)=>document.getElementById(id);
 const all=(selector)=>Array.from(document.querySelectorAll(selector));
 
@@ -202,6 +202,7 @@ async function initializeOnchain() {
       ]);
       if (outputCodes.some(code => !code || code==='0x')) return;
     }
+    const nextChallengeId = readUintResult(await call(config.challengeEscrow,SELECTORS.nextChallengeId));
     // The manifest is created only after manual explorer verification; the browser checks chain and existence.
     verifiedDemo = config;
     $('proof-escrow').textContent=compactAddress(config.challengeEscrow);
@@ -221,6 +222,10 @@ async function initializeOnchain() {
       $('proof-flow-meta').hidden = false;
       $('proof-flow').textContent='3 receipts verified';
     }
+    $('onchain-escrow').hidden = false;
+    $('onchain-escrow-status').textContent = nextChallengeId === 1n
+      ? 'Escrow deployed and empty. No WIF reward is funded.'
+      : String(nextChallengeId - 1n) + ' challenge record(s) exist. No demo reward is funded.';
     $('onchain-protect').hidden = false;
     $('onchain-challenge').hidden = false;
   } catch {

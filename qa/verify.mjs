@@ -24,7 +24,7 @@ const base='http://127.0.0.1:'+server.address().port;
 const browser=await chromium.launch({headless:true});
 const fixture={owner:'0x'+'3'.repeat(40),factory:'0x'+'1'.repeat(40),mockToken:'0x'+'2'.repeat(40),challengeEscrow:'0x'+'6'.repeat(40),vault:'0x'+'4'.repeat(40),arena:'0x'+'5'.repeat(40),practiceVault:'0x'+'7'.repeat(40),tx:'0x'+'a'.repeat(64),demoTx:'0x'+'b'.repeat(64),practiceTx:'0x'+'c'.repeat(64),allowedTx:'0x'+'d'.repeat(64),deniedTx:'0x'+'e'.repeat(64),practiceProofTx:'0x'+'f'.repeat(64)};
 const padding=addr=>'0x'+'0'.repeat(24)+addr.slice(2);
-function routeRPC(page,{code='0x60016000',codeByAddress={},receiptStatus='0x1'}={}) {
+function routeRPC(page,{code='0x60016000',codeByAddress={},receiptStatus='0x1',nextChallengeId='0x'+'0'.repeat(63)+'1'}={}) {
   return page.route('https://rpc.testnet.chain.robinhood.com/**', route=>{
     const request=JSON.parse(route.request().postData()||'{}');
     let result=null;
@@ -35,7 +35,7 @@ function routeRPC(page,{code='0x60016000',codeByAddress={},receiptStatus='0x1'}=
       case 'eth_getTransactionReceipt':result={status:receiptStatus,blockNumber:'0x10',transactionHash:fixture.tx,from:fixture.owner,to:fixture.factory};break;
       case 'eth_call':{
         const selector=request.params?.[0]?.data?.slice(0,10);
-        result=selector==='0xee643f9e'?padding(fixture.vault):selector==='0x7f81587e'?padding(fixture.arena):'0x'+'0'.repeat(63)+'1';
+        result=selector==='0xee643f9e'?padding(fixture.vault):selector==='0x7f81587e'?padding(fixture.arena):selector==='0xfc67aa50'?nextChallengeId:'0x'+'0'.repeat(63)+'1';
         break;
       }
     }
@@ -71,6 +71,7 @@ try {
     if(sizes.scroll>sizes.client+1) problems.push(width+' horizontal overflow: '+JSON.stringify(sizes));
     assert.equal(await page.locator('#onchain-protect').isHidden(),true,'Unverified deployment must not unlock transactions');
     assert.equal(await page.locator('#onchain-challenge').isHidden(),true,'Unverified deployment must not unlock challenges');
+    assert.equal(await page.locator('#onchain-escrow').isHidden(),true,'Unverified deployment must not expose escrow state');
     if (width===1280) {
       await page.locator('#tab-protect').focus();
       await page.keyboard.press('ArrowRight');
@@ -127,7 +128,7 @@ try {
 
   const fullManifestContext=await browser.newContext({viewport:{width:1280,height:850},reducedMotion:'reduce'});
   const fullManifestPage=await fullManifestContext.newPage();
-  await routeRPC(fullManifestPage);
+  await routeRPC(fullManifestPage,{nextChallengeId:'0x'+'0'.repeat(63)+'3'});
   await fullManifestPage.route('**/deployment.json',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(completeManifest)}));
   await fullManifestPage.goto(base,{waitUntil:'domcontentloaded'});
   await fullManifestPage.addScriptTag({path:path.join(here,'node_modules/axe-core/axe.min.js')});
@@ -143,6 +144,8 @@ try {
   assert.equal(await fullManifestPage.locator('#onchain-protect').isHidden(),false,'Complete manifest should unlock testnet Protect actions');
   await fullManifestPage.locator('#tab-challenge').click();
   assert.deepEqual(await axeViolations(fullManifestPage),[],'Complete-manifest Challenge must remain accessible');
+  assert.equal(await fullManifestPage.locator('#onchain-escrow').isHidden(),false,'Verified escrow should be connected read-only');
+  assert.equal(await fullManifestPage.locator('#onchain-escrow-status').innerText(),'2 challenge record(s) exist. No demo reward is funded.');
   assert.equal(await fullManifestPage.locator('#onchain-challenge').isHidden(),false,'Complete manifest should unlock testnet Challenge actions');
   await fullManifestContext.close();
 

@@ -45,6 +45,10 @@
   <div><strong>Run the practice onchain</strong><p>Each attempt gets an isolated vault containing only valueless BTEST. No reward is paid.</p></div>
   <div class="onchain-buttons"><button id="create-practice" type="button" class="secondary-button">Create practice ↗</button><button id="solve-practice" type="button" class="secondary-button" hidden>Submit 60 + 50 proof ↗</button></div>
   <div id="onchain-challenge-status" class="onchain-status" role="status" aria-live="polite"></div>
+</div>
+<div id="onchain-escrow" class="onchain-card" hidden>
+  <div><strong>Security escrow</strong><p>Read-only WIF-capable contract. The demo never funds a reward.</p></div>
+  <div id="onchain-escrow-status" class="onchain-status" role="status" aria-live="polite"></div>
 </div></section>
 <section class="view" role="tabpanel" id="panel-proof" aria-labelledby="tab-proof" hidden>
 <div class="view-heading"><div><h2>Proof</h2><p>Inspect real testnet data without connecting a wallet.</p></div><span class="mode-pill">● Read-only RPC</span></div>
