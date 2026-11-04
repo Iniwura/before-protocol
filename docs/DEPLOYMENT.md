@@ -19,14 +19,24 @@ Chain ID: 46630. RPC: https://rpc.testnet.chain.robinhood.com. Explorer: https:/
 1. Use a newly generated throwaway testnet-only wallet. Obtain test ETH through the official testnet faucet: https://faucet.testnet.chain.robinhood.com.
 2. Verify the RPC using node script/check-chain.mjs.
 3. Set BEFORE_TEST_DEPLOYER_KEY in your local shell or a secret manager. Never upload it to GitHub or paste it into ChatGPT.
-4. Run:
+4. Run a read-only simulation first. This does not sign or broadcast anything:
+
+~~~sh
+forge script script/DeployBefore.s.sol:DeployBefore \
+  --rpc-url https://rpc.testnet.chain.robinhood.com \
+  --sender 0xYOUR_PUBLIC_DEPLOYER_ADDRESS -vvvv
+~~~
+
+Confirm the simulation reaches `SIMULATION COMPLETE` and note the estimated test ETH requirement. The sender is public; do not substitute a private key for `--sender`.
+
+5. Run:
 
 ~~~sh
 forge script script/DeployBefore.s.sol:DeployBefore --rpc-url https://rpc.testnet.chain.robinhood.com --broadcast -vvvv
 ~~~
 
-5. The script deploys `MockERC20`, `BeforeFactory` and an **empty** `WifSecurityChallenge`, then creates only the BTEST demo vault and unpaid practice arena. It never accepts a WIF address and never funds a reward.
-6. Verify chain ID, direct creation transaction hashes, deployed bytecode and source code before claiming testnet proof. Use the optional challenge-escrow arguments to `script/verify-testnet.mjs`.
+6. The script deploys `MockERC20`, `BeforeFactory` and an **empty** `WifSecurityChallenge`, then creates only the BTEST demo vault and unpaid practice arena. It never accepts a WIF address and never funds a reward.
+7. Verify chain ID, direct creation transaction hashes, deployed bytecode and source code before claiming testnet proof. Use the optional challenge-escrow arguments to `script/verify-testnet.mjs`.
 
 The script restricts itself to chain IDs 31337 and 46630. No public testnet transaction is claimed at this checkpoint. Do not attempt mainnet with this script.
 
