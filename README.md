@@ -25,7 +25,7 @@ Requires [Foundry](https://getfoundry.sh/) and Node.js.
 ~~~sh
 forge build
 forge test --fuzz-runs 1024 -vvv
-node --test checks/reference.test.mjs checks/deployment-proof.test.mjs checks/deployment-cli.test.mjs web/test/core.test.mjs web/test/onchain.test.mjs
+node --test checks/reference.test.mjs checks/deployment-proof.test.mjs checks/deployment-cli.test.mjs checks/broadcast-args.test.mjs web/test/core.test.mjs web/test/onchain.test.mjs
 node script/check-chain.mjs
 ~~~
 

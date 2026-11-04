@@ -13,13 +13,13 @@ From the repository root:
 ~~~sh
 forge build
 forge test --fuzz-runs 1024 -vvv
-node --test checks/reference.test.mjs checks/deployment-proof.test.mjs checks/deployment-cli.test.mjs web/test/core.test.mjs web/test/onchain.test.mjs
+node --test checks/reference.test.mjs checks/deployment-proof.test.mjs checks/deployment-cli.test.mjs checks/broadcast-args.test.mjs web/test/core.test.mjs web/test/onchain.test.mjs
 npm ci --prefix qa
 PLAYWRIGHT_BROWSERS_PATH=/tmp/before-browsers node qa/verify.mjs
 node script/check-chain.mjs
 ~~~
 
-The current local checkpoint is 63 Solidity tests, 52 JavaScript checks, 12 accessibility viewport/screen audits, four mocked success-path wallet transactions, two wallet failure paths and zero horizontal-overflow failures. Mocked wallet results are not blockchain broadcasts.
+The current local checkpoint is 63 Solidity tests, 55 JavaScript checks, 12 accessibility viewport/screen audits, four mocked success-path wallet transactions, two wallet failure paths and zero horizontal-overflow failures. Mocked wallet results are not blockchain broadcasts.
 
 The deployment verifier is read-only. Given direct creation receipts, the two factory-call receipts and three public demo receipts, it checks chain ID 46630, receipt success or intentional revert status, address/hash correspondence, confirmation depth, exact calldata and event data, deployer-owned registry outputs, 150-BTEST balances, the allowed/denied Protect outcomes, the 60+50 Challenge proof and exact runtime bytecode for `BeforeFactory`, `MockERC20`, `WifSecurityChallenge`, `BeforeVault`, `TrainingArena` and `TrainingVault`:
 
