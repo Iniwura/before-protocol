@@ -16,6 +16,8 @@ jobs:
         run: forge build
       - name: Unit, adversarial and fuzz tests
         run: forge test --fuzz-runs 1024 -vvv
+      - name: Real local Anvil deployment and eleven-argument release gate
+        run: node script/anvil-e2e.mjs
       - name: Independent policy reference tests
         run: node --test checks/reference.test.mjs checks/deployment-proof.test.mjs checks/deployment-cli.test.mjs checks/broadcast-args.test.mjs
       - name: Web policy and validation tests

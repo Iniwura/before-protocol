@@ -4,18 +4,23 @@ import {readFile,writeFile} from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';
 import path from 'node:path';
 import {isAddress,isTxHash,parseHexUint,CHAIN_ID,RPC_URL} from '../web/core.mjs';
-import {attestCall,attestContract,attestEvent,attestFactoryEvent,attestFactoryInteraction,attestRuntime} from '../checks/deployment-proof.mjs';
+import {attestCall,attestContract,attestEvent,attestFactoryEvent,attestFactoryInteraction,attestImmutableRuntime,attestTokenTransfers} from '../checks/deployment-proof.mjs';
 
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const argv=process.argv.slice(2);
 const write=argv.includes('--write');
-const args=argv.filter(a=>a!=='--write');
+const local=argv.includes('--local');
+const args=argv.filter(a=>a!=='--write'&&a!=='--local');
 if(args.length!==4 && args.length!==6 && args.length!==8 && args.length!==11){
-  console.error('Usage: node script/verify-testnet.mjs FACTORY_ADDRESS FACTORY_DEPLOY_TX MOCK_TOKEN_ADDRESS MOCK_TOKEN_DEPLOY_TX [CHALLENGE_ESCROW_ADDRESS CHALLENGE_ESCROW_DEPLOY_TX [DEMO_FACTORY_TX PRACTICE_FACTORY_TX [ALLOWED_WITHDRAWAL_TX DENIED_WITHDRAWAL_TX PRACTICE_PROOF_TX]]] [--write]');
+  console.error('Usage: node script/verify-testnet.mjs FACTORY_ADDRESS FACTORY_DEPLOY_TX MOCK_TOKEN_ADDRESS MOCK_TOKEN_DEPLOY_TX [CHALLENGE_ESCROW_ADDRESS CHALLENGE_ESCROW_DEPLOY_TX [DEMO_FACTORY_TX PRACTICE_FACTORY_TX [ALLOWED_WITHDRAWAL_TX DENIED_WITHDRAWAL_TX PRACTICE_PROOF_TX]]] [--write] [--local]');
   process.exit(2);
 }
 if(write && args.length!==11){
   console.error('Refusing --write without complete deployment and public Protect/Challenge evidence (11 arguments required).');
+  process.exit(2);
+}
+if(write && local){
+  console.error('Refusing --write for a local Anvil chain. Local evidence must never enable the hosted manifest.');
   process.exit(2);
 }
 const [factory,factoryTx,mockToken,mockTokenTx,challengeEscrow,challengeEscrowTx,demoTx,practiceTx,allowedTx,deniedTx,practiceProofTx]=args;
@@ -34,12 +39,14 @@ async function rpc(method,params=[]){
   });
   if(!response.ok)throw new Error('RPC HTTP '+response.status);
   const json=await response.json();
-  if(json.error||json.result===undefined)throw new Error(json.error?.message||'Malformed RPC result');
+  if(json.error||json.result===undefined){
+    const context=method==='eth_call'?` to ${params[0]?.to||'unknown'} data ${params[0]?.data||'unknown'} at ${params[1]||'latest'}`:'';
+    throw new Error(`${method}${context}: ${json.error?.message||'Malformed RPC result'}`);
+  }
   return json.result;
 }
 async function compiledRuntime(file){
-  const artifact=JSON.parse(await readFile(path.join(root,'out',file+'.sol',file+'.json'),'utf8'));
-  return artifact.deployedBytecode?.object;
+  return JSON.parse(await readFile(path.join(root,'out',file+'.sol',file+'.json'),'utf8'));
 }
 const SELECTORS={
   createDemoVault:'0x4e6a5acd',
@@ -50,7 +57,11 @@ const SELECTORS={
   owner:'0x8da5cb5b',
   allowedRecipient:'0xcb943a37',
   token:'0xfc0c546a',
+  maxPerTransfer:'0xd1129bf3',
+  dailyLimit:'0x67eeba0c',
   balanceOf:'0x70a08231',
+  arena:'0xfd3705f9',
+  hypotheticalDailyCap:'0xb346121b',
   withdraw:'0xf3fef3a3',
   proveSplitBypass:'0x3b1bf525',
   solved:'0x799320bb',
@@ -64,7 +75,9 @@ const EVENTS={
 const addressCall=(selector,address)=>selector+address.slice(2).toLowerCase().padStart(64,'0');
 const word=(address)=>'0'.repeat(24)+address.slice(2).toLowerCase();
 const words=(...values)=>'0x'+values.map(value=>typeof value==='string'?value.replace(/^0x/,'').padStart(64,'0'):BigInt(value).toString(16).padStart(64,'0')).join('');
+const immutableWord=value=>typeof value==='string'?'0x'+word(value):words(value);
 const practiceProofInput=()=>SELECTORS.proveSplitBypass+words(32n,2n,60n*10n**18n,50n*10n**18n).slice(2);
+const balanceCall=(token,address)=>addressCall(SELECTORS.balanceOf,address);
 const uintWords=(value,label)=>{
   if(typeof value!=='string'||!/^0x(?:[0-9a-fA-F]{64})+$/.test(value))throw new Error(label+': malformed event data.');
   return Array.from({length:(value.length-2)/64},(_,index)=>parseHexUint('0x'+value.slice(2+index*64,66+index*64)));
@@ -77,7 +90,8 @@ const decodeAddressResult=(value,label)=>{
 };
 try{
   const chainId=Number(parseHexUint(await rpc('eth_chainId')));
-  if(chainId!==CHAIN_ID)throw new Error('Wrong network. Expected chain ID 46630.');
+  const expectedChainId=local?31337:CHAIN_ID;
+  if(chainId!==expectedChainId)throw new Error(`Wrong network. Expected chain ID ${expectedChainId}.`);
   const head=await rpc('eth_blockNumber');
   const pairs=[
     {label:'Factory',address:factory,txHash:factoryTx,file:'BeforeFactory'},
@@ -88,10 +102,13 @@ try{
   }
   const verified=[];
   for(const item of pairs){
-    const receipt=await rpc('eth_getTransactionReceipt',[item.txHash]);
+    const [transaction,receipt]=await Promise.all([
+      rpc('eth_getTransactionByHash',[item.txHash]),
+      rpc('eth_getTransactionReceipt',[item.txHash]),
+    ]);
     const actualCode=await rpc('eth_getCode',[item.address,'latest']);
-    const artifactCode=await compiledRuntime(item.file);
-    verified.push(attestContract({...item,receipt,actualCode,artifactCode,headBlock:head,minConfirmations:12}));
+    const artifact=await compiledRuntime(item.file);
+    verified.push(attestContract({...item,transaction,receipt,actualCode,artifactCode:artifact.deployedBytecode?.object,headBlock:head,minConfirmations:12}));
   }
   let interactionManifest={demoTx:null,practiceTx:null,deployer:null,demoVault:null,practiceArena:null,practiceVault:null};
   if(demoTx){
@@ -123,23 +140,43 @@ try{
       rpc('eth_getCode',[practiceArena,'latest']),
       rpc('eth_getCode',[practiceVault,'latest']),
     ]);
-    attestRuntime({label:'DemoVault',address:demoVault,actualCode:beforeVaultCode,artifactCode:await compiledRuntime('BeforeVault')});
-    attestRuntime({label:'PracticeArena',address:practiceArena,actualCode:arenaCode,artifactCode:await compiledRuntime('TrainingArena')});
-    attestRuntime({label:'PracticeVault',address:practiceVault,actualCode:trainingVaultCode,artifactCode:await compiledRuntime('TrainingVault')});
-    const [demoOwner,demoRecipient,demoToken,arenaToken,demoBalance,practiceBalance]=await Promise.all([
+    const [beforeVaultArtifact,arenaArtifact,trainingVaultArtifact]=await Promise.all([
+      compiledRuntime('BeforeVault'),compiledRuntime('TrainingArena'),compiledRuntime('TrainingVault'),
+    ]);
+    const [demoOwner,demoRecipient,demoToken,demoMaxPerTransfer,demoDailyLimit,arenaToken,arenaVault,arenaDailyCap,practiceVaultArena,practiceVaultToken,practiceVaultMax]=await Promise.all([
       rpc('eth_call',[{to:demoVault,data:SELECTORS.owner},'latest']),
       rpc('eth_call',[{to:demoVault,data:SELECTORS.allowedRecipient},'latest']),
       rpc('eth_call',[{to:demoVault,data:SELECTORS.token},'latest']),
+      rpc('eth_call',[{to:demoVault,data:SELECTORS.maxPerTransfer},'latest']),
+      rpc('eth_call',[{to:demoVault,data:SELECTORS.dailyLimit},'latest']),
       rpc('eth_call',[{to:practiceArena,data:SELECTORS.token},'latest']),
-      rpc('eth_call',[{to:mockToken,data:addressCall(SELECTORS.balanceOf,demoVault)},'latest']),
-      rpc('eth_call',[{to:mockToken,data:addressCall(SELECTORS.balanceOf,practiceVault)},'latest']),
+      rpc('eth_call',[{to:practiceArena,data:SELECTORS.arenaVault},'latest']),
+      rpc('eth_call',[{to:practiceArena,data:SELECTORS.hypotheticalDailyCap},'latest']),
+      rpc('eth_call',[{to:practiceVault,data:SELECTORS.arena},'latest']),
+      rpc('eth_call',[{to:practiceVault,data:SELECTORS.token},'latest']),
+      rpc('eth_call',[{to:practiceVault,data:SELECTORS.maxPerTransfer},'latest']),
     ]);
     if(decodeAddressResult(demoOwner,'DemoVault owner').toLowerCase()!==deployer.toLowerCase())throw new Error('DemoVault owner does not match the factory deployer.');
     if(decodeAddressResult(demoRecipient,'DemoVault recipient').toLowerCase()!==deployer.toLowerCase())throw new Error('DemoVault recipient does not match the factory deployer.');
     if(decodeAddressResult(demoToken,'DemoVault token').toLowerCase()!==mockToken.toLowerCase())throw new Error('DemoVault token does not match MockERC20.');
     if(decodeAddressResult(arenaToken,'PracticeArena token').toLowerCase()!==mockToken.toLowerCase())throw new Error('PracticeArena token does not match MockERC20.');
+    if(parseHexUint(demoMaxPerTransfer)!==60n*10n**18n||parseHexUint(demoDailyLimit)!==100n*10n**18n)throw new Error('DemoVault constructor limits do not match the approved policy.');
+    if(decodeAddressResult(arenaVault,'PracticeArena vault').toLowerCase()!==practiceVault.toLowerCase())throw new Error('PracticeArena vault does not match the registered practice vault.');
+    if(parseHexUint(arenaDailyCap)!==100n*10n**18n)throw new Error('PracticeArena constructor cap does not match the documented challenge.');
+    if(decodeAddressResult(practiceVaultArena,'PracticeVault arena').toLowerCase()!==practiceArena.toLowerCase())throw new Error('PracticeVault arena does not match its creator.');
+    if(decodeAddressResult(practiceVaultToken,'PracticeVault token').toLowerCase()!==mockToken.toLowerCase())throw new Error('PracticeVault token does not match MockERC20.');
+    if(parseHexUint(practiceVaultMax)!==60n*10n**18n)throw new Error('PracticeVault constructor limit does not match the documented challenge.');
+    attestImmutableRuntime({label:'DemoVault',address:demoVault,actualCode:beforeVaultCode,artifactCode:beforeVaultArtifact.deployedBytecode?.object,immutableReferences:beforeVaultArtifact.deployedBytecode?.immutableReferences,immutableValues:[immutableWord(deployer),immutableWord(mockToken),immutableWord(deployer),immutableWord(60n*10n**18n),immutableWord(100n*10n**18n)]});
+    attestImmutableRuntime({label:'PracticeArena',address:practiceArena,actualCode:arenaCode,artifactCode:arenaArtifact.deployedBytecode?.object,immutableReferences:arenaArtifact.deployedBytecode?.immutableReferences,immutableValues:[immutableWord(practiceVault),immutableWord(mockToken),immutableWord(100n*10n**18n)]});
+    attestImmutableRuntime({label:'PracticeVault',address:practiceVault,actualCode:trainingVaultCode,artifactCode:trainingVaultArtifact.deployedBytecode?.object,immutableReferences:trainingVaultArtifact.deployedBytecode?.immutableReferences,immutableValues:[immutableWord(practiceArena),immutableWord(mockToken),immutableWord(60n*10n**18n)]});
     const initialBalance=150n*10n**18n;
-    if(parseHexUint(demoBalance)!==initialBalance||parseHexUint(practiceBalance)!==initialBalance)throw new Error('Factory-created demo assets are not funded with exactly 150 BTEST.');
+    const [demoBalanceAtCreation,practiceBalanceAtCreation]=await Promise.all([
+      rpc('eth_call',[{to:mockToken,data:balanceCall(mockToken,demoVault)},demoReceipt.blockNumber]),
+      rpc('eth_call',[{to:mockToken,data:balanceCall(mockToken,practiceVault)},practiceReceipt.blockNumber]),
+    ]);
+    if(parseHexUint(demoBalanceAtCreation)!==initialBalance||parseHexUint(practiceBalanceAtCreation)!==initialBalance)throw new Error('Factory-created vault balances are not exactly 150 BTEST at their creation blocks.');
+    attestTokenTransfers({label:'DemoVault funding',receipt:demoReceipt,token:mockToken,transfers:[{from:'0x'+'0'.repeat(40),to:factory,amount:initialBalance},{from:factory,to:demoVault,amount:initialBalance}]});
+    attestTokenTransfers({label:'PracticeVault funding',receipt:practiceReceipt,token:mockToken,transfers:[{from:'0x'+'0'.repeat(40),to:factory,amount:initialBalance},{from:factory,to:practiceVault,amount:initialBalance}]});
     interactionManifest={demoTx,practiceTx,deployer,demoVault,practiceArena,practiceVault};
     console.log('PASS: factory interaction receipts create the verified demo vault and funded practice arena.');
   }
@@ -168,6 +205,7 @@ try{
     if(withdrawalData.length!==2||withdrawalData[0]!==20n*10n**18n||withdrawalData[1]!==20n*10n**18n){
       throw new Error('AllowedProtectWithdrawal: event does not prove the 20 BTEST first withdrawal.');
     }
+    attestTokenTransfers({label:'AllowedProtectWithdrawal',receipt:allowedReceipt,token:mockToken,transfers:[{from:interactionManifest.demoVault,to:deployer,amount:20n*10n**18n}]});
     const proof=attestCall({label:'PracticeSplitProof',txHash:practiceProofTx,transaction:proofTransaction,receipt:proofReceipt,to:interactionManifest.practiceArena,input:practiceProofInput(),headBlock:head});
     const proofEvent=attestEvent({label:'PracticeSplitProof',receipt:proofReceipt,address:interactionManifest.practiceArena,eventTopic:EVENTS.splitProof,indexedAddresses:{1:proof.from}});
     if(proofEvent.topics.length!==2) throw new Error('PracticeSplitProof: proof event topics are malformed.');
@@ -175,7 +213,20 @@ try{
     if(proofData.length!==2||proofData[0]!==110n*10n**18n||proofData[1]!==100n*10n**18n){
       throw new Error('PracticeSplitProof: event does not prove the 60 + 50 bypass.');
     }
-    const solved=await rpc('eth_call',[{to:interactionManifest.practiceArena,data:SELECTORS.solved},'latest']);
+    attestTokenTransfers({label:'PracticeSplitProof',receipt:proofReceipt,token:mockToken,transfers:[{from:interactionManifest.practiceVault,to:interactionManifest.practiceArena,amount:60n*10n**18n},{from:interactionManifest.practiceVault,to:interactionManifest.practiceArena,amount:50n*10n**18n}]});
+    const [demoBalanceAfterAllowed,practiceBalanceAfterProof,deniedBalanceAfterRevert,recipientBalanceAfterAllowed,practiceArenaBalance,solved]=await Promise.all([
+      rpc('eth_call',[{to:mockToken,data:balanceCall(mockToken,interactionManifest.demoVault)},allowedReceipt.blockNumber]),
+      rpc('eth_call',[{to:mockToken,data:balanceCall(mockToken,interactionManifest.practiceVault)},proofReceipt.blockNumber]),
+      rpc('eth_call',[{to:mockToken,data:balanceCall(mockToken,interactionManifest.demoVault)},deniedReceipt.blockNumber]),
+      rpc('eth_call',[{to:mockToken,data:balanceCall(mockToken,deployer)},allowedReceipt.blockNumber]),
+      rpc('eth_call',[{to:mockToken,data:balanceCall(mockToken,interactionManifest.practiceArena)},proofReceipt.blockNumber]),
+      rpc('eth_call',[{to:interactionManifest.practiceArena,data:SELECTORS.solved},proofReceipt.blockNumber]),
+    ]);
+    if(parseHexUint(demoBalanceAfterAllowed)!==130n*10n**18n)throw new Error('Protected vault balance after the 20 BTEST withdrawal is not exactly 130 BTEST.');
+    if(parseHexUint(deniedBalanceAfterRevert)!==130n*10n**18n)throw new Error('Denied withdrawal changed the protected vault balance.');
+    if(parseHexUint(recipientBalanceAfterAllowed)!==20n*10n**18n)throw new Error('Allowed withdrawal recipient did not receive exactly 20 BTEST.');
+    if(parseHexUint(practiceBalanceAfterProof)!==40n*10n**18n)throw new Error('Practice vault balance after the 60 + 50 bypass is not exactly 40 BTEST.');
+    if(parseHexUint(practiceArenaBalance)!==110n*10n**18n)throw new Error('Practice arena did not receive exactly 110 BTEST.');
     if(parseHexUint(solved)!==1n) throw new Error('PracticeSplitProof: arena is not marked solved.');
     flowManifest={allowedTx,deniedTx,practiceProofTx,practiceSolver:proof.from};
     console.log('PASS: public Protect and Challenge receipts prove one allowed transfer, one denied transfer and the 60 + 50 practice bypass.');

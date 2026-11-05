@@ -26,6 +26,7 @@ Requires [Foundry](https://getfoundry.sh/) and Node.js.
 forge build
 forge test --fuzz-runs 1024 -vvv
 node --test checks/reference.test.mjs checks/deployment-proof.test.mjs checks/deployment-cli.test.mjs checks/broadcast-args.test.mjs web/test/core.test.mjs web/test/onchain.test.mjs
+node script/anvil-e2e.mjs
 node script/check-chain.mjs
 ~~~
 
@@ -89,7 +90,9 @@ The contract can hold WIF when configured with the intended Robinhood Chain WIF 
 
 ## Proving a testnet deployment
 
-After a mock-only testnet deployment, `script/verify-testnet.mjs` can check the actual factory, test-token and empty escrow creation receipts, their contract addresses, 12 confirmation blocks, and byte-for-byte runtime code against Foundry artifacts. Its full interaction mode also checks the two factory-call receipts, exact calldata and factory event data, deployer-owned registry outputs, created vault/arena runtime code, 150-BTEST balances, and public Protect/Challenge receipts for an allowed withdrawal, a denied withdrawal and the 60+50 practice proof. It is read-only and cannot make a false testnet claim from only a pasted address.
+After a mock-only testnet deployment, `script/verify-testnet.mjs` can check the actual factory, test-token and empty escrow creation receipts, their contract addresses, 12 confirmation blocks, and immutable-aware runtime provenance against Foundry artifacts. Its full interaction mode also checks the two factory-call receipts, exact calldata and factory event data, deployer-owned registry outputs, created vault/arena constructor state, exact BTEST transfer logs, block-specific 150/130/40 BTEST balances, and public Protect/Challenge receipts for an allowed withdrawal, a denied withdrawal and the 60+50 practice proof. It is read-only and cannot make a false testnet claim from only a pasted address.
+
+The same eleven-argument verifier is exercised against real local Anvil state by `node script/anvil-e2e.mjs`; genuine evidence must pass and swapped receipts must fail. Local evidence is never eligible to enable the hosted manifest.
 
 **No testnet deployment is claimed here.** Verified metadata remains `false` until evidence passes.
 
