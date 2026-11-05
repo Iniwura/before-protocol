@@ -23,6 +23,6 @@ The browser quality suite lives at `qa/verify.mjs`. It runs on each pull request
 - A complete verified manifest reads the deployed security escrow's `nextChallengeId()` state in Challenge; this is read-only and never enables WIF funding.
 - All four widths showed no horizontal scrolling.
 - The current branch preserves the approved minimal Protect / Challenge / Proof layout while adding the fail-closed deployment gate and explicit testnet disclosures.
-- GitHub Actions run [112](https://github.com/Iniwura/before-protocol/actions/runs/41928214417) independently passed both browser-quality and contract checks for commit `3071507`.
+- GitHub Actions run [119](https://github.com/Iniwura/before-protocol/actions/runs/41942216114) independently passed the browser-quality, contract and real local-Anvil release-gate checks for commit `ed0ad59`.
 
 **Limitations:** Automated accessibility checks cannot replace manual screen-reader testing, keyboard focus inspection, real-wallet checks, or human usability assessment. Browser network and wallet mocks do not prove Robinhood Chain deployment. The live production site remains on its prior commit until the PR is merged and deployed.

@@ -14,14 +14,15 @@ From the repository root:
 forge build
 forge test --fuzz-runs 1024 -vvv
 node --test checks/reference.test.mjs checks/deployment-proof.test.mjs checks/deployment-cli.test.mjs checks/broadcast-args.test.mjs web/test/core.test.mjs web/test/onchain.test.mjs
+node script/anvil-e2e.mjs
 npm ci --prefix qa
 PLAYWRIGHT_BROWSERS_PATH=/tmp/before-browsers node qa/verify.mjs
 node script/check-chain.mjs
 ~~~
 
-The current local checkpoint is 66 Solidity tests, 55 JavaScript checks, 12 accessibility viewport/screen audits, four mocked success-path wallet transactions, three wallet failure paths and zero horizontal-overflow failures. Mocked wallet results are not blockchain broadcasts.
+The current local checkpoint is 66 Solidity tests, 57 JavaScript checks, a real Anvil deployment/verifier pass with tampered-evidence rejection, 12 accessibility viewport/screen audits, four mocked success-path wallet transactions, three wallet failure paths and zero horizontal-overflow failures. Mocked wallet results are not blockchain broadcasts.
 
-The deployment verifier is read-only. Given direct creation receipts, the two factory-call receipts and three public demo receipts, it checks chain ID 46630, receipt success or intentional revert status, address/hash correspondence, confirmation depth, exact calldata and event data, deployer-owned registry outputs, 150-BTEST balances, the allowed/denied Protect outcomes, the 60+50 Challenge proof and exact runtime bytecode for `BeforeFactory`, `MockERC20`, `WifSecurityChallenge`, `BeforeVault`, `TrainingArena` and `TrainingVault`:
+The deployment verifier is read-only. Given direct creation receipts, the two factory-call receipts and three public demo receipts, it checks chain ID 46630, receipt success or intentional revert status, address/hash correspondence, confirmation depth, exact calldata and event data, deployer-owned registry outputs, exact BTEST transfer logs, 150/130/40 block-specific balances, the allowed/denied Protect outcomes, the 60+50 Challenge proof and immutable-aware runtime provenance for `BeforeFactory`, `MockERC20`, `WifSecurityChallenge`, `BeforeVault`, `TrainingArena` and `TrainingVault`:
 
 ~~~sh
 node script/verify-testnet.mjs \

@@ -29,9 +29,9 @@ The production mechanism is a separate ERC-20 escrow for meaningful security fin
 ## Evidence checkpoint
 
 - 66 Solidity tests, including adversarial accounting, cross-chain and copied-wallet replay, expiry, verifier quorum, code-pinning, transfer-callback mutation and empty-evidence cases.
-- 55 JavaScript checks, including exact deployment receipt/event/runtime proof and public broadcast extraction checks.
+- 57 JavaScript checks, including immutable-aware runtime proof, historical-balance proof, exact deployment receipt/event/runtime proof and public broadcast extraction checks.
 - Browser QA: 12 responsive/accessibility audits plus 3 complete-manifest accessibility states, zero violations, no horizontal overflow, mocked wallet success and failure paths.
-- [CI run 112](https://github.com/Iniwura/before-protocol/actions/runs/41928214417) passed both jobs for head `3071507`.
+- [CI run 119](https://github.com/Iniwura/before-protocol/actions/runs/41942216114) passed the contract, real local-Anvil release gate and browser-quality jobs for head `ed0ad59`.
 - Robinhood Chain read-only RPC confirms chain ID 46630.
 
 ## Claim boundary
