@@ -24,6 +24,7 @@ await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
 const base='http://127.0.0.1:'+server.address().port;
 const browser=await chromium.launch({headless:true});
 const fixture={owner:'0x'+'3'.repeat(40),factory:'0x'+'1'.repeat(40),mockToken:'0x'+'2'.repeat(40),challengeEscrow:'0x'+'6'.repeat(40),vault:'0x'+'4'.repeat(40),arena:'0x'+'5'.repeat(40),practiceVault:'0x'+'7'.repeat(40),tx:'0x'+'a'.repeat(64),demoTx:'0x'+'b'.repeat(64),practiceTx:'0x'+'c'.repeat(64),allowedTx:'0x'+'d'.repeat(64),deniedTx:'0x'+'e'.repeat(64),practiceProofTx:'0x'+'f'.repeat(64)};
+const failClosedManifest={chainId:46630,factory:null,mockToken:null,challengeEscrow:null,arena:null,demoTx:null,practiceTx:null,deployer:null,demoVault:null,practiceArena:null,practiceVault:null,allowedTx:null,deniedTx:null,practiceProofTx:null,practiceSolver:null,verified:false,factoryTx:null,mockTokenTx:null,challengeEscrowTx:null};
 const padding=addr=>'0x'+'0'.repeat(24)+addr.slice(2);
 const transactionRecord=(hash,to,input)=>({hash,from:fixture.owner,to,input,value:'0x0'});
 const walletTransactions={
@@ -70,6 +71,7 @@ try {
     const page=await context.newPage();
     page.on('pageerror',error=>problems.push(width+' browser: '+error.message));
     await routeRPC(page);
+    await page.route('**/deployment.json',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(failClosedManifest)}));
     await page.goto(base,{waitUntil:'domcontentloaded'});
     await page.addScriptTag({path:path.join(here,'node_modules/axe-core/axe.min.js')});
     for(const tab of ['protect','challenge','proof']){

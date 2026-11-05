@@ -40,9 +40,9 @@ forge script script/DeployBefore.s.sol:DeployBefore \
 
 6. The script deploys `MockERC20`, `BeforeFactory` and an **empty** `WifSecurityChallenge`, then creates only the BTEST demo vault and unpaid practice arena. It never accepts a WIF address and never funds a reward.
 7. If Foundry wrote a broadcast file, run `node script/broadcast-args.mjs` with its public `run-latest.json` path to extract the three creation hashes/addresses and two factory-call hashes. This helper reads no key and never broadcasts.
-8. Verify chain ID, direct creation transaction hashes, deployed bytecode and source code before claiming testnet proof. Pass the two factory-call hashes and, for the full release gate, the public allowed-withdrawal, denied-withdrawal and practice-proof hashes as the optional final arguments so the verifier also checks exact calldata and event data, deployer-owned registry outputs, created vault/arena runtime code, 150-BTEST balances and the real Protect/Challenge flow.
+8. Verify chain ID, direct creation transaction hashes, deployed bytecode and source code before claiming testnet proof. Pass the two factory-call hashes and, for the full release gate, the public allowed-withdrawal, denied-withdrawal and practice-proof hashes as the optional final arguments so the verifier also checks exact calldata and event data, deployer-owned registry outputs, created vault/arena runtime code, 150-BTEST balances and the real Protect/Challenge flow. The current verifier-generated evidence is recorded in `docs/TESTNET_PROOF.md` and `web/deployment.json`.
 
-The script restricts itself to chain IDs 31337 and 46630. No public testnet transaction is claimed at this checkpoint. Do not attempt mainnet with this script.
+The script restricts itself to chain IDs 31337 and 46630. The recorded public deployment is mock-only, uses no WIF address or reward funding, and must never be reused for mainnet. Do not attempt mainnet with this script.
 
 ## Valuable WIF funding
 

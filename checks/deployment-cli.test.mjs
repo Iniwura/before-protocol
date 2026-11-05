@@ -1,12 +1,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createServer} from 'node:http';
-import {readFile} from 'node:fs/promises';
+import {readFile,writeFile} from 'node:fs/promises';
 import {spawn} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
 import path from 'node:path';
 
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
+const manifestPath=path.join(root,'web/deployment.json');
 const factory='0x'+'1'.repeat(40), token='0x'+'2'.repeat(40), escrow='0x'+'3'.repeat(40);
 const txA='0x'+'a'.repeat(64), txB='0x'+'b'.repeat(64), txC='0x'+'c'.repeat(64);
 const deployer='0x'+'4'.repeat(40), demoVault='0x'+'5'.repeat(40), practiceArena='0x'+'6'.repeat(40), practiceVault='0x'+'7'.repeat(40);
@@ -68,18 +69,26 @@ test('read-only deployment CLI accepts exact evidence but rejects tampered bytec
   });
   await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
   const url='http://127.0.0.1:'+server.address().port;
+  const originalManifest=await readFile(manifestPath,'utf8');
+  const manifestBase=JSON.parse(originalManifest);
   try {
-    const valid=await launchCLI(url);
-    assert.equal(valid.code,0,valid.stderr);
-    assert.match(valid.stdout,/PASS: two deployment receipts/);
-    assert.match(valid.stdout,/Dry-run only/);
-    tamper=true;
-    const bad=await launchCLI(url);
-    assert.equal(bad.code,1,bad.stdout+bad.stderr);
-    assert.match(bad.stderr,/runtime bytecode does not match/);
-    const manifest=JSON.parse(await readFile(path.join(root,'web/deployment.json'),'utf8'));
-    assert.equal(manifest.verified,false);
+    for(const initialVerified of [false,true]){
+      const startingManifest=JSON.stringify({...manifestBase,verified:initialVerified},null,2)+'\n';
+      await writeFile(manifestPath,startingManifest);
+      const valid=await launchCLI(url);
+      assert.equal(valid.code,0,valid.stderr);
+      assert.match(valid.stdout,/PASS: two deployment receipts/);
+      assert.match(valid.stdout,/Dry-run only/);
+      assert.equal(await readFile(manifestPath,'utf8'),startingManifest,'successful dry-run must not mutate the manifest');
+      tamper=true;
+      const bad=await launchCLI(url);
+      assert.equal(bad.code,1,bad.stdout+bad.stderr);
+      assert.match(bad.stderr,/runtime bytecode does not match/);
+      assert.equal(await readFile(manifestPath,'utf8'),startingManifest,`failed check mutated a ${initialVerified?'verified':'unverified'} manifest`);
+      tamper=false;
+    }
   } finally {
+    await writeFile(manifestPath,originalManifest);
     await new Promise(resolve=>server.close(resolve));
   }
 });

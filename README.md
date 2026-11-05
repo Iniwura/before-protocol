@@ -4,7 +4,7 @@
 
 BEFORE is a prototype for the [World Is Flat](https://worldisflat.fun/build) hackathon on Robinhood Chain. It demonstrates enforceable ERC-20 transfer policies, an isolated intentionally vulnerable practice vault, deterministic verification of a policy bypass, and a separate commit/reveal escrow for independently verifiable security findings.
 
-> **Research only. The browser prototype is deployed; the contracts are not deployed or audited. Do not deposit real assets.** The WIF-capable escrow is implemented and tested, but no real WIF reward is funded or claimed.
+> **Research only. The mock-only contracts are deployed and independently verified on Robinhood Chain testnet; they are not audited and must not receive real assets.** The WIF-capable escrow is empty, no real WIF reward is funded, and no mainnet custody is claimed.
 
 ## Protect
 
@@ -16,7 +16,7 @@ TrainingVault intentionally omits the aggregate daily limit. TrainingArena lets 
 
 ## Proof
 
-The exercise verifies token balance changes and a one-time solution state using contract execution, not an AI opinion. When a deployment manifest is independently verified, the app also reads the actual challenge escrow's record count without enabling WIF funding. Public-chain receipts and verified source will be added after testnet deployment.
+The exercise verifies token balance changes and a one-time solution state using contract execution, not an AI opinion. The verified deployment manifest also lets the app read the actual empty challenge escrow's record count without enabling WIF funding. Public-chain receipts and immutable-aware bytecode evidence are recorded in [TESTNET_PROOF.md](docs/TESTNET_PROOF.md).
 
 ## Reproduce locally
 
@@ -32,20 +32,22 @@ node script/check-chain.mjs
 
 The network check is read-only; it requires internet access.
 
-## Verified engineering checkpoint — 2026-11-04
+## Verified engineering checkpoint — 2026-11-05
 
 - Foundry 1.9.0 and Solc 0.8.36 compiled the code successfully.
 - Solidity policy, factory, adversarial and escrow tests pass in a local Foundry EVM; fuzz tests run at 1,024 cases each.
-- Independent JavaScript policy, deployment-proof, web ABI and CLI tests pass.
+- Independent JavaScript policy, deployment-proof, web ABI and CLI tests pass, including manifest-preservation checks for both verified and unverified starting states.
 - The WIF-capable escrow has dedicated commit/reveal, copied-commitment, invalid-proof, expiry, cancellation and fee-token tests.
 - Robinhood Chain testnet public RPC returned chain ID 46630 in a read-only check.
-- **No chain deployment, audited security claim, real-token custody, or real WIF reward.**
+- The public mock-only deployment passed the complete eleven-argument verifier: direct bytecode, immutable constructor state, events, receipts, historical balances and Protect/Challenge flow.
+- The authorized disposable signer was `0xd1061825504b30f404c0d94b745205925f251f2c`; the earlier `0xa35dc047f9937bf668743efbdf8ea93b31a55888` preflight address was not used.
+- **No audited security claim, real-token custody, funded WIF reward or mainnet deployment.**
 
-GitHub Actions run [119](https://github.com/Iniwura/before-protocol/actions/runs/41942216114) independently passed the contract, real local-Anvil release gate and browser-quality jobs for code head `ed0ad59`, including the reviewed-finding quorum, escrow-instance binding, source-side token-accounting hardening, verifier/target/reward-token code-pinning tests, transfer-callback mutation protection, cross-chain commitment-domain separation, empty-evidence rejection, immutable-aware runtime proof, historical-balance proof, read-only escrow status, wallet transaction-identity checks, event-bound deployment proof, complete-manifest Proof rendering, deployed-state accessibility checks, public-flow evidence checks and expanded browser failure-path checks. Neither local nor CI results establish testnet deployment, an audit or WIF custody.
+GitHub Actions run [121](https://github.com/Iniwura/before-protocol/actions/runs/41946920351) independently passed the contract, real local-Anvil release gate and browser-quality jobs for code head `e0bf908`, including the reviewed-finding quorum, escrow-instance binding, source-side token-accounting hardening, verifier/target/reward-token code-pinning tests, transfer-callback mutation protection, cross-chain commitment-domain separation, empty-evidence rejection, immutable-aware runtime proof, historical-balance proof, read-only escrow status, wallet transaction-identity checks, event-bound deployment proof, complete-manifest Proof rendering, deployed-state accessibility checks, public-flow evidence checks and expanded browser failure-path checks. This CI evidence does not establish an audit or WIF custody.
 
 ## Live research prototype
 
-**Website:** https://before-web-theta.vercel.app/
+**Website:** Preview URL is recorded in the release handoff after the verified-manifest deployment.
 
 The responsive, dependency-free frontend has three experiences:
 
@@ -55,7 +57,7 @@ The responsive, dependency-free frontend has three experiences:
 
 The web code is in `web/`; the Node test commands cover policy, ABI, deployment-proof and browser-facing logic. GitHub Actions checks Solidity, policy-model, deployment and web tests. CI is at https://github.com/Iniwura/before-protocol/actions.
 
-The static website being live does not mean the contracts have been deployed. Testnet-chain transactions and verified contract addresses remain outstanding.
+The verified preview reads the public testnet deployment through the checked-in manifest. Production remains unchanged until separately approved.
 
 ## Architecture
 
@@ -70,11 +72,11 @@ The static website being live does not mean the contracts have been deployed. Te
 - script — test-only deployment helper and read-only chain ID checker.
 - docs — deployment, security boundaries, evidence, and milestone handoff.
 
-## Phase 3 — Testnet demo factory (proposed, not deployed)
+## Phase 3 — Testnet demo factory (verified mock-only deployment)
 
 The `BeforeFactory` source adds self-service creation of **testnet-only, mock-token** vaults and independent practice arenas. A single wallet transaction can create an owner-controlled protected vault pre-funded with valueless BTEST; another creates a separate challenge funded only with BTEST. Factory registry reads let observers check whether an address was created by the configured factory.
 
-The web has wallet transaction paths ready but **they remain hidden** until the versioned `web/deployment.json` is populated with independently verified Robinhood Chain testnet addresses and genuine deployment transaction hashes. Empty or unverified metadata cannot enable blockchain actions.
+The versioned `web/deployment.json` now contains independently verified Robinhood Chain testnet addresses and genuine deployment transaction hashes. The UI exposes only the mock-token Protect/Challenge paths; the empty escrow remains read-only and cannot fund WIF.
 
 This is not a real-WIF bounty or a mainnet custody release.
 
@@ -94,16 +96,16 @@ After a mock-only testnet deployment, `script/verify-testnet.mjs` can check the 
 
 The same eleven-argument verifier is exercised against real local Anvil state by `node script/anvil-e2e.mjs`; genuine evidence must pass and swapped receipts must fail. Local evidence is never eligible to enable the hosted manifest.
 
-**No testnet deployment is claimed here.** Verified metadata remains `false` until evidence passes.
+**A mock-only testnet deployment is claimed here.** Verified metadata is `true` because the public eleven-argument evidence passed. This is not an audit, a WIF payout or a mainnet release.
 
 [Read the testnet proof process](docs/TESTNET_PROOF.md).
 
 ## Next gates
 
 1. Confirm current competition rules and complete project registration.
-2. Deploy the mock-only demo contracts and empty challenge escrow on Robinhood Chain testnet and capture explorer receipts and verified source.
+2. Review explorer source and receipts for the public mock-only deployment.
 3. Increase property/invariant coverage and obtain independent security review before any real custody.
 4. Configure a separate WIF reward only for a meaningful, independently reviewed verifier; the existing trivially solvable training exercise must never be presented as a paid research bounty.
-5. Continue browser QA and replace local preview-only flows with real, safely scoped testnet interactions once testnet contracts are verifiably deployed.
+5. Keep production unchanged until the verified preview and draft PR receive explicit approval.
 
 [Deployment](docs/DEPLOYMENT.md) · [Security boundaries](docs/SECURITY_NOTES.md) · [WIF challenge design](docs/WIF_CHALLENGE_DESIGN.md) · [Verification](docs/VERIFICATION.md) · [Submission runbook](docs/SUBMISSION.md) · [Phase 1](docs/PHASE_1.md) · [Phase 2](docs/PHASE_2.md)
