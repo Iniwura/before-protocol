@@ -15,4 +15,4 @@
 
 The local end-to-end test exercises mock funding, protected withdrawals, refused unauthorized actions, cumulative limits and a training split-bypass proof. The escrow suite independently exercises exact source-and-recipient token accounting, solver-bound commit/reveal, copied commitment rejection, verifier failure, invalid-proof slashing, expiry, cancellation, fee-token rejection, a token that mints without debiting its source, and a fixed-quorum reviewer verifier. It does not settle WIF.
 
-This report is not a security audit. GitHub Actions run 109 passed both the contract and browser-quality jobs for commit `d3fcd68`; it does not establish testnet deployment or WIF custody.
+This report is not a security audit. GitHub Actions run 114 passed both the contract and browser-quality jobs for documentation head `1bf9a84`; it does not establish testnet deployment or WIF custody.
