@@ -1,0 +1,12 @@
+{
+  "verified": false,
+  "chainId": 46630,
+  "demo": null,
+  "escrow": null,
+  "token": null,
+  "target": null,
+  "operator": null,
+  "transactions": null,
+  "reviewType": "synthetic",
+  "valuableWifFunded": false
+}
