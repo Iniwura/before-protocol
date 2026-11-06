@@ -37,7 +37,7 @@ try{
    if(body.method==='eth_blockNumber')value='0x123456';
    if(body.method==='eth_getCode')value=body.params[0].toLowerCase()===spender.toLowerCase()?'0x':'0x60016001';
    if(body.method==='eth_getTransactionByHash')value={hash,from:owner,to:txTo,input:'0x095ea7b3'+spender.slice(2).padStart(64,'0')+word(99n*10n**18n)};
-   if(body.method==='eth_getTransactionReceipt')value={transactionHash:hash,to:txTo,status:'0x1',blockNumber:'0x123450'};
+   if(body.method==='eth_getTransactionReceipt')value={transactionHash:hash,from:owner,to:txTo,status:'0x1',blockNumber:'0x123450'};
    if(body.method==='eth_call'){
     const data=body.params[0].data.toLowerCase();
     value=data==='0x95d89b41'?(incorrectToken?'0x':'0x'+symbol.slice(2)):data==='0x313ce567'?'0x'+word(18):data.startsWith('0x70a08231')?'0x'+word(10n*10n**18n):data.startsWith('0xdd62ed3e')?'0x'+word(20n*10n**18n):'0x';
