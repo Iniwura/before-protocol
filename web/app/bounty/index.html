@@ -21,15 +21,35 @@
 </header>
 
 <main class="main">
-  <section class="intro" aria-labelledby="page-title">
+  <section class="entry-choice" id="entry-choice" aria-labelledby="entry-title">
+    <div class="entry-kicker">START HERE <span>NO EXPERIENCE REQUIRED</span></div>
+    <div class="entry-heading"><h1 id="entry-title">What do you<br><em>want to do?</em></h1><p>BEFORE helps people find security weaknesses and reward verified findings. Choose what brings you here.</p></div>
+    <div class="entry-grid">
+      <button class="entry-card" type="button" data-start="sponsor">
+        <span class="entry-index">01 / I HAVE A PROJECT</span><strong>Post a reward.</strong>
+        <p>Offer valueless test tokens to someone who finds a valid problem.</p><span class="entry-action">Create a bounty <span aria-hidden="true">↗</span></span>
+      </button>
+      <button class="entry-card" type="button" data-start="solver">
+        <span class="entry-index">02 / I FOUND A PROBLEM</span><strong>Submit a finding.</strong>
+        <p>Open a shared bounty link and send your evidence for review.</p><span class="entry-action">Submit evidence <span aria-hidden="true">↗</span></span>
+      </button>
+      <button class="entry-card" type="button" data-start="reviewer">
+        <span class="entry-index">03 / I WAS INVITED</span><strong>Review a finding.</strong>
+        <p>Check a researcher's report and approve it if it is valid.</p><span class="entry-action">Review evidence <span aria-hidden="true">↗</span></span>
+      </button>
+    </div>
+    <div class="entry-explore"><div><strong>Just exploring?</strong><span>See a complete public testnet example, without connecting a wallet.</span></div><a href="/app/#proof">See how BEFORE works <span aria-hidden="true">↗</span></a></div>
+    <p class="entry-safety">This version uses freely mintable BTEST on Robinhood testnet, not real money. Appointed reviewers must assess evidence independently; this is not a security audit.</p>
+  </section>
+  <section class="intro" aria-labelledby="page-title" hidden>
     <div class="eyebrow"><span>BEFORE / BOUNTY STUDIO</span><span id="chain-status">ROBINHOOD TESTNET · CHECKING</span></div>
     <h1 id="page-title">Find it.<br><span>Prove it.</span></h1>
     <div class="intro-foot"><span>LIVE BTEST WORKFLOW / NO REAL WIF</span><p>Publish a security challenge. Commit a finding. Review the evidence. Settle onchain.</p></div>
     <div class="warning" role="note"><strong>Test tokens only.</strong> BTEST is freely mintable and has no value. Reviewers are chosen by sponsors; approvals are not independent audits. Each transaction requires wallet confirmation and testnet ETH for gas.</div>
   </section>
 
-  <section class="workbench" aria-label="Bounty actions">
-    <div class="workbench-top"><span>THE WORKFLOW</span><span>01 — 04</span></div>
+  <section class="workbench" aria-label="Bounty actions" hidden>
+    <div class="workbench-top"><button id="change-goal" class="change-goal" type="button">← Change what I want to do</button><span id="current-step-label">YOUR TASK</span></div>
     <nav class="role-nav" aria-label="Bounty workflow" role="tablist">
       <button class="role active" role="tab" id="tab-sponsor" aria-controls="role-sponsor" aria-selected="true" data-role="sponsor" type="button"><span>01 /</span><strong>Create</strong><i aria-hidden="true">↗</i></button>
       <button class="role" role="tab" id="tab-solver" aria-controls="role-solver" aria-selected="false" data-role="solver" type="button"><span>02 /</span><strong>Solve</strong><i aria-hidden="true">↗</i></button>
@@ -40,10 +60,10 @@
     <section class="challenge-inspector" aria-labelledby="inspector-title">
       <div class="inspector-bar"><span>PUBLIC CHALLENGE</span><span id="inspect-network">CHAIN 46630 · BTEST ONLY</span></div>
       <div class="inspector-content">
-        <div><h2 id="inspector-title">Find a bounty.</h2><p>Enter an onchain challenge ID to load its rules and status.</p></div>
+        <div><h2 id="inspector-title">Open your bounty.</h2><p>Paste the link someone shared with you, or enter its bounty number.</p></div>
         <form id="load-form" class="load-form">
-          <label for="challenge-id">Challenge ID</label>
-          <div class="load-controls"><input id="challenge-id" type="text" inputmode="numeric" pattern="[0-9]*" placeholder="e.g. 5" autocomplete="off" required><button class="button-dark" type="submit">Load <span aria-hidden="true">↗</span></button></div>
+          <label for="challenge-id">Bounty link or number</label>
+          <div class="load-controls"><input id="challenge-id" type="text" placeholder="Paste a link or enter #5" autocomplete="off" required><button class="button-dark" type="submit">Load <span aria-hidden="true">↗</span></button></div>
         </form>
       </div>
       <div class="challenge-summary" id="challenge-summary" hidden aria-live="polite">
@@ -58,23 +78,29 @@
     </section>
 
     <section class="role-panel" id="role-sponsor" role="tabpanel" aria-labelledby="tab-sponsor">
+      <div class="step-intro"><span>YOUR JOB / PROJECT OWNER</span><p>Pick someone who can review reports. Set a test-token reward. We handle the blockchain steps when you confirm them.</p></div>
       <div class="role-heading"><div><span class="small-heading">01 / FOR SPONSORS</span><h2>Set the<br>rules.</h2></div><p>Choose reviewers and fund a mock-token reward. The contract locks the reward until settlement, cancellation, or expiry.</p></div>
       <form id="create-form" class="role-form">
-        <div class="field-wide"><label for="reviewers">Reviewer wallets</label><textarea id="reviewers" rows="2" placeholder="0x…&#10;One address per line, up to three" required></textarea><small>Use wallet addresses controlled by your reviewers. Reviewer approval is a human decision, not automated exploit verification.</small></div>
-        <div class="field-grid">
-          <div class="field"><label for="threshold">Approvals required</label><select id="threshold"><option value="1">1 approval</option><option value="2">2 approvals</option><option value="3">3 approvals</option></select></div>
-          <div class="field"><label for="reward-amount">Reward / BTEST</label><input id="reward-amount" value="100" inputmode="decimal" required></div>
-          <div class="field"><label for="bond-amount">Solver bond / BTEST</label><input id="bond-amount" value="10" inputmode="decimal" required></div>
-          <div class="field"><label for="commit-minutes">Commit window / minutes</label><input id="commit-minutes" type="number" value="10" min="2" max="1440" required></div>
-          <div class="field"><label for="reveal-minutes">Reveal window / minutes</label><input id="reveal-minutes" type="number" value="30" min="5" max="10080" required></div>
-        </div>
+        <div class="field-wide"><label for="reviewers">Who will review the findings?</label><textarea id="reviewers" rows="2" placeholder="Paste the reviewer’s wallet address" required></textarea><small>Ask a reviewer for their wallet address. This person approves reports, not the app itself.</small></div>
+        <div class="field-wide"><label for="reward-amount">Reward for a valid finding</label><input id="reward-amount" value="100" inputmode="decimal" required><small>100 BTEST is a recommended starting example. BTEST has no monetary value.</small></div>
+        <details class="advanced-settings"><summary>Change bond, deadlines or reviewer approvals <span aria-hidden="true">+</span></summary>
+          <div class="field-grid">
+            <div class="field"><label for="threshold">Reviewer approvals needed</label><select id="threshold"><option value="1">1 approval</option><option value="2">2 approvals</option><option value="3">3 approvals</option></select></div>
+            <div class="field"><label for="bond-amount">Researcher deposit / BTEST</label><input id="bond-amount" value="10" inputmode="decimal" required></div>
+            <div class="field"><label for="commit-minutes">Submission deadline / minutes</label><input id="commit-minutes" type="number" value="10" min="2" max="1440" required></div>
+            <div class="field"><label for="reveal-minutes">Final reveal deadline / minutes</label><input id="reveal-minutes" type="number" value="30" min="5" max="10080" required></div>
+          </div>
+          <p class="action-foot">A researcher locks a refundable deposit when submitting a finding. Deadlines are enforced by the escrow smart contract.</p>
+        </details>
         <div class="scope-note"><span>TARGET</span><strong>BEFORE training vault</strong><span>REVIEW SCOPE</span><strong>Testnet BTEST finding, chosen reviewer decision</strong></div>
         <button class="button-dark action-submit" type="submit" id="publish-bounty"><span>Publish BTEST bounty</span><span aria-hidden="true">↗</span></button>
-        <p class="action-foot">Wallet steps: deploy review gate, mint valueless BTEST if needed, approve exact reward, publish onchain. Every step requires your confirmation.</p>
+        <p class="action-foot">You will confirm a few testnet transactions in your wallet. Nothing uses real WIF.</p>
+        <div id="publish-success" class="publish-success" hidden aria-live="polite"><span>BOUNTY CREATED</span><strong id="published-bounty-id">Bounty #— is live.</strong><p>Share this link with a researcher and your reviewer. The researcher submits a finding; the reviewer checks it. You do not need to switch roles.</p><button type="button" class="button-outline" id="copy-published-link">Copy bounty link ↗</button></div>
       </form>
     </section>
 
     <section class="role-panel" id="role-solver" role="tabpanel" aria-labelledby="tab-solver" hidden>
+      <div class="step-intro"><span>YOUR JOB / RESEARCHER</span><p>First open your shared bounty link above. Then describe the problem and save your recovery key. Once reviewed, reveal your finding to claim the test-token reward.</p></div>
       <div class="role-heading"><div><span class="small-heading">02 / FOR SOLVERS</span><h2>Submit your<br>finding.</h2></div><p>Commit a private evidence hash and post a BTEST bond. Keep the secret salt until the reveal window opens.</p></div>
       <form class="role-form" id="solve-form">
         <div class="field-wide"><label for="evidence">Finding evidence</label><textarea id="evidence" rows="4" placeholder="Describe the vulnerability and reproduction steps" required></textarea><small>Do not paste passwords, private keys, personal data or real exploits. Your evidence is eventually published onchain when revealed.</small></div>
@@ -85,6 +111,7 @@
     </section>
 
     <section class="role-panel" id="role-reviewer" role="tabpanel" aria-labelledby="tab-reviewer" hidden>
+      <div class="step-intro"><span>YOUR JOB / REVIEWER</span><p>Open the shared bounty link. Read the report from the researcher and inspect the actual issue before recording your decision.</p></div>
       <div class="role-heading"><div><span class="small-heading">03 / FOR REVIEWERS</span><h2>Review the<br>evidence.</h2></div><p>Only wallets appointed by the sponsor can approve. Confirm the exact solver, target and evidence before signing an irreversible review.</p></div>
       <form class="role-form" id="review-form">
         <div class="field-wide"><label for="solver-address">Solver wallet</label><input id="solver-address" placeholder="0x…" spellcheck="false" autocomplete="off" required></div>
@@ -95,6 +122,7 @@
     </section>
 
     <section class="role-panel" id="role-recover" role="tabpanel" aria-labelledby="tab-recover" hidden>
+      <div class="step-intro"><span>YOUR JOB / RECOVERY</span><p>Already have an unfinished bounty? Load it above to see what can be refunded or canceled.</p></div>
       <div class="role-heading"><div><span class="small-heading">04 / FOR SPONSORS AND SOLVERS</span><h2>Close the<br>loop.</h2></div><p>Return unused rewards or pending bonds under the contract's expiry rules. Only the entitled wallet can claim the refund.</p></div>
       <div class="recovery-actions">
         <div><strong>Cancel an unused bounty</strong><p>Sponsor only, before the commit deadline and before anyone commits.</p><button type="button" class="button-outline" id="cancel-bounty">Cancel & refund reward ↗</button></div>
