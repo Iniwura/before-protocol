@@ -32,6 +32,14 @@ for(const button of tabs){
 const hash=location.hash.slice(1);
 if(['protect','challenge','proof'].includes(hash))activateTab(hash);
 window.addEventListener('hashchange',()=>{const h=location.hash.slice(1);if(['protect','challenge','proof'].includes(h))activateTab(h);});
+$('explore-experiences')?.addEventListener('click',(event)=>{
+  event.preventDefault();
+  activateTab('protect');
+  document.querySelector('.app-tabs').scrollIntoView({
+    behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth',
+    block:'start'
+  });
+});
 
 function renderPolicy(){
   const box=$('protect-result');
@@ -47,6 +55,8 @@ function renderPolicy(){
   $('protect-result-text').textContent=result.reason;
 }
 $('protect-form').addEventListener('submit',(event)=>{event.preventDefault();renderPolicy();});
+for (const input of ['protect-amount','protect-spent']) $(input).addEventListener('input',renderPolicy);
+for (const input of all('input[name="destination"]')) input.addEventListener('change',renderPolicy);
 renderPolicy();
 
 function renderPractice(){
@@ -60,6 +70,7 @@ function renderPractice(){
   $('challenge-verdict').style.borderLeftColor=result.kind==='bypass'?'#ea9c6d':result.kind==='not-bypass'?'#1aaf83':'#d2a154';
 }
 $('challenge-form').addEventListener('submit',(event)=>{event.preventDefault();renderPractice();});
+for (const input of ['challenge-a','challenge-b']) $(input).addEventListener('input',renderPractice);
 renderPractice();
 
 async function rpc(method,params=[]){
@@ -143,20 +154,40 @@ $('vault-form').addEventListener('submit',async(event)=>{
     const note=document.createElement('p');note.textContent='State was read using the BEFORE vault interface. Contract identity, token decimals and source verification are not established by this read.';target.append(note);
   }catch(error){setResult(target,'Unable to read vault: '+error.message);}
 });
+let receiptLookupSequence=0;
 $('tx-form').addEventListener('submit',async(event)=>{
-  event.preventDefault();const target=$('tx-result'),hash=$('tx-hash').value.trim();
+  event.preventDefault();
+  const lookupId=++receiptLookupSequence;
+  const target=$('tx-result'),hash=$('tx-hash').value.trim();
   if(!isTxHash(hash)){setResult(target,'Enter a valid 0x-prefixed 32-byte transaction hash.');return;}
   setResult(target,'Fetching transaction receipt…');
   try{
     await assertNetwork();
+    if (lookupId!==receiptLookupSequence) return;
     const receipt=await rpc('eth_getTransactionReceipt',[hash]);
+    if (lookupId!==receiptLookupSequence) return;
     if(!receipt){setResult(target,'No mined receipt was found on Robinhood Chain testnet. The transaction may be pending or unknown.');return;}
     const success=receipt.status==='0x1';
     const status=success?'Confirmed success':receipt.status==='0x0'?'Execution reverted':'Unknown';
     const block=parseHexUint(receipt.blockNumber).toLocaleString('en-US');
     addLookupRows(target,[['Execution',status],['Block',block],['Sender',receipt.from??'—'],['Recipient',receipt.to??'Contract creation'],['Created contract',receipt.contractAddress??'—']],EXPLORER+'/tx/'+hash);
     const note=document.createElement('p');note.textContent='This receipt proves chain inclusion and reported execution status, not that a contract is secure.';target.append(note);
-  }catch(error){setResult(target,'Unable to inspect transaction: '+error.message);}
+  }catch(error){if (lookupId===receiptLookupSequence) setResult(target,'Unable to inspect transaction: '+error.message);}
+});
+const receiptShortcuts=$('receipt-shortcuts');
+receiptShortcuts.addEventListener('click',(event)=>{
+  const button=event.target.closest('button[data-receipt]');
+  if (!button || !receiptShortcuts.contains(button) || !verifiedDemo) return;
+  const hash=verifiedDemo[button.dataset.receipt];
+  if (!isTxHash(hash)) return;
+  $('tx-hash').value=hash;
+  for (const choice of receiptShortcuts.querySelectorAll('button[data-receipt]')) {
+    choice.setAttribute('aria-pressed',String(choice===button));
+  }
+  $('tx-form').requestSubmit();
+});
+$('tx-hash').addEventListener('input',()=>{
+  for (const choice of receiptShortcuts.querySelectorAll('button[data-receipt]')) choice.setAttribute('aria-pressed','false');
 });
 refreshNetwork();
 initializeOnchain();
@@ -221,6 +252,7 @@ async function initializeOnchain() {
     if (config.allowedTx && config.deniedTx && config.practiceProofTx) {
       $('proof-flow-meta').hidden = false;
       $('proof-flow').textContent='3 receipts verified';
+      receiptShortcuts.hidden=false;
     }
     $('onchain-escrow').hidden = false;
     $('onchain-escrow-status').textContent = nextChallengeId === 1n
