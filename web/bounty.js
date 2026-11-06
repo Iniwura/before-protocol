@@ -133,7 +133,7 @@ const roleNames={sponsor:'Create a bounty',solver:'Submit a finding',reviewer:'R
 function showRole(which){
  if(!roleNames[which])return;
  $('entry-choice').hidden=true;
- document.querySelector('.intro').hidden=false;
+ document.querySelector('.intro').hidden=true;
  document.querySelector('.workbench').hidden=false;
  document.querySelector('.challenge-inspector').hidden=which==='sponsor'&&!state.id;
  setText('current-step-label',roleNames[which]);
@@ -248,6 +248,7 @@ $('load-form').addEventListener('submit',async e=>{
 });
 $('share-bounty').addEventListener('click',()=>copyBountyLink());
 $('copy-published-link').addEventListener('click',()=>copyBountyLink());
+$('copy-reviewer-link').addEventListener('click',()=>copyBountyLink('reviewer'));
 $('wallet-connect').addEventListener('click',async()=>{
  try{await getWallet();activity('Wallet connected to Robinhood Chain Testnet.')}
  catch(e){activity(errorText(e))}
