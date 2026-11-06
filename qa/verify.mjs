@@ -30,6 +30,7 @@ const transactionRecord=(hash,to,input)=>({hash,from:fixture.owner,to,input,valu
 const walletTransactions={
   [fixture.demoTx.toLowerCase()]:transactionRecord(fixture.demoTx,fixture.factory,encodeDemoCreate(fixture.mockToken)),
   [fixture.allowedTx.toLowerCase()]:transactionRecord(fixture.allowedTx,fixture.vault,encodeDemoWithdraw(fixture.owner)),
+  [fixture.deniedTx.toLowerCase()]:transactionRecord(fixture.deniedTx,fixture.vault,encodeDemoWithdraw(fixture.owner)),
   [fixture.practiceTx.toLowerCase()]:transactionRecord(fixture.practiceTx,fixture.factory,encodePracticeCreate(fixture.mockToken)),
   [fixture.practiceProofTx.toLowerCase()]:transactionRecord(fixture.practiceProofTx,fixture.arena,encodePracticeProof())
 };
@@ -44,7 +45,7 @@ function routeRPC(page,{code='0x60016000',codeByAddress={},receiptStatus='0x1',n
       case 'eth_getTransactionReceipt':{
         const hash=request.params?.[0]?.toLowerCase();
         const transaction=transactions[hash];
-        result=transaction?{status:receiptStatus,blockNumber:'0x10',transactionHash:transaction.hash,from:transaction.from,to:transaction.to}:null;
+        result=transaction?{status:hash===fixture.deniedTx.toLowerCase()?'0x0':receiptStatus,blockNumber:'0x10',transactionHash:transaction.hash,from:transaction.from,to:transaction.to}:null;
         break;
       }
       case 'eth_getTransactionByHash':result=transactions[request.params?.[0]?.toLowerCase()]??null;break;
@@ -83,11 +84,13 @@ try {
       if(result.length) problems.push(JSON.stringify({width,tab,result}));
       audited++;
     }
+    assert.equal(await page.locator('.app-tabs').evaluate(el=>getComputedStyle(el).position),'sticky','Navigation should stay accessible while scrolling');
     const sizes=await page.evaluate(()=>({scroll:document.documentElement.scrollWidth,client:document.documentElement.clientWidth}));
     if(sizes.scroll>sizes.client+1) problems.push(width+' horizontal overflow: '+JSON.stringify(sizes));
     assert.equal(await page.locator('#onchain-protect').isHidden(),true,'Unverified deployment must not unlock transactions');
     assert.equal(await page.locator('#onchain-challenge').isHidden(),true,'Unverified deployment must not unlock challenges');
     assert.equal(await page.locator('#onchain-escrow').isHidden(),true,'Unverified deployment must not expose escrow state');
+    assert.equal(await page.locator('#receipt-shortcuts').isHidden(),true,'Unverified deployment must not expose receipt shortcuts');
     if (width===1280) {
       await page.locator('#tab-protect').focus();
       await page.keyboard.press('ArrowRight');
@@ -99,6 +102,7 @@ try {
       await page.locator('#tab-protect').click();
       await page.locator('#protect-amount').fill('20');
       await page.locator('#protect-spent').fill('40');
+      assert.equal(await page.locator('#protect-result-title').innerText(),'Within policy.','Policy preview should respond immediately to input');
       await page.locator('#protect-form button').click();
       assert.equal(await page.locator('#protect-result-title').innerText(),'Within policy.');
       await page.locator('input[name="destination"][value="other"]').check();
@@ -154,6 +158,19 @@ try {
   assert.equal(await fullManifestPage.locator('#proof-practice').innerText(),fixture.arena.slice(0,6)+'…'+fixture.arena.slice(-4));
   assert.equal(await fullManifestPage.locator('#proof-flow').innerText(),'3 receipts verified');
   assert.equal(await fullManifestPage.locator('#vault-address').inputValue(),fixture.vault,'Verified demo vault should seed the inspector');
+  assert.equal(await fullManifestPage.locator('#receipt-shortcuts').isHidden(),false,'Verified manifest should unlock one-click receipt inspection');
+  await fullManifestPage.locator('button[data-receipt="allowedTx"]').click();
+  assert.equal(await fullManifestPage.locator('#tx-hash').inputValue(),fixture.allowedTx,'Allowed shortcut must use the verified manifest hash');
+  await fullManifestPage.waitForFunction(()=>document.querySelector('#tx-result').textContent.includes('Confirmed success'));
+  await fullManifestPage.locator('button[data-receipt="deniedTx"]').click();
+  assert.equal(await fullManifestPage.locator('#tx-hash').inputValue(),fixture.deniedTx,'Denied shortcut must use the verified manifest hash');
+  await fullManifestPage.waitForFunction(()=>document.querySelector('#tx-result').textContent.includes('Execution reverted'));
+  assert.equal(await fullManifestPage.locator('button[data-receipt="deniedTx"]').getAttribute('aria-pressed'),'true');
+  await fullManifestPage.locator('button[data-receipt="practiceProofTx"]').click();
+  assert.equal(await fullManifestPage.locator('#tx-hash').inputValue(),fixture.practiceProofTx,'Practice shortcut must use the verified manifest hash');
+  await fullManifestPage.waitForFunction(()=>document.querySelector('#tx-result').textContent.includes('Confirmed success'));
+  await fullManifestPage.locator('#tx-hash').fill(fixture.tx);
+  assert.equal(await fullManifestPage.locator('button[data-receipt="practiceProofTx"]').getAttribute('aria-pressed'),'false','Manual hash edits reset shortcut selection');
   assert.deepEqual(await axeViolations(fullManifestPage),[],'Complete-manifest Proof must remain accessible');
   await fullManifestPage.locator('#tab-protect').click();
   assert.deepEqual(await axeViolations(fullManifestPage),[],'Complete-manifest Protect must remain accessible');
