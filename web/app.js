@@ -213,7 +213,7 @@ function showOnchainStatus(id, message, txHash = null) {
 
 async function initializeOnchain() {
   try {
-    const response = await fetch('./deployment.json', {cache:'no-store'});
+    const response = await fetch('/deployment.json', {cache:'no-store'});
     if (!response.ok) return;
     const config = await response.json();
     if (!deploymentReady(config)) return;
