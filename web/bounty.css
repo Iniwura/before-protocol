@@ -261,3 +261,6 @@ button:disabled{opacity:.48;cursor:not-allowed}
  .activity a{grid-column:1;grid-row:3;margin-top:2px}
  .activity button{grid-column:2;grid-row:1}
 }
+
+.entry-wif{margin:15px 0 0;font-size:12px;line-height:1.5;color:#55554d}
+.entry-wif a{color:#171717;font-weight:760;text-decoration:underline;text-underline-offset:4px}
