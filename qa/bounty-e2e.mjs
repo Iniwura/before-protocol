@@ -146,7 +146,7 @@ try {
  id=await page.locator('#challenge-id').inputValue();
  await page.locator('#tab-recover').click();
  await page.locator('#cancel-bounty').click();
- await page.waitForFunction(()=>document.querySelector('#activity-text').textContent.includes('confirmed onchain'),{timeout:30000});
+ await page.waitForFunction(()=>document.querySelector('#activity-text').textContent.includes('Cancel unused bounty confirmed onchain'),{timeout:30000});
  assert.equal(await page.locator('#summary-state').innerText(),'Canceled');
  result.transactions.push({stage:'cancel',id});
  // Expiry and both refunds on a third challenge.
@@ -163,10 +163,10 @@ try {
  await page.evaluate(()=>window.__switchTestAccount(0));
  await page.locator('#tab-recover').click();
  await page.locator('#refund-reward').click();
- await page.waitForFunction(()=>document.querySelector('#activity-text').textContent.includes('confirmed onchain'),{timeout:30000});
+ await page.waitForFunction(()=>document.querySelector('#activity-text').textContent.includes('Refund expired reward confirmed onchain'),{timeout:30000});
  await page.evaluate(()=>window.__switchTestAccount(2));
  await page.locator('#refund-bond').click();
- await page.waitForFunction(()=>document.querySelector('#activity-text').textContent.includes('confirmed onchain'),{timeout:30000});
+ await page.waitForFunction(()=>document.querySelector('#activity-text').textContent.includes('Refund unanswered bond confirmed onchain'),{timeout:30000});
  result.transactions.push({stage:'refund',id});
  const escrowBTEST=BigInt(await rpc('eth_call',[{to:mock,data:'0x70a08231'+escrow.slice(2).toLowerCase().padStart(64,'0')},'latest']));
  assert.equal(escrowBTEST,0n,'No synthetic BTEST remains in escrow after settlement, cancellation and expiry');
