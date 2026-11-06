@@ -129,8 +129,43 @@ async function runAction(label,fn){
  catch(e){activity(label+' · '+errorText(e))}
  finally{state.busy=false;for(const b of all('.role-form button,.recovery-actions button'))b.disabled=false}
 }
+const roleNames={sponsor:'Create a bounty',solver:'Submit a finding',reviewer:'Review a finding',recover:'Recover funds'};
 function showRole(which){
- for(const button of all('[role="tab"]')){
+ if(!roleNames[which])return;
+ $('entry-choice').hidden=true;
+ $('intro').hidden=false;
+ document.querySelector('.workbench').hidden=false;
+ document.querySelector('.challenge-inspector').hidden=which==='sponsor'&&!state.id;
+ setText('current-step-label',roleNames[which]);
+ for(const button of all('[data-start]')){
+ button.addEventListener('click',()=>{
+  showRole(button.dataset.start);
+  const choice=button.dataset.start;
+  const first=choice==='sponsor'?'reviewers':'challenge-id';
+  $(first).focus({preventScroll:true});
+  document.querySelector('.workbench').scrollIntoView({behavior:'instant',block:'start'});
+ });
+}
+$('change-goal').addEventListener('click',()=>{
+ $('entry-choice').hidden=false;
+ $('intro').hidden=true;
+ document.querySelector('.workbench').hidden=true;
+ const url=new URL(location.href);url.hash='';history.replaceState(null,'',url.toString());
+ $('entry-title').focus({preventScroll:true});
+ document.querySelector('.entry-choice').scrollIntoView({behavior:'instant',block:'start'});
+});
+function bountyLink(role){
+ if(!state.id)throw Error('Load a bounty before sharing its link.');
+ const url=new URL('/app/bounty/',location.origin);
+ url.searchParams.set('id',state.id);
+ if(role==='reviewer')url.hash='reviewer';
+ return url.toString();
+}
+async function copyBountyLink(role){
+ try{await navigator.clipboard.writeText(bountyLink(role));activity(role==='reviewer'?'Reviewer invitation copied.':'Researcher invitation copied.')}
+ catch{activity('Copy this link: '+bountyLink(role))}
+}
+for(const button of all('[role="tab"]')){
   const active=button.dataset.role===which;
   button.classList.toggle('active',active);
   button.setAttribute('aria-selected',String(active));
@@ -148,8 +183,9 @@ for(const button of all('[role="tab"]')){
   showRole(tabs[n].dataset.role);tabs[n].focus();
  });
 }
-if(['sponsor','solver','reviewer','recover'].includes(location.hash.slice(1)))showRole(location.hash.slice(1));
-window.addEventListener('hashchange',()=>{const h=location.hash.slice(1);if(['sponsor','solver','reviewer','recover'].includes(h))showRole(h)});
+const initialRole=location.hash.slice(1);
+if(roleNames[initialRole])showRole(initialRole);
+window.addEventListener('hashchange',()=>{const h=location.hash.slice(1);if(roleNames[h])showRole(h)});
 
 async function loadChallenge(id){
  if(!state.config)throw Error('The verified testnet deployment is not available.');
@@ -192,16 +228,25 @@ async function loadChallenge(id){
  activity('Challenge #'+id+' loaded from Robinhood testnet.');
  return challenge;
 }
+function normalizeBountyId(input){
+ const value=String(input).trim();
+ if(isValidChallengeId(value))return value;
+ if(/^#\d{1,15}$/.test(value)&&isValidChallengeId(value.slice(1)))return value.slice(1);
+ try{
+  const url=new URL(value);
+  if(!/^https?:$/.test(url.protocol)||url.pathname.replace(/\/$/,'')!=='/app/bounty')throw Error('Not a BEFORE bounty link.');
+  const id=url.searchParams.get('id');
+  if(isValidChallengeId(id))return id;
+ }catch{}
+ throw Error('Paste the bounty link someone shared, or enter a number such as 5.');
+}
 $('load-form').addEventListener('submit',async e=>{
  e.preventDefault();
- try{await loadChallenge($('challenge-id').value.trim())}
+ try{await loadChallenge(normalizeBountyId($('challenge-id').value))}
  catch(err){state.challenge=null;state.id=null;$('challenge-summary').hidden=true;$('inspector-footer').hidden=true;activity(errorText(err))}
 });
-$('share-bounty').addEventListener('click',async()=>{
- if(!state.id)return;
- try{await navigator.clipboard.writeText(new URL(location.href).toString());activity('Bounty link copied to clipboard.')}
- catch{activity('Copy this address from your browser: '+location.href)}
-});
+$('share-bounty').addEventListener('click',()=>copyBountyLink());
+$('copy-published-link').addEventListener('click',()=>copyBountyLink());
 $('wallet-connect').addEventListener('click',async()=>{
  try{await getWallet();activity('Wallet connected to Robinhood Chain Testnet.')}
  catch(e){activity(errorText(e))}
@@ -284,8 +329,12 @@ $('create-form').addEventListener('submit',async event=>{
   const receipt=await sendTransaction({from:wallet,to:state.config.challengeEscrow,data,description:'Publish BTEST challenge'});
   const id=eventChallengeId(receipt.receipt,state.config.challengeEscrow);
   await loadChallenge(id);
-  showRole('solver');
-  activity('BTEST bounty #'+id+' is live. Share its URL with a solver and your chosen reviewer.',receipt.hash);
+  showRole('sponsor');
+  document.querySelector('.challenge-inspector').hidden=false;
+  $('publish-success').hidden=false;
+  setText('published-bounty-id','Bounty #'+id+' is live.');
+  $('publish-success').scrollIntoView({behavior:'instant',block:'center'});
+  activity('Bounty #'+id+' is live. Copy the invitation link and share it with a researcher and appointed reviewer.',receipt.hash);
  });
 });
 const saltKey=(id,wallet)=>'before-btest-salt-'+CHAIN_ID+'-'+id+'-'+wallet.toLowerCase();
@@ -433,7 +482,10 @@ async function initialize(){
    }
   }
   const id=new URLSearchParams(location.search).get('id');
-  if(id&&isValidChallengeId(id))await loadChallenge(id);
+  if(id&&isValidChallengeId(id)){
+   showRole(roleNames[location.hash.slice(1)]?location.hash.slice(1):'solver');
+   await loadChallenge(id);
+  }
  }catch(err){
   setText('chain-status','TESTNET · UNAVAILABLE');
   activity(errorText(err));
