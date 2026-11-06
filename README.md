@@ -14,6 +14,16 @@ BEFORE is a prototype for the [World Is Flat](https://worldisflat.fun/build) hac
 - Legacy `/#protect`, `/#challenge`, `/#proof` deep links redirect into the app.
 - The app uses the **single, existing, verified** `web/deployment.json`; contract addresses and protocol logic do not change.
 
+## Guided application and Bounty Studio
+
+The approved editorial interface now offers a clear sequence in `/app/`: **Protect → Challenge → Proof**, with actual next-step navigation. The separate **Bounty Studio** at `/app/bounty/` adds self-service BTEST-only sponsor, solver, reviewer and recovery workflows. The landing page links directly to both.
+
+Bounty Studio uses the existing testnet escrow, freely mintable BTEST and the fixed training-vault target. A sponsor can deploy a per-bounty, immutable `ReviewedFindingVerifier` with chosen reviewer wallets and a quorum, mint and approve the exact mock reward, and open a timed challenge. A different solver wallet can commit a private evidence hash and BTEST bond. Appointed reviewers can record their approval of the exact context and evidence; the solver can reveal and settle only during the reveal window with the required approvals. Sponsors/solvers can cancel or recover expired funds when onchain conditions allow.
+
+The **full wallet workflow** passed real local Anvil transactions in Playwright across sponsor, solver and reviewer wallets, including reviewed payout, unappointed-reviewer rejection, premature and unapproved reveal protection, cancellation and expiry refunds, with no remaining test escrow BTEST. This is distinct from the already-verified **public synthetic-reviewer** testnet lifecycle. We have not claimed that the newly added self-service UI has broadcast its own public wallet transactions.
+
+See [how to use Bounty Studio](docs/BOUNTY_STUDIO.md) and [public BTEST testnet evidence](docs/BOUNTY_TESTNET_EVIDENCE.md). **No WIF token can be selected in the studio; no real WIF bounty, independent audit or mainnet custody is claimed.**
+
 ## Complete BTEST bounty lifecycle
 
 The [BTEST-only end-to-end demo](docs/BOUNTY_TESTNET_DEMO.md) now exercises the real `WifSecurityChallenge` settlement code end to end: sponsor deposits, solver commits, two explicit reviewer approvals, payout, invalid-evidence slashing, cancellation, expiry and bond refunds. Synthetic demo actors have separate onchain addresses, but **all are controlled by one operator**. This is not independent security review.
