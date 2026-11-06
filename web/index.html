@@ -31,7 +31,7 @@
       <div class="hero-bottom">
         <div class="hero-issue">01 — 03<br>PROTECT. CHALLENGE. PROOF.</div>
         <p class="hero-statement">Security isn't a promise.<br><span>It's something you can verify.</span></p>
-        <div class="hero-direction"><span>EXPLORE THE PROTOCOL</span><span class="direction-arrow" aria-hidden="true">↘</span></div>
+        <a class="hero-direction" href="#tab-protect" id="explore-experiences"><span>EXPLORE THE PROTOCOL</span><span class="direction-arrow" aria-hidden="true">↘</span></a>
       </div>
     </section>
 
@@ -136,7 +136,16 @@
       <div class="panel transaction-panel">
         <div class="panel-overline"><span>03C / TRANSACTION INSPECTOR</span><span>PUBLIC RECEIPT</span></div>
         <div class="transaction-layout"><h3>Every claim.<br><span>A transaction.</span></h3>
-          <div class="transaction-body"><form id="tx-form" class="tx-form"><label class="input-label" for="tx-hash">Transaction hash</label><div class="tx-row"><input class="wide-input" id="tx-hash" type="text" spellcheck="false" placeholder="0x…" autocomplete="off" required><button class="secondary-button" type="submit">Inspect receipt <span aria-hidden="true">↗</span></button></div></form><div class="lookup-result" id="tx-result" aria-live="polite">No transaction has been inspected.</div></div>
+          <div class="transaction-body"><form id="tx-form" class="tx-form"><label class="input-label" for="tx-hash">Transaction hash</label><div class="tx-row"><input class="wide-input" id="tx-hash" type="text" spellcheck="false" placeholder="0x…" autocomplete="off" required><button class="secondary-button" type="submit">Inspect receipt <span aria-hidden="true">↗</span></button></div></form>
+          <div class="receipt-shortcuts" id="receipt-shortcuts" hidden>
+            <span class="shortcuts-label">EXPLORE REAL TESTNET RECEIPTS</span>
+            <div class="receipt-actions" role="group" aria-label="Public testnet transaction examples">
+              <button class="receipt-shortcut" type="button" data-receipt="allowedTx" aria-pressed="false">Allowed transfer <span aria-hidden="true">↗</span></button>
+              <button class="receipt-shortcut" type="button" data-receipt="deniedTx" aria-pressed="false">Blocked transfer <span aria-hidden="true">↗</span></button>
+              <button class="receipt-shortcut" type="button" data-receipt="practiceProofTx" aria-pressed="false">Practice proof <span aria-hidden="true">↗</span></button>
+            </div>
+          </div>
+          <div class="lookup-result" id="tx-result" aria-live="polite">No transaction has been inspected.</div></div>
         </div>
       </div>
       <div class="disclosure"><span class="disclosure-mark">i</span> Receipts and contract state are live when RPC is available. Neither is a security audit.</div>
