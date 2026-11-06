@@ -172,6 +172,7 @@ try {
  id=await page.locator('#challenge-id').inputValue();
  await page.evaluate(()=>window.__switchTestAccount(2));
  await page.locator('#tab-solver').click();
+ await page.locator('#evidence').fill('BTEST training vault checks individual transfers but misses the daily aggregate limit.');
  await page.locator('#generate-salt').click();
  await page.locator('#commit-finding').click();
  await page.waitForFunction(()=>document.querySelector('#activity-text').textContent.includes('Finding committed'),{timeout:45000});
