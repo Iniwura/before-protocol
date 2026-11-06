@@ -84,6 +84,14 @@ try {
     await page.locator('[data-start="'+role+'"]').click();
    }
    assert.ok(await page.locator('#role-'+role).isVisible(),'Role unavailable '+role);
+   if(role==='solver'){
+    await page.locator('#challenge-id').fill('not-a-bounty');
+    await page.locator('#load-form button').click();
+    assert.equal(await page.locator('#action-status').isVisible(),true,'Invalid bounty link must produce an on-screen error');
+    assert.equal(await page.locator('#action-status').getAttribute('data-tone'),'error','Invalid link must be marked as an error');
+    await page.locator('#activity-dismiss').click();
+    assert.equal(await page.locator('#action-status').isHidden(),true,'Feedback must be dismissible');
+   }
    const violations=await page.evaluate(async()=>{
     const x=await window.axe.run(document,{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21a','wcag21aa']}});
     return x.violations.map(v=>({id:v.id,impact:v.impact,targets:v.nodes.map(n=>n.target)}));
@@ -132,12 +140,17 @@ async function chooseTask(role){
  await page.locator('[data-start="sponsor"]').click();
  await page.locator('#wallet-connect').click();
  await page.waitForFunction(()=>document.querySelector('#wallet-label').textContent.includes('…'));
+ assert.equal(await page.locator('#action-status').isVisible(),true,'Wallet state must be visible where the user works');
+ await page.locator('#activity-dismiss').click();
+ assert.equal(await page.locator('#action-status').isHidden(),true,'User can dismiss wallet status');
  await page.locator('#reviewers').fill(reviewer);
  await page.locator('details.advanced-settings summary').click();
  await page.locator('#commit-minutes').fill('2');
  await page.locator('#reveal-minutes').fill('5');
  await page.locator('#publish-bounty').click();
  await page.waitForFunction(()=>document.querySelector('#activity-text').textContent.includes('is live'),{timeout:55000});
+ assert.equal(await page.locator('#action-status').isVisible(),true,'Bounty publishing must announce its confirmation');
+ assert.equal(await page.locator('#activity-link').isVisible(),true,'Confirmed action must expose a verified receipt link');
  assert.equal(await page.locator('#publish-success').isVisible(),true,'Sponsor should see a shareable success state, not solver form');
  assert.equal(await page.locator('#copy-published-link').count(),1);
  assert.equal(await page.locator('#copy-reviewer-link').count(),1);
