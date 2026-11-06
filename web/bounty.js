@@ -137,6 +137,15 @@ function showRole(which){
  document.querySelector('.workbench').hidden=false;
  document.querySelector('.challenge-inspector').hidden=which==='sponsor'&&!state.id;
  setText('current-step-label',roleNames[which]);
+for(const button of all('[role="tab"]')){
+  const active=button.dataset.role===which;
+  button.classList.toggle('active',active);
+  button.setAttribute('aria-selected',String(active));
+  button.tabIndex=active?0:-1;
+ }
+ for(const section of all('[role="tabpanel"]'))section.hidden=section.id!=='role-'+which;
+ const url=new URL(location.href);url.hash=which;history.replaceState(null,'',url.toString());
+}
  for(const button of all('[data-start]')){
  button.addEventListener('click',()=>{
   showRole(button.dataset.start);
@@ -165,15 +174,7 @@ async function copyBountyLink(role){
  try{await navigator.clipboard.writeText(bountyLink(role));activity(role==='reviewer'?'Reviewer invitation copied.':'Researcher invitation copied.')}
  catch{activity('Copy this link: '+bountyLink(role))}
 }
-for(const button of all('[role="tab"]')){
-  const active=button.dataset.role===which;
-  button.classList.toggle('active',active);
-  button.setAttribute('aria-selected',String(active));
-  button.tabIndex=active?0:-1;
- }
- for(const section of all('[role="tabpanel"]'))section.hidden=section.id!=='role-'+which;
- const url=new URL(location.href);url.hash=which;history.replaceState(null,'',url.toString());
-}
+
 for(const button of all('[role="tab"]')){
  button.addEventListener('click',()=>showRole(button.dataset.role));
  button.addEventListener('keydown',e=>{
