@@ -24,7 +24,7 @@ button:disabled{opacity:.48;cursor:not-allowed}
 .eyebrow{display:flex;align-items:center;justify-content:space-between;gap:15px;border-bottom:1px solid var(--line);padding-bottom:17px;color:#5f5f58}
 .eyebrow>span:last-child{text-align:right}
 .intro h1{font-weight:790;letter-spacing:-.096em;line-height:.87;font-size:clamp(85px,11.3vw,188px);margin:52px 0 46px -.05em}
-.intro h1 span{color:#96968e}
+.intro h1 span{color:#74746d}
 .intro-foot{border-top:1px solid var(--ink);padding-top:25px;display:flex;justify-content:space-between;align-items:start;gap:35px}
 .intro-foot span{min-width:190px}
 .intro-foot p{font-size:clamp(23px,2.6vw,39px);font-weight:630;letter-spacing:-.06em;line-height:1.13;max-width:730px;margin:0}
