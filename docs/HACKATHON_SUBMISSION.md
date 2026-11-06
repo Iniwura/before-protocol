@@ -14,7 +14,7 @@ Copy-ready material for the [World Is Flat hackathon](https://worldisflat.fun/bu
 
 The production mechanism is a separate ERC-20 escrow for meaningful security findings. A sponsor pins the target contract, runtime code, written scope, verifier and reward token. Solvers use a wallet-bound commit/reveal and bond; a fixed reviewer quorum approves the exact evidence before settlement. Invalid evidence loses only the bond, expiry returns funds, and code changes fail closed.
 
-**Product:** https://before-ms9o5xmtp-iniwura-akurus-projects.vercel.app
+**Product preview:** https://before-1xhzzheka-iniwura-akurus-projects.vercel.app/
 
 **Source:** https://github.com/Iniwura/before-protocol
 

@@ -49,7 +49,7 @@ The authorized disposable signer was the newly generated `before-testnet` encryp
 
 ## Safe judge demo
 
-1. Open the deployed static site and start on **Protect**. Use the local policy preview to show a 75-token request being blocked, then show an approved 20-token request within the 60/100 policy.
+1. Open the [verified preview](https://before-1xhzzheka-iniwura-akurus-projects.vercel.app/) and start on **Protect**. Use the local policy preview to show a 75-token request being blocked, then show an approved 20-token request within the 60/100 policy.
 2. Open **Challenge** and submit 60 + 50. The browser explains that both individual transfers pass while the combined amount exceeds the intended daily cap.
 3. If the deployment manifest is verified, **Challenge** also shows the actual security escrow's read-only record count. It does not create a challenge, fund WIF or imply a payout.
 4. Open **Proof** and refresh the network. The verified manifest now points to the public demo vault, practice arena and receipts; the chain inspection remains read-only.

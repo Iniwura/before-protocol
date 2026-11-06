@@ -47,7 +47,7 @@ GitHub Actions [run 123](https://github.com/Iniwura/before-protocol/actions/runs
 
 ## Live research prototype
 
-**Website:** Preview URL is recorded in the release handoff after the verified-manifest deployment.
+**Verified preview:** https://before-1xhzzheka-iniwura-akurus-projects.vercel.app/
 
 The responsive, dependency-free frontend has three experiences:
 
