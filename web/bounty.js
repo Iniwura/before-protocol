@@ -179,6 +179,7 @@ $('change-goal').addEventListener('click',()=>{
  document.querySelector('.intro').hidden=true;
  document.querySelector('.workbench').hidden=true;
  $('wallet-connect').hidden=true;
+ $('action-status').hidden=true;
  const url=new URL(location.href);url.hash='';history.replaceState(null,'',url.toString());
  $('entry-title').focus({preventScroll:true});
  document.querySelector('.entry-choice').scrollIntoView({behavior:'instant',block:'start'});
@@ -265,14 +266,14 @@ function normalizeBountyId(input){
 $('load-form').addEventListener('submit',async e=>{
  e.preventDefault();
  try{await loadChallenge(normalizeBountyId($('challenge-id').value))}
- catch(err){state.challenge=null;state.id=null;$('challenge-summary').hidden=true;$('inspector-footer').hidden=true;activity(errorText(err))}
+ catch(err){state.challenge=null;state.id=null;$('challenge-summary').hidden=true;$('inspector-footer').hidden=true;activity(errorText(err),null,'error')}
 });
 $('share-bounty').addEventListener('click',()=>copyBountyLink());
 $('copy-published-link').addEventListener('click',()=>copyBountyLink());
 $('copy-reviewer-link').addEventListener('click',()=>copyBountyLink('reviewer'));
 $('wallet-connect').addEventListener('click',async()=>{
  try{await getWallet();activity('Wallet connected to Robinhood Chain Testnet.')}
- catch(e){activity(errorText(e))}
+ catch(e){activity(errorText(e),null,'error')}
 });
 
 function matchVerifierRuntime(code,artifact){
@@ -523,7 +524,7 @@ async function initialize(){
   }
  }catch(err){
   setText('chain-status','TESTNET · UNAVAILABLE');
-  activity(errorText(err));
+  activity(errorText(err),null,'error');
  }
 }
 initialize();
