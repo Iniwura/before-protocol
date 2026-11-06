@@ -70,9 +70,15 @@ try {
   await page.waitForTimeout(250);
   const size=await page.evaluate(()=>({scroll:document.documentElement.scrollWidth,client:document.documentElement.clientWidth}));
   assert.ok(size.scroll<=size.client+1,'Bounty layout overflows at '+width);
+  await page.addScriptTag({path:path.join(root,'qa/node_modules/axe-core/axe.min.js')});
   for(const role of ['sponsor','solver','reviewer','recover']){
    await page.locator('#tab-'+role).click();
    assert.ok(await page.locator('#role-'+role).isVisible(),'Role unavailable '+role);
+   const violations=await page.evaluate(async()=>{
+    const x=await window.axe.run(document,{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21a','wcag21aa']}});
+    return x.violations.map(v=>({id:v.id,impact:v.impact,targets:v.nodes.map(n=>n.target)}));
+   });
+   assert.deepEqual(violations,[],'Bounty accessibility violations '+width+' '+role);
   }
   assert.deepEqual(faults,[],'UI JS errors at '+width);
   result.screens.push({width,passed:true});
@@ -124,14 +130,23 @@ try {
  await page.locator('#commit-finding').click();
  await page.waitForFunction(()=>document.querySelector('#activity-text').textContent.includes('Finding committed'),{timeout:45000});
  result.transactions.push({stage:'commit',id});
- await page.evaluate(()=>window.__switchTestAccount(1));
+ await page.locator('#reveal-finding').click();
+ await page.waitForFunction(()=>document.querySelector('#activity-text').textContent.includes('Reveal is allowed only within the active reveal window.'));
+ await rpc('evm_increaseTime',['0x8c']);await rpc('evm_mine',[]);
+ await page.locator('#reveal-finding').click();
+ await page.waitForFunction(()=>document.querySelector('#activity-text').textContent.includes('Reviewer quorum has not approved'));
+ await page.evaluate(()=>window.__switchTestAccount(0));
  await page.locator('#tab-reviewer').click();
+ await page.locator('#solver-address').fill(solver);
+ await page.locator('#review-evidence').fill('BTEST training vault checks individual transfers but misses the daily aggregate limit.');
+ await page.locator('#approve-finding').click();
+ await page.waitForFunction(()=>document.querySelector('#activity-text').textContent.includes('not an appointed reviewer'));
+ await page.evaluate(()=>window.__switchTestAccount(1));
  await page.locator('#solver-address').fill(solver);
  await page.locator('#review-evidence').fill('BTEST training vault checks individual transfers but misses the daily aggregate limit.');
  await page.locator('#approve-finding').click();
  await page.waitForFunction(()=>document.querySelector('#activity-text').textContent.includes('Reviewer approval recorded'),{timeout:30000});
  result.transactions.push({stage:'review',id});
- await rpc('evm_increaseTime',['0x8c']);await rpc('evm_mine',[]);
  await page.evaluate(()=>window.__switchTestAccount(2));
  await page.locator('#tab-solver').click();
  await page.locator('#reveal-finding').click();
