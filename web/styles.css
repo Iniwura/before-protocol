@@ -165,7 +165,7 @@ button:disabled{opacity:.48;cursor:not-allowed}
 .small-disclosure{color:#5c5c56;font-size:11px;line-height:1.5;margin-top:25px}
 .onchain-escrow{margin-top:0;background:#f2f2ee;border-top:0}
 .proof-intro{padding:clamp(24px,3.1vw,52px);min-height:650px;background:#161616;color:#fff;display:flex;flex-direction:column}
-.proof-intro .panel-overline{color:#c4c4bf}
+.proof-intro .panel-overline{color:#c4c4bf}\n.proof-intro .panel-overline>span:last-child{color:#c4c4bf}
 .chain-value{font-size:clamp(55px,6.2vw,94px);font-weight:750;letter-spacing:-.085em;line-height:1;margin:69px 0 10px;overflow-wrap:anywhere}
 .proof-intro .field-label{color:#a6a69f}
 .proof-intro .rule-separator{background:#55554f;margin:40px 0 14px}
