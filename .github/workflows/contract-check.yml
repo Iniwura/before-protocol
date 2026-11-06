@@ -18,12 +18,14 @@ jobs:
         run: forge test --fuzz-runs 1024 -vvv
       - name: Real local Anvil deployment and eleven-argument release gate
         run: node script/anvil-e2e.mjs
+      - name: End-to-end mock bounty on fresh Anvil, with payout, slashing, refunds and exact accounting
+        run: node script/run-bounty-lifecycle.mjs --local
       - name: Independent policy reference tests
         run: node --test checks/reference.test.mjs checks/deployment-proof.test.mjs checks/deployment-cli.test.mjs checks/broadcast-args.test.mjs
       - name: Web policy and validation tests
         run: node --test web/test/core.test.mjs web/test/onchain.test.mjs
       - name: Browser source syntax
-        run: node --check web/app.js && node --check web/onchain.mjs && node --check script/verify-testnet.mjs
+        run: node --check web/app.js && node --check web/onchain.mjs && node --check web/landing.js && node --check script/run-bounty-lifecycle.mjs && node --check script/verify-testnet.mjs
 
   browser-quality:
     runs-on: ubuntu-latest
