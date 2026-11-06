@@ -245,3 +245,19 @@ button:disabled{opacity:.48;cursor:not-allowed}
 .review-handoff p{font-size:12px;line-height:1.5;margin:12px 0 20px;max-width:450px}
 .review-handoff button{font-size:11px;min-height:42px}
 @media(max-width:720px){.journey-strip{flex-direction:column;align-items:flex-start;gap:10px}.journey-strip>div{font-size:11px;gap:7px}.review-handoff{padding:21px}}
+
+/* A concise status surface keeps wallet confirmation/errors visible above long forms. */
+.activity{position:fixed;z-index:110;bottom:18px;left:50%;transform:translateX(-50%);width:min(850px,calc(100% - 32px));min-height:75px;margin:0;padding:16px 19px;display:grid;grid-template-columns:115px minmax(0,1fr) auto 26px;align-items:center;gap:14px;border:1px solid #656560;border-radius:6px;box-shadow:0 11px 40px #0004}
+.activity>span{font-size:9px;color:#d7d7d0;line-height:1.35}
+.activity p{font-size:13px;line-height:1.35}
+.activity a{font-size:11px}
+.activity[data-tone="error"]{border-color:#cda390}
+.activity button{border:0;background:transparent;color:#fff;font-size:26px;font-weight:400;line-height:1;min-height:32px;min-width:26px;padding:0;justify-self:end}
+.activity button:hover{color:#ccc}
+@media(max-width:720px){
+ .activity{grid-template-columns:1fr 30px;gap:8px 12px;padding:15px 18px;bottom:max(12px,env(safe-area-inset-bottom))}
+ .activity>span{grid-column:1;grid-row:1}
+ .activity p{grid-column:1/-1;grid-row:2;font-size:12px}
+ .activity a{grid-column:1;grid-row:3;margin-top:2px}
+ .activity button{grid-column:2;grid-row:1}
+}
