@@ -124,6 +124,9 @@ async function main(){
    const passwordFile=process.env.BEFORE_KEYSTORE_PASSWORD_FILE;
    if(!passwordFile)throw Error('Set BEFORE_KEYSTORE_PASSWORD_FILE to your existing encrypted signer password file. No secrets in arguments or source.');
    flags=['--account',account,'--password-file',passwordFile];
+   const resolved=(await run(cast,['wallet','address',...flags])).stdout.trim();
+   sender=assertAddr(resolved,'public signer');
+   if(sender.toLowerCase()!=='0xd1061825504b30f404c0d94b745205925f251f2c')throw Error('Wrong signer. Expected the previously authorized before-testnet keystore.');
  }
  const chainId=Number(BigInt(await rpc(url,'eth_chainId')));
  if(chainId!==(local?31337:46630))throw Error('Wrong network. Refusing all broadcasts.');
@@ -142,21 +145,62 @@ async function main(){
    if((await rpc(url,'eth_getCode',[token,'latest']))==='0x'||(await rpc(url,'eth_getCode',[escrow,'latest']))==='0x'||(await rpc(url,'eth_getCode',[target,'latest']))==='0x')throw Error('Public proof contract missing.');
  }
  const initial=await readAmount(url,token,escrow);
- const demo=await deploy(url,flags,'src/mocks/BountyLifecycleDemo.sol:BountyLifecycleDemo',[escrow,token,target]);
- await requireStage(url,demo.address,0);
- const started=await send(url,flags,demo.address,['start()']);
- await requireStage(url,demo.address,1);
- if(await readAmount(url,token,escrow)!==initial+330n*10n**18n)throw Error('Start accounting mismatch.');
- const settleAfter=toBigInt(await readValue(url,demo.address,'settleAfter()(uint64)'));
- const cleanupAfter=toBigInt(await readValue(url,demo.address,'cleanupAfter()(uint64)'));
- await waitUntil(url,settleAfter,local);
- const settled=await send(url,flags,demo.address,['settle()']);
- await requireStage(url,demo.address,2);
- if(await readAmount(url,token,escrow)!==initial+100n*10n**18n)throw Error('Settlement accounting mismatch.');
- await waitUntil(url,cleanupAfter,local);
- const completed=await send(url,flags,demo.address,['cleanup()']);
- await requireStage(url,demo.address,3);
- if(await readAmount(url,token,escrow)!==initial)throw Error('Cleanup accounting mismatch.');
+ const outDir=path.join(root,'out');await mkdir(outDir,{recursive:true});
+ const progressFile=path.join(outDir,'bounty-testnet-progress.json');
+ let progress=null;
+ if(!local){try{progress=JSON.parse(await readFile(progressFile,'utf8'))}catch(e){if(e.code!=='ENOENT')throw e}}
+ if(progress){
+   if(progress.chainId!==46630||progress.signer?.toLowerCase()!==sender.toLowerCase()
+      ||progress.escrow?.toLowerCase()!==escrow.toLowerCase()||progress.token?.toLowerCase()!==token.toLowerCase()
+      ||progress.target?.toLowerCase()!==target.toLowerCase())throw Error('Saved resume state does not match signer and verified deployment.');
+ }
+ let demo;
+ const transactions=progress?.transactions||Object.fromEntries(deployments.map((d,i)=>['preparation'+(i+1),d.tx]));
+ const saveProgress=async()=>{if(!local)await writeFile(progressFile,JSON.stringify({chainId,signer:sender,escrow,token,target,address:demo.address,transactions},null,2)+'\\n')};
+ if(progress){
+   demo={address:assertAddr(progress.address,'saved demo'),tx:progress.transactions.deploy};
+   const code=await rpc(url,'eth_getCode',[demo.address,'latest']);
+   if(!code||code==='0x')throw Error('Saved demo contract missing on chain.');
+ }else{
+   demo=await deploy(url,flags,'src/mocks/BountyLifecycleDemo.sol:BountyLifecycleDemo',[escrow,token,target]);
+   transactions.deploy=demo.tx;
+   await saveProgress();
+ }
+ let current=toBigInt(await readValue(url,demo.address,'stage()(uint8)'));
+ if(current===0n){
+   transactions.start=await send(url,flags,demo.address,['start()']);
+   await requireStage(url,demo.address,1);
+   await saveProgress();
+   current=1n;
+ }
+ const initialBaseline=progress?.initialEscrowBalance===undefined
+   ?initial- (current===0n?0n:330n*10n**18n)
+   :BigInt(progress.initialEscrowBalance);
+ // For an existing public run, the escrow baseline is independently recovered
+ // from the coordinator's recorded start-state (not today's changing global balance).
+ const baseline=toBigInt(await readValue(url,demo.address,'initialEscrowBalance()(uint256)'));
+ if(current===1n){
+   if(await readAmount(url,token,escrow)<baseline+330n*10n**18n)throw Error('Start accounting mismatch.');
+   const settleAfter=toBigInt(await readValue(url,demo.address,'settleAfter()(uint64)'));
+   await waitUntil(url,settleAfter,local);
+   transactions.settle=await send(url,flags,demo.address,['settle()']);
+   await requireStage(url,demo.address,2);
+   await saveProgress();
+   current=2n;
+ }
+ if(current===2n){
+   if(await readAmount(url,token,escrow)<baseline+100n*10n**18n)throw Error('Settlement accounting mismatch.');
+   const cleanupAfter=toBigInt(await readValue(url,demo.address,'cleanupAfter()(uint64)'));
+   await waitUntil(url,cleanupAfter,local);
+   transactions.cleanup=await send(url,flags,demo.address,['cleanup()']);
+   await requireStage(url,demo.address,3);
+   await saveProgress();
+   current=3n;
+ }
+ if(current!==3n)throw Error('Unexpected demo stage: '+current);
+ if(await readAmount(url,token,escrow)<baseline)throw Error('Cleanup unexpectedly lost escrow assets.');
+ // The coordinator's own enforced 500/60 synthetic-actor balances guarantee
+ // this specific run returned all of its BTEST. Other public challenges may exist.
  const roles={};
  for(const [key,signature] of Object.entries({sponsor:'sponsor()(address)',solver:'solver()(address)',reviewerOne:'reviewerOne()(address)',reviewerTwo:'reviewerTwo()(address)'})){
    roles[key]=assertAddr(await readValue(url,demo.address,signature),key);
@@ -165,14 +209,14 @@ async function main(){
  for(const [key,signature] of Object.entries({paid:'paidId()(uint256)',invalid:'invalidId()(uint256)',expired:'expiredId()(uint256)',canceled:'canceledId()(uint256)'})){
    ids[key]=String(toBigInt(await readValue(url,demo.address,signature)));
  }
- const transactions={...Object.fromEntries(deployments.map((d,i)=>['preparation'+(i+1),d.tx])),deploy:demo.tx,start:started,settle:settled,cleanup:completed};
+
  const report={
   mode,chainId,verified:true,tokenType:'freely mintable BTEST only',valuableWifFunded:false,
   independentReview:false,roleDisclosure:'Synthetic sponsor/solver/reviewers controlled by one operator, not independent reviewers.',
   address:demo.address,escrow,token,target,roles,challengeIds:ids,
   transactions,
   explorerLinks:local?{}:Object.fromEntries(Object.entries(transactions).map(([k,v])=>[k,explorer+'/tx/'+v])),
-  proof:{stage:3,initialEscrowBalance:initial.toString(),finalEscrowBalance:(await readAmount(url,token,escrow)).toString(),paid:100,invalidBondSlashed:10,expiredRewardRefunded:100,expiredBondRefunded:10,canceledRewardRefunded:100,invalidRewardRefunded:100}
+  proof:{stage:3,initialEscrowBalance:baseline.toString(),finalEscrowBalance:(await readAmount(url,token,escrow)).toString(),paid:100,invalidBondSlashed:10,expiredRewardRefunded:100,expiredBondRefunded:10,canceledRewardRefunded:100,invalidRewardRefunded:100}
  };
  const dir=path.join(root,'out');await mkdir(dir,{recursive:true});
  const reportFile=path.join(dir,local?'bounty-local-report.json':'bounty-testnet-report.json');
