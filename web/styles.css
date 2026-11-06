@@ -397,3 +397,7 @@ button:disabled{opacity:.48;cursor:not-allowed}
 .top-actions{gap:9px}
 @media(max-width:920px){.source-home{display:none}.studio-entry{grid-template-columns:1fr auto}.studio-entry>span:first-child{grid-column:1/-1}}
 @media(max-width:680px){.journey-next{flex-direction:column;align-items:flex-start;gap:10px}.studio-entry{padding:22px 20px}.journey-next strong{font-size:29px}.studio-entry strong{font-size:23px}}
+
+/* Additional WIF shortcut appears only when the approved application header has room. */
+.source-wif{display:none}
+@media(min-width:980px){.source-wif{display:inline-flex}}
