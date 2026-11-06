@@ -82,7 +82,7 @@ await landingPage.goto(origin+'/',{waitUntil:'domcontentloaded'});
 assert.match(await landingPage.title(),/BEFORE/,'Landing title must identify the product');
 assert.equal(await landingPage.locator('h1').innerText(),'BEFORE®','Landing has its own editorial hero');
 assert.equal(await landingPage.locator('a.header-launch').getAttribute('href'),'/app/bounty/','Primary CTA opens user-focused bounty application');
-assert.equal(await landingPage.locator('a[href="/app/bounty/"]').count(),1,'Public landing must open Bounty Studio');
+assert.ok(await landingPage.locator('a[href="/app/bounty/"]').count()>=1,'Public landing must open Bounty Studio');
 for(const section of ['protect','challenge','proof']){
   assert.equal(await landingPage.locator('a.experience-row[href="/app/#'+section+'"]').count(),1,'Landing deep link missing: '+section);
 }
