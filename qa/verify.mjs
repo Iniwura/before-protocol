@@ -76,6 +76,10 @@ for(const section of ['protect','challenge','proof']){
   assert.equal(await landingPage.locator('a.experience-row[href="/app/#'+section+'"]').count(),1,'Landing deep link missing: '+section);
 }
 assert.match(await landingPage.locator('.bounty-caveat').innerText(),/No real WIF is deposited/i,'Landing must clearly exclude real WIF deposits');
+await landingPage.addScriptTag({path:path.join(here,'node_modules/axe-core/axe.min.js')});
+assert.deepEqual(await axeViolations(landingPage),[],'Public landing page must meet WCAG');
+const landingSize=await landingPage.evaluate(()=>({scroll:document.documentElement.scrollWidth,client:document.documentElement.clientWidth}));
+assert.ok(landingSize.scroll<=landingSize.client+1,'Landing must not overflow on mobile');
 await landingPage.goto(origin+'/#proof');
 await landingPage.waitForURL(origin+'/app/#proof');
 assert.equal(await landingPage.locator('#tab-proof').getAttribute('aria-selected'),'true','Legacy Proof link must still open Proof');
@@ -195,7 +199,7 @@ try {
   await fullManifestPage.locator('#tab-challenge').click();
   assert.deepEqual(await axeViolations(fullManifestPage),[],'Complete-manifest Challenge must remain accessible');
   assert.equal(await fullManifestPage.locator('#onchain-escrow').isHidden(),false,'Verified escrow should be connected read-only');
-  assert.equal(await fullManifestPage.locator('#onchain-escrow-status').innerText(),'2 challenge record(s) exist. No demo reward is funded.');
+  assert.equal(await fullManifestPage.locator('#onchain-escrow-status').innerText(),'2 testnet challenge record(s) exist. No WIF reward is funded.');
   assert.equal(await fullManifestPage.locator('#onchain-challenge').isHidden(),false,'Complete manifest should unlock testnet Challenge actions');
   await fullManifestContext.close();
 
