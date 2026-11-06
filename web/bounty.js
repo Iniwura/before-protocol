@@ -455,7 +455,7 @@ $('review-form').addEventListener('submit',e=>{
   const key=await read(c.verifier,encodeReviewKey(state.config.challengeEscrow,state.id,solver,c.target,state.scope,evidence));
   const count=decodeNumber(await read(c.verifier,encodeCall('approvalCount(bytes32)',[bytes32(key)])));
   const quorum=decodeNumber(await read(c.verifier,encodeCall('threshold()')));
-  setText('review-status',count+' of '+quorum+' approvals recorded for the exact evidence hash.');
+  setText('review-status',count+' of '+quorum+' approvals recorded for this exact report. '+(count>=quorum?'Reviewer approval is complete. Tell the researcher to reopen the bounty after the submission deadline and claim the BTEST reward.':'The researcher still needs approval from '+(quorum-count)+' appointed reviewer(s).'));
   activity('Reviewer approval recorded for bounty #'+state.id+'.',tx.hash);
  });
 });
