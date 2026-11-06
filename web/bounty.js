@@ -135,7 +135,7 @@ function showRole(which){
  $('entry-choice').hidden=true;
  document.querySelector('.intro').hidden=true;
  document.querySelector('.workbench').hidden=false;
- document.querySelector('.challenge-inspector').hidden=which==='sponsor'&&!state.id;
+ document.querySelector('.challenge-inspector').hidden=which==='sponsor';
  setText('current-step-label',roleNames[which]);
 for(const button of all('[role="tab"]')){
   const active=button.dataset.role===which;
@@ -211,6 +211,7 @@ async function loadChallenge(id){
  ]);
  const quorum=Number(decodeNumber(threshold));
  if(quorum<1||quorum>3||quorum>Number(decodeNumber(reviewerCount)))throw Error('Reviewer quorum is outside studio limits.');
+ if(state.id!==String(id)){$('evidence').value='';$('salt').value='';$('review-evidence').value='';$('solver-address').value='';$('review-handoff').hidden=true;}
  state.id=String(id);state.challenge=challenge;state.scope=scope;
  $('challenge-id').value=String(id);
  const now=await blockTime();
@@ -347,7 +348,12 @@ async function refreshCommitment(){
   setText('commitment-state',statuses[commitment.status]||'Unknown commitment status');
   const saved=localStorage.getItem(saltKey(state.id,state.wallet));
   $('salt').value=saved&&/^0x[0-9a-f]{64}$/.test(saved)?saved:'';
-  if(commitment.status===1)setText('commitment-state','Bond locked, commitment pending. Get reviewer approval, then reveal after the commit deadline.');
+  $('reveal-finding').hidden=commitment.status!==1;
+  $('generate-salt').disabled=commitment.status===1;
+  if(commitment.status===1){
+   setText('commitment-state','Finding submitted. Share your report with a reviewer, then return here after approval and the submission deadline.');
+   $('review-handoff').hidden=false;
+  }else $('review-handoff').hidden=true;
  }catch{setText('commitment-state','Could not read your onchain commitment.')}
 }
 $('generate-salt').addEventListener('click',async()=>{
@@ -359,6 +365,12 @@ $('generate-salt').addEventListener('click',async()=>{
   localStorage.setItem(saltKey(state.id,wallet),value);
   activity('Private salt created on this device. Copy it and keep it until reveal.');
  }catch(e){activity(errorText(e))}
+});
+$('copy-review-request').addEventListener('click',async()=>{
+ if(!state.id||!state.wallet||!safeEvidence($('evidence').value))return activity('Open your submitted bounty and enter the exact report before sharing it.');
+ const msg='BEFORE BTEST finding review request\nBounty: '+bountyLink('reviewer')+'\nResearcher wallet: '+state.wallet+'\nEvidence:\n'+$('evidence').value+'\n\nThis is a testnet report. Review the evidence before approving onchain.';
+ try{await navigator.clipboard.writeText(msg);activity('Review request copied. Send it privately to your appointed reviewer.');}
+ catch{activity('Clipboard unavailable. Share your bounty link, wallet address and exact evidence privately.');}
 });
 $('copy-salt').addEventListener('click',async()=>{
  if(!/^0x[0-9a-fA-F]{64}$/.test($('salt').value))return activity('Generate a salt first.');
@@ -476,7 +488,7 @@ async function initialize(){
    if(window.ethereum.on){
     window.ethereum.on('accountsChanged',accounts=>{
      state.wallet=accounts?.[0]||null;
-     $('salt').value='';$('evidence').value='';
+     $('salt').value='';$('evidence').value='';$('review-handoff').hidden=true;$('reveal-finding').hidden=true;
      setText('wallet-label',state.wallet?state.wallet.slice(0,6)+'…'+state.wallet.slice(-4):'Connect wallet');
      setText('commitment-state','Wallet changed. Load your active commitment again.');
     });
