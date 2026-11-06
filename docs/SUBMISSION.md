@@ -20,7 +20,7 @@ PLAYWRIGHT_BROWSERS_PATH=/tmp/before-browsers node qa/verify.mjs
 node script/check-chain.mjs
 ~~~
 
-The current checkpoint is 66 Solidity tests, 57 JavaScript checks, a real Anvil deployment/verifier pass with tampered-evidence rejection, 12 accessibility viewport/screen audits, four mocked success-path wallet transactions, three wallet failure paths and zero horizontal-overflow failures. The public mock-only Robinhood deployment also passed the complete eleven-argument verifier; mocked wallet results remain distinct from the public broadcast.
+The current checkpoint is 70 Solidity tests, 57 JavaScript checks, a real Anvil deployment/verifier pass with tampered-evidence rejection, 12 accessibility viewport/screen audits, three complete-manifest audits, four mocked success-path wallet transactions, three wallet failure paths and zero horizontal-overflow failures. The public mock-only Robinhood deployment and BTEST bounty lifecycle also passed independent receipt/accounting checks; mocked wallet results remain distinct from public broadcasts.
 
 The deployment verifier is read-only. Given direct creation receipts, the two factory-call receipts and three public demo receipts, it checks chain ID 46630, receipt success or intentional revert status, address/hash correspondence, confirmation depth, exact calldata and event data, deployer-owned registry outputs, exact BTEST transfer logs, 150/130/40 block-specific balances, the allowed/denied Protect outcomes, the 60+50 Challenge proof and immutable-aware runtime provenance for `BeforeFactory`, `MockERC20`, `WifSecurityChallenge`, `BeforeVault`, `TrainingArena` and `TrainingVault`:
 
@@ -47,6 +47,10 @@ The authorized disposable signer was the newly generated `before-testnet` encryp
 - [PracticeVault](https://explorer.testnet.chain.robinhood.com/address/0x7e29bC6Df38e60E77513bc1084dB488FeE12947C)
 - Public flows: [allowed 20 BTEST](https://explorer.testnet.chain.robinhood.com/tx/0x49ab86e469b83c7f02a01b0765973e213ba894cbbd6f37f6af17d0e84ae23b3c), [denied 75 BTEST, status `0x0`](https://explorer.testnet.chain.robinhood.com/tx/0xf40bd10c748f6bf60cdb4c12382b414478210c4875bcb3899792e16f425aaf04), [60+50 practice proof](https://explorer.testnet.chain.robinhood.com/tx/0x4b002674e855aea3f2ba526b1028043603a2facca6e6c7d465742f7100fbe901)
 
+### Public BTEST bounty lifecycle
+
+The mock-only lifecycle coordinator is [`0x166E3367cdC9751A02570fedf8d700C4f70fCd1C`](https://explorer.testnet.chain.robinhood.com/address/0x166E3367cdC9751A02570fedf8d700C4f70fCd1C). The four successful operator receipts are recorded with independent event, bytecode, quorum and final-accounting checks in [BOUNTY_TESTNET_EVIDENCE.md](BOUNTY_TESTNET_EVIDENCE.md). The run used freely mintable BTEST only; synthetic reviewer roles were controlled by one operator, no WIF was funded, and no independent vulnerability review is claimed.
+
 ## Safe judge demo
 
 1. Open the [verified preview](https://before-1xhzzheka-iniwura-akurus-projects.vercel.app/) and start on **Protect**. Use the local policy preview to show a 75-token request being blocked, then show an approved 20-token request within the 60/100 policy.
@@ -61,7 +65,7 @@ Do not describe the local preview or mocked wallet run as a real transaction. Do
 
 `WifSecurityChallenge` is a separate reward escrow that can hold WIF when configured with the intended token address. Each challenge anchors a target contract, target code hash and immutable hash of the written scope. It uses exact source-and-recipient ERC-20 accounting, a solver-bound commit/reveal, a solver bond, a bounded 30-day window, verifier and target code-hash pinning, first-valid settlement, invalid-proof slashing, cancellation and expiry recovery. `ReviewedFindingVerifier` supplies a fixed reviewer quorum for the exact escrow instance, context and evidence hash.
 
-It is not a security oracle. The verifier must bind the supplied challenge ID, solver, target and scope, inspect the intended target, and be independently reviewed. The current submission contains no WIF address, private key, funded challenge or payout claim. A disposable testnet broadcast still needs test ETH and a user-controlled signature; valuable challenge funding needs a separate explicit approval.
+It is not a security oracle. The verifier must bind the supplied challenge ID, solver, target and scope, inspect the intended target, and be independently reviewed. The current submission contains no WIF address, private key, funded challenge or payout claim. The BTEST lifecycle is public evidence of contract behavior only; valuable challenge funding needs a separate explicit approval.
 
 ## Claim language
 

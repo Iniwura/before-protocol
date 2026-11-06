@@ -146,6 +146,7 @@ button,input{font:inherit}
  .statement-symbol{height:275px}
  .statement-layout h2,.section-heading h2,.bounty h2{font-size:13vw}
  .evidence{padding-left:15px;padding-right:15px}
+ .evidence-heading{flex-wrap:wrap;align-items:flex-start}
  .receipt-name{font-size:26px}
 }
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;transition:none!important;animation:none!important}}

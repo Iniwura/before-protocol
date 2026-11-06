@@ -246,7 +246,7 @@ button:disabled{opacity:.48;cursor:not-allowed}
 }
 @media (max-width:680px){
  .main{width:calc(100% - 32px)}
- .topbar{height:63px;padding:0 16px}
+ .topbar{height:63px;padding:0 16px;grid-template-columns:minmax(0,1fr) auto}
  .brand{font-size:22px}
  .top-actions{gap:10px}
  .source-link{padding:11px 13px;font-size:10px;gap:7px}

@@ -22,7 +22,7 @@ The [BTEST-only end-to-end demo](docs/BOUNTY_TESTNET_DEMO.md) now exercises the 
 node script/run-bounty-lifecycle.mjs --local
 ```
 
-The local runner deploys contracts and advances disposable Anvil time. The public runner targets **only Robinhood Chain Testnet (46630)**, requires the previously authorized `before-testnet` keystore and real block timestamps, and will write public proof metadata only after all signed receipts are verified. **The public bounty lifecycle broadcast has not yet been completed or claimed.** Until then `web/bounty-proof.json` is `verified:false`, keeping the app's bounty-evidence panel hidden. No WIF token is funded.
+The local runner deploys contracts and advances disposable Anvil time. The public runner targets **only Robinhood Chain Testnet (46630)**, requires the previously authorized `before-testnet` keystore and real block timestamps, and writes public proof metadata only after all signed receipts are verified. The public BTEST-only lifecycle has completed and its receipts are recorded in [BOUNTY_TESTNET_EVIDENCE.md](docs/BOUNTY_TESTNET_EVIDENCE.md); `web/bounty-proof.json` is `verified:true`. No WIF token is funded.
 
 ## Protect
 

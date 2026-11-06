@@ -60,6 +60,12 @@ The runner keeps non-secret resume state in `out/bounty-testnet-progress.json` a
 
 **Review and commit `web/bounty-proof.json` only after independent receipt checks.** Until then its committed value is `verified:false`; the app deliberately hides the bounty evidence panel.
 
+## Completed public evidence
+
+The authorized testnet run completed successfully on chain `46630`. The coordinator is [`0x166E3367cdC9751A02570fedf8d700C4f70fCd1C`](https://explorer.testnet.chain.robinhood.com/address/0x166E3367cdC9751A02570fedf8d700C4f70fCd1C). Independent read-only checks matched all four receipts, every lifecycle event, the two-reviewer quorum, bytecode presence and final BTEST accounting. The public transaction-evidence report with explorer links is [BOUNTY_TESTNET_EVIDENCE.md](BOUNTY_TESTNET_EVIDENCE.md).
+
+The proof is still explicitly synthetic: all demo roles are controlled by one operator, `independentReview` is false, `valuableWifFunded` is false, and no mainnet or production action is implied.
+
 ## What the product verifies
 
 After approved publication of the proof file, `/app/#challenge` checks the chain ID, signer, escrow/token/target contract bindings, deployed code, coordinator stage 3, and all three public lifecycle transaction/receipt pairs before showing the read-only receipt trail. A static JSON flag alone never unlocks a payout claim.
