@@ -140,6 +140,7 @@ async function chooseTask(role){
  await page.locator('[data-start="sponsor"]').click();
  await page.locator('#wallet-connect').click();
  await page.waitForFunction(()=>document.querySelector('#wallet-label').textContent.includes('…'));
+ await page.locator('#action-status').waitFor({state:'visible'});
  assert.equal(await page.locator('#action-status').isVisible(),true,'Wallet state must be visible where the user works');
  await page.locator('#activity-dismiss').click();
  assert.equal(await page.locator('#action-status').isHidden(),true,'User can dismiss wallet status');
