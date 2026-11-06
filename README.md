@@ -1,18 +1,29 @@
 # BEFORE
 
-**Protect. Challenge. Proof.**
+**Know what you approved. Prove what happened.**
 
-BEFORE is a prototype for the [World Is Flat](https://worldisflat.fun/build) hackathon on Robinhood Chain. It demonstrates enforceable ERC-20 transfer policies, an isolated intentionally vulnerable practice vault, deterministic verification of a policy bypass, and a separate commit/reveal escrow for independently verifiable security findings.
+BEFORE is a [World Is Flat](https://worldisflat.fun/build) Robinhood Chain prototype with two clearly separated, working experiences: **read-only $WIF spending-permission inspection on mainnet** and **BTEST-only security-bounty settlement on testnet**.
 
-> **Research only. The mock-only contracts are deployed and independently verified on Robinhood Chain testnet; they are not audited and must not receive real assets.** The WIF-capable escrow has received no real WIF reward from the BEFORE team. Any BTEST challenge demonstration is valueless and separately labeled. No mainnet custody is claimed.
+For WIF holders, BEFORE inspects an identified wallet/spender allowance against the official $WIF token contract without wallet connection, signing or custody. For builders and researchers, the Bounty Studio demonstrates sponsor → researcher → appointed reviewer → verifiable settlement using valueless BTEST. The optional Protect → Challenge → Proof training experience shows enforceable policy vaults, intentional vulnerabilities and actual testnet receipts.
+
+> **Scope:** The WIF feature only reads public mainnet state; it does not enumerate all permissions or revoke them. Bounty contracts are unaudited, deployed only on testnet and must **never** receive real assets. The historical BTEST reviewer approvals used synthetic roles controlled by one operator; they are not independent vulnerability reviews. No real WIF has been funded, approved, moved or held by BEFORE.
 
 ## Product routes
 
-- **Landing page:** https://before-web-git-feat-bounty-e2e-a-524092-iniwura-akurus-projects.vercel.app/
-- **Working app:** https://before-web-git-feat-bounty-e2e-a-524092-iniwura-akurus-projects.vercel.app/app/ (Protect, Challenge and Proof)
-- The existing production release remains unchanged while this route split is reviewed on draft PR #5. The Vercel branch preview is protected by project authentication.
-- Legacy `/#protect`, `/#challenge`, `/#proof` deep links redirect into the app.
-- The app uses the **single, existing, verified** `web/deployment.json`; contract addresses and protocol logic do not change.
+- **Landing:** https://before-web-theta.vercel.app/
+- **Bounty Studio (main guided app, testnet-only):** https://before-web-theta.vercel.app/app/bounty/
+- **WIF Permission Check (mainnet, read-only):** https://before-web-theta.vercel.app/app/wif/
+- **Protect → Challenge → Proof demonstration:** https://before-web-theta.vercel.app/app/
+
+The website uses dependency-free static routes. Legacy `/#protect`, `/#challenge`, and `/#proof` links redirect to the corresponding section of `/app/`. Contracts, chain IDs and proof manifests are fixed to their documented networks. The source is public, and the mainnet WIF reader uses the official `0x5173b8eA6923c2d40267890D45C46a3480954773` token contract on chain **4663**. The bounty and training contracts use Robinhood Testnet **46630** only.
+
+See [WIF Permission Check](docs/WIF_PERMISSION_CHECK.md), [Bounty Studio guide](docs/BOUNTY_STUDIO.md) and [public testnet evidence](docs/BOUNTY_TESTNET_EVIDENCE.md).
+
+## Real WIF utility: read-only permission inspection
+
+Paste a confirmed WIF `approve(spender, amount)` transaction hash or enter a wallet address and a specific spender. BEFORE checks the token contract's current `allowance(owner, spender)` and `balanceOf(owner)` at the same mainnet block. It makes large permissions readable, shows whether spender bytecode exists, links the approval and wallet addresses to the public explorer, and refuses mismatched network/token data. Nothing is signed, sent, revoked or deposited. An allowance of zero applies **only to the selected spender**.
+
+The permission checker was exercised against the real Robinhood mainnet RPC in Chromium and is covered by independent ABI tests and 320/375/768/1280px accessibility regressions. Read [exact capabilities and limits](docs/WIF_PERMISSION_CHECK.md).
 
 ## Guided application and Bounty Studio
 
@@ -53,10 +64,14 @@ Requires [Foundry](https://getfoundry.sh/) and Node.js.
 ~~~sh
 forge build
 forge test --fuzz-runs 1024 -vvv
-node --test checks/reference.test.mjs checks/deployment-proof.test.mjs checks/deployment-cli.test.mjs checks/broadcast-args.test.mjs web/test/core.test.mjs web/test/onchain.test.mjs
+node --test checks/reference.test.mjs checks/deployment-proof.test.mjs checks/deployment-cli.test.mjs checks/broadcast-args.test.mjs web/test/core.test.mjs web/test/onchain.test.mjs web/test/bounty-core.test.mjs web/test/wif-core.test.mjs
 node script/anvil-e2e.mjs
 node script/run-bounty-lifecycle.mjs --local
 node script/check-chain.mjs
+# After installing browser QA dependencies and Chromium:
+node qa/verify.mjs
+node qa/bounty-e2e.mjs
+node qa/wif-verify.mjs
 ~~~
 
 The network check is read-only; it requires internet access.
@@ -86,7 +101,7 @@ The responsive, dependency-free application at `/app/` has three experiences:
 
 The web code is in `web/`; the Node test commands cover policy, ABI, deployment-proof and browser-facing logic. GitHub Actions checks Solidity, policy-model, deployment and web tests. CI is at https://github.com/Iniwura/before-protocol/actions.
 
-The live application reads the verified public testnet deployment through the checked-in manifest. The separate landing/app experience remains on a draft PR until explicitly approved.
+The security demonstration and Bounty Studio read the verified public testnet deployment through the checked-in manifest. The WIF checker independently reads the official mainnet WIF contract without changing any token permissions or transmitting wallet secrets.
 
 ## Architecture
 
