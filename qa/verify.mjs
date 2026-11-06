@@ -72,7 +72,7 @@ function routeRPC(page,{code='0x60016000',codeByAddress={},receiptStatus='0x1',n
 async function axeViolations(page){
   return page.evaluate(async()=>{
     const {violations}=await axe.run(document,{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21aa']}});
-    return violations.map(v=>({id:v.id,impact:v.impact,nodes:v.nodes.length}));
+    return violations.map(v=>({id:v.id,impact:v.impact,nodes:v.nodes.map(n=>({target:n.target,summary:n.failureSummary}))}));
   });
 }
 // Public landing should not masquerade as an active wallet product; every link has a working app target.
@@ -224,6 +224,7 @@ try {
   assert.equal(await fullManifestPage.locator('#onchain-challenge').isHidden(),false,'Complete manifest should unlock testnet Challenge actions');
   await fullManifestPage.locator('#bounty-proof').waitFor({state:'visible'});
   assert.equal(await fullManifestPage.locator('#bounty-proof-steps a').count(),3,'Real receipt proof should show three lifecycle transactions');
+  await fullManifestPage.waitForTimeout(350);
   assert.deepEqual(await axeViolations(fullManifestPage),[],'Verified bounty evidence must remain accessible');
   await fullManifestContext.close();
 
