@@ -246,7 +246,7 @@ button:disabled{opacity:.48;cursor:not-allowed}
 }
 @media (max-width:680px){
  .main{width:calc(100% - 32px)}
- .topbar{height:63px;padding:0 16px}
+ .topbar{height:63px;padding:0 16px;grid-template-columns:minmax(0,1fr) auto}
  .brand{font-size:22px}
  .top-actions{gap:10px}
  .source-link{padding:11px 13px;font-size:10px;gap:7px}
@@ -357,6 +357,47 @@ button:disabled{opacity:.48;cursor:not-allowed}
  .receipt-actions{gap:7px}
  .receipt-shortcut{font-size:10px;padding:10px 13px;gap:9px}
 }
+/* Read-only bounty trail. Shown only after public transaction and contract checks. */
+.bounty-proof{margin-top:9px;background:#171717;color:#f7f7f1;padding:clamp(25px,3.1vw,52px);min-width:0}
+.bounty-proof-top{display:flex;justify-content:space-between;gap:15px;border-bottom:1px solid #54544e;padding-bottom:20px;font-size:10px;font-weight:800;letter-spacing:.07em;color:#d0d0c7}
+.bounty-proof-heading{display:grid;grid-template-columns:1fr 1fr;gap:25px;align-items:end;padding:37px 0 40px}
+.bounty-proof-heading h3{font-size:clamp(35px,4.8vw,76px);letter-spacing:-.08em;line-height:.97;font-weight:750;margin:0}
+.bounty-proof-heading p{font-size:13px;line-height:1.5;color:#bdbdb7;max-width:375px;margin:0}
+.bounty-proof-steps{border-top:1px solid #60605c;display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}
+.bounty-proof-step{display:flex;flex-direction:column;align-items:flex-start;gap:16px;padding:23px 20px 25px;border-right:1px solid #5c5c55;min-width:0}
+.bounty-proof-step:first-child{padding-left:0}
+.bounty-proof-step:last-child{border-right:0}
+.bounty-proof-step small{font-size:10px;color:#bdbdb6;font-weight:800;letter-spacing:.06em}
+.bounty-proof-step strong{font-size:clamp(18px,2.2vw,27px);letter-spacing:-.055em;font-weight:720;line-height:1.1}
+.bounty-proof-step a{display:inline-flex;gap:9px;align-items:center;color:#f7f7f1;font-size:11px;font-weight:700;text-decoration:underline;text-underline-offset:5px;overflow-wrap:anywhere}
+.bounty-proof-disclosure{font-size:11px;line-height:1.5;color:#bcbcb5;margin:24px 0 0}
+@media(max-width:680px){
+ .bounty-proof{padding:24px}
+ .bounty-proof-top{flex-direction:column;gap:5px;font-size:9px}
+ .bounty-proof-heading{grid-template-columns:1fr;gap:15px;padding:30px 0}
+ .bounty-proof-heading h3{font-size:48px}
+ .bounty-proof-steps{grid-template-columns:1fr}
+ .bounty-proof-step,.bounty-proof-step:first-child{padding:20px 0;border-right:0;border-bottom:1px solid #5c5c55;gap:9px}
+ .bounty-proof-step:last-child{border-bottom:0}
+}
 @media (prefers-reduced-motion:reduce){
  *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
 }
+
+.journey-next{display:flex;align-items:center;justify-content:space-between;gap:20px;border-top:1px solid var(--ink);border-bottom:1px solid var(--ink);padding:23px 7px;margin-top:36px}
+.journey-next:hover{background:#e8e8e1}
+.journey-next>span{font-size:10px;font-weight:800;letter-spacing:.05em}
+.journey-next strong{font-size:clamp(24px,3vw,42px);font-weight:720;letter-spacing:-.07em}
+.studio-entry{display:grid;grid-template-columns:1fr 2fr auto;gap:20px;align-items:center;padding:28px 32px;background:#e3e6dc;color:#171717;border:1px solid var(--ink);margin-top:9px}
+.studio-entry:hover{background:#d4ddc8}
+.studio-entry>span:first-child{font-size:10px;letter-spacing:.06em;font-weight:800}
+.studio-entry strong{font-size:clamp(20px,2.5vw,30px);font-weight:700;line-height:1.12;letter-spacing:-.05em}
+.studio-entry .entry-arrow{font-size:30px}
+.source-home{background:transparent;color:var(--ink);border:1px solid var(--ink)}
+.top-actions{gap:9px}
+@media(max-width:920px){.source-home{display:none}.studio-entry{grid-template-columns:1fr auto}.studio-entry>span:first-child{grid-column:1/-1}}
+@media(max-width:680px){.journey-next{flex-direction:column;align-items:flex-start;gap:10px}.studio-entry{padding:22px 20px}.journey-next strong{font-size:29px}.studio-entry strong{font-size:23px}}
+
+/* Additional WIF shortcut appears only when the approved application header has room. */
+.source-wif{display:none}
+@media(min-width:980px){.source-wif{display:inline-flex}}

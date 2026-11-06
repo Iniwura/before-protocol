@@ -1,0 +1,17 @@
+{
+  "verified": true,
+  "chainId": 46630,
+  "demo": "0x166E3367cdC9751A02570fedf8d700C4f70fCd1C",
+  "escrow": "0xF9d644dd2024E2dFc425aA7c1059F9b4E720684a",
+  "token": "0xf080A1a012F2Dd41c4F416Befd6D70074af75A4C",
+  "target": "0x7e29bc6df38e60e77513bc1084db488fee12947c",
+  "operator": "0xd1061825504B30F404C0D94B745205925F251f2C",
+  "transactions": {
+    "deploy": "0x1e0e7783d9f46047c351d4b942344052892312c9f2ff0fa7f06e2b764b59e7dc",
+    "start": "0x2ad4387c44ab0e1d5bf4f561318a9e8e8c493e7f8a6414cb980bf36603517789",
+    "settle": "0x74df2df93542458b66ae7751ceed7e28bd66b739bd43a5f6bedc1ba903aefd08",
+    "cleanup": "0x5e35f62052dc5d8bbaed2da78cbf3df3a2fed0d6254f49e940d74f0a772e5898"
+  },
+  "reviewType": "synthetic",
+  "valuableWifFunded": false
+}

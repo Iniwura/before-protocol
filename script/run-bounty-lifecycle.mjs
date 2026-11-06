@@ -1,0 +1,243 @@
+#!/usr/bin/env node
+// Real public-testnet or disposable-local lifecycle runner for valueless BTEST only.
+// Local mode starts its own Anvil. Public mode requires the user's EXISTING encrypted
+// Foundry account and a password file. NEVER prints or stores private keys.
+// The demo actors are synthetic and all controlled by one operator. Their approvals
+// prove contract behavior, not independent security review.
+import {spawn} from 'node:child_process';
+import {createServer} from 'node:net';
+import {fileURLToPath} from 'node:url';
+import {readFile, mkdir, writeFile} from 'node:fs/promises';
+import path from 'node:path';
+
+const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
+const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+const mode=process.argv.includes('--testnet')?'testnet':process.argv.includes('--local')?'local':null;
+if (!mode) throw Error('Use --local or --testnet. Never infer the network.');
+const forge=process.env.FORGE_BIN||'forge';
+const cast=process.env.CAST_BIN||'cast';
+const anvilBin=process.env.ANVIL_BIN||'anvil';
+const testnetRPC='https://rpc.testnet.chain.robinhood.com';
+const explorer='https://explorer.testnet.chain.robinhood.com';
+const addressPattern=/^0x[a-fA-F0-9]{40}$/;
+const hashPattern=/^0x[a-fA-F0-9]{64}$/;
+let anvilProcess;
+
+function run(cmd,args,{env=process.env}={}){
+ return new Promise((resolve,reject)=>{
+   const child=spawn(cmd,args,{cwd:root,env,stdio:['ignore','pipe','pipe']});
+   let stdout='',stderr='';
+   child.stdout.on('data',buf=>stdout+=buf);
+   child.stderr.on('data',buf=>stderr+=buf);
+   child.once('error',reject);
+   child.once('close',code=>{
+     if(code!==0)reject(Error(cmd+' returned '+code+': '+(stderr||stdout).slice(-1600)));
+     else resolve({stdout,stderr});
+   });
+ });
+}
+async function rpc(url,method,params=[]){
+ const c=new AbortController(),timeout=setTimeout(()=>c.abort(),15000);
+ try{
+  const res=await fetch(url,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({jsonrpc:'2.0',id:1,method,params}),signal:c.signal});
+  const body=await res.json();
+  if(!res.ok||body.error||body.result===undefined)throw Error(body.error?.message||'Bad RPC response: '+method);
+  return body.result;
+ }finally{clearTimeout(timeout)}
+}
+async function port(){
+ const s=createServer();await new Promise(ok=>s.listen(0,'127.0.0.1',ok));
+ const n=s.address().port;await new Promise(ok=>s.close(ok));return n;
+}
+function parseJSON(out){
+ const start=out.indexOf('{'),end=out.lastIndexOf('}');
+ if(start<0||end<start)throw Error('Tool returned no JSON: '+out.slice(0,600));
+ return JSON.parse(out.slice(start,end+1));
+}
+function assertAddr(value,label){
+ if(!addressPattern.test(value||''))throw Error('Invalid '+label+': '+String(value));
+ return value;
+}
+function toBigInt(x){return BigInt(String(x).split(' ')[0]);}
+async function send(rpcURL,flags,contract,signature=[]){
+ const args=['send',contract,...signature,'--rpc-url',rpcURL,'--json',...flags];
+ const receipt=parseJSON((await run(cast,args)).stdout);
+ const hash=receipt.transactionHash;
+ if(!hashPattern.test(hash||'')||receipt.status!=='0x1')throw Error('Transaction not successful: '+JSON.stringify({hash,status:receipt.status,contract}));
+ return hash;
+}
+async function deploy(rpcURL,flags,name,constructorArgs=[]){
+ const args=['create',name,'--rpc-url',rpcURL,'--json','--broadcast',...flags];
+ if(constructorArgs.length)args.push('--constructor-args',...constructorArgs);
+ const value=parseJSON((await run(forge,args)).stdout);
+ const addr=assertAddr(value.deployedTo,'deployed contract');
+ const hash=value.transactionHash;
+ if(!hashPattern.test(hash||''))throw Error('Missing deployment receipt hash for '+name);
+ const r=await rpc(rpcURL,'eth_getTransactionReceipt',[hash]);
+ if(!r||r.status!=='0x1'||r.contractAddress?.toLowerCase()!==addr.toLowerCase())throw Error('Deployment receipt mismatch '+name);
+ return {address:addr,tx:hash};
+}
+async function readValue(url,to,signature,...args){
+ const {stdout}=await run(cast,['call',to,signature,...args,'--rpc-url',url]);
+ return stdout.trim().split(' ')[0];
+}
+async function readAmount(url,token,address){
+ return toBigInt(await readValue(url,token,'balanceOf(address)(uint256)',address));
+}
+async function requireStage(url,addr,stage){
+ const current=toBigInt(await readValue(url,addr,'stage()(uint8)'));
+ if(current!==BigInt(stage))throw Error('Bounty demo stage is '+current+', expected '+stage);
+}
+async function waitUntil(url,deadline,local){
+ if(local){
+   const block=await rpc(url,'eth_getBlockByNumber',['latest',false]);
+   const needed=BigInt(deadline)+1n-BigInt(block.timestamp);
+   if(needed>0)await rpc(url,'evm_increaseTime',['0x'+needed.toString(16)]);
+   await rpc(url,'evm_mine',[]);
+   return;
+ }
+ // Public testnet progress is driven only by mined blocks, never forged time.
+ for(let i=0;i<360;i++){
+   const head=await rpc(url,'eth_getBlockByNumber',['latest',false]);
+   if(BigInt(head.timestamp)>BigInt(deadline))return;
+   await wait(2000);
+ }
+ throw Error('Testnet deadline was not reached in this run. Resume later, do not fabricate a receipt.');
+}
+
+async function main(){
+ let url,flags=[],sender,local=mode==='local';
+ if(local){
+   const p=await port();url='http://127.0.0.1:'+p;
+   anvilProcess=spawn(anvilBin,['--host','127.0.0.1','--port',String(p),'--chain-id','31337','--silent'],{cwd:root,stdio:'ignore'});
+   for(let i=0;i<60;i++){
+     try {if(await rpc(url,'eth_chainId')==='0x7a69')break}catch{}
+     await wait(150);
+   }
+   if(await rpc(url,'eth_chainId')!=='0x7a69')throw Error('Local Anvil did not start.');
+   sender=(await rpc(url,'eth_accounts'))[0];
+   flags=['--unlocked','--from',assertAddr(sender,'unlocked Anvil sender')];
+ }else{
+   url=process.env.BEFORE_TESTNET_RPC||testnetRPC;
+   if(url!==testnetRPC)throw Error('Public demo requires the canonical Robinhood testnet RPC.');
+   const account=process.env.BEFORE_SIGNER_ACCOUNT||'before-testnet';
+   const passwordFile=process.env.BEFORE_KEYSTORE_PASSWORD_FILE;
+   if(!passwordFile)throw Error('Set BEFORE_KEYSTORE_PASSWORD_FILE to your existing encrypted signer password file. No secrets in arguments or source.');
+   flags=['--account',account,'--password-file',passwordFile];
+   const resolved=(await run(cast,['wallet','address',...flags])).stdout.trim();
+   sender=assertAddr(resolved,'public signer');
+   if(sender.toLowerCase()!=='0xd1061825504b30f404c0d94b745205925f251f2c')throw Error('Wrong signer. Expected the previously authorized before-testnet keystore.');
+ }
+ const chainId=Number(BigInt(await rpc(url,'eth_chainId')));
+ if(chainId!==(local?31337:46630))throw Error('Wrong network. Refusing all broadcasts.');
+ const manifest=JSON.parse(await readFile(path.join(root,'web/deployment.json'),'utf8'));
+ if(!manifest.verified||Number(manifest.chainId)!==46630)throw Error('Release manifest must be verified.');
+ let token,escrow,target;
+ const deployments=[];
+ if(local){
+   const x=await deploy(url,flags,'src/mocks/MockERC20.sol:MockERC20');token=x.address;deployments.push(x);
+   const e=await deploy(url,flags,'src/WifSecurityChallenge.sol:WifSecurityChallenge');escrow=e.address;deployments.push(e);
+   const t=await deploy(url,flags,'src/TrainingVault.sol:TrainingVault',[token,(60n*10n**18n).toString()]);target=t.address;deployments.push(t);
+ }else{
+   token=assertAddr(manifest.mockToken,'public BTEST');
+   escrow=assertAddr(manifest.challengeEscrow,'public escrow');
+   target=assertAddr(manifest.practiceVault,'public TrainingVault');
+   if((await rpc(url,'eth_getCode',[token,'latest']))==='0x'||(await rpc(url,'eth_getCode',[escrow,'latest']))==='0x'||(await rpc(url,'eth_getCode',[target,'latest']))==='0x')throw Error('Public proof contract missing.');
+ }
+ const outDir=path.join(root,'out');await mkdir(outDir,{recursive:true});
+ const progressFile=path.join(outDir,'bounty-testnet-progress.json');
+ let progress=null;
+ if(!local){try{progress=JSON.parse(await readFile(progressFile,'utf8'))}catch(e){if(e.code!=='ENOENT')throw e}}
+ if(progress){
+   if(progress.chainId!==46630||progress.signer?.toLowerCase()!==sender.toLowerCase()
+      ||progress.escrow?.toLowerCase()!==escrow.toLowerCase()||progress.token?.toLowerCase()!==token.toLowerCase()
+      ||progress.target?.toLowerCase()!==target.toLowerCase())throw Error('Saved resume state does not match signer and verified deployment.');
+ }
+ let demo;
+ const transactions=progress?.transactions||Object.fromEntries(deployments.map((d,i)=>['preparation'+(i+1),d.tx]));
+ const saveProgress=async()=>{if(!local)await writeFile(progressFile,JSON.stringify({chainId,signer:sender,escrow,token,target,address:demo.address,transactions},null,2)+'\\n')};
+ if(progress){
+   demo={address:assertAddr(progress.address,'saved demo'),tx:progress.transactions.deploy};
+   const code=await rpc(url,'eth_getCode',[demo.address,'latest']);
+   if(!code||code==='0x')throw Error('Saved demo contract missing on chain.');
+ }else{
+   demo=await deploy(url,flags,'src/mocks/BountyLifecycleDemo.sol:BountyLifecycleDemo',[escrow,token,target]);
+   transactions.deploy=demo.tx;
+   await saveProgress();
+ }
+ for(const [field,expected] of Object.entries({operator:sender,escrow,token,target})){
+   const actual=await readValue(url,demo.address,field+'()(address)');
+   if(!addressPattern.test(actual)||actual.toLowerCase()!==expected.toLowerCase())throw Error('Demo role / contract binding mismatch: '+field);
+ }
+ let current=toBigInt(await readValue(url,demo.address,'stage()(uint8)'));
+ if(current===0n){
+   transactions.start=await send(url,flags,demo.address,['start()']);
+   await requireStage(url,demo.address,1);
+   await saveProgress();
+   current=1n;
+ }
+ // The onchain coordinator records its start-state baseline.
+ const baseline=toBigInt(await readValue(url,demo.address,'initialEscrowBalance()(uint256)'));
+ if(current===1n){
+   if(await readAmount(url,token,escrow)<baseline+330n*10n**18n)throw Error('Start accounting mismatch.');
+   const settleAfter=toBigInt(await readValue(url,demo.address,'settleAfter()(uint64)'));
+   await waitUntil(url,settleAfter,local);
+   transactions.settle=await send(url,flags,demo.address,['settle()']);
+   await requireStage(url,demo.address,2);
+   await saveProgress();
+   current=2n;
+ }
+ if(current===2n){
+   if(await readAmount(url,token,escrow)<baseline+100n*10n**18n)throw Error('Settlement accounting mismatch.');
+   const cleanupAfter=toBigInt(await readValue(url,demo.address,'cleanupAfter()(uint64)'));
+   await waitUntil(url,cleanupAfter,local);
+   transactions.cleanup=await send(url,flags,demo.address,['cleanup()']);
+   await requireStage(url,demo.address,3);
+   await saveProgress();
+   current=3n;
+ }
+ if(current!==3n)throw Error('Unexpected demo stage: '+current);
+ if(await readAmount(url,token,escrow)<baseline)throw Error('Cleanup unexpectedly lost escrow assets.');
+ for(const field of ['deploy','start','settle','cleanup']){
+   const hash=transactions[field];
+   if(!hashPattern.test(hash||''))throw Error('Cannot issue a public proof with a missing '+field+' transaction hash.');
+   const receipt=await rpc(url,'eth_getTransactionReceipt',[hash]);
+   if(!receipt||receipt.status!=='0x1'||receipt.from?.toLowerCase()!==sender.toLowerCase()){
+     throw Error('Missing or unauthorized successful receipt: '+field);
+   }
+ }
+
+ // The coordinator's own enforced 500/60 synthetic-actor balances guarantee
+ // this specific run returned all of its BTEST. Other public challenges may exist.
+ const roles={};
+ for(const [key,signature] of Object.entries({sponsor:'sponsor()(address)',solver:'solver()(address)',reviewerOne:'reviewerOne()(address)',reviewerTwo:'reviewerTwo()(address)'})){
+   roles[key]=assertAddr(await readValue(url,demo.address,signature),key);
+ }
+ const ids={};
+ for(const [key,signature] of Object.entries({paid:'paidId()(uint256)',invalid:'invalidId()(uint256)',expired:'expiredId()(uint256)',canceled:'canceledId()(uint256)'})){
+   ids[key]=String(toBigInt(await readValue(url,demo.address,signature)));
+ }
+
+ const report={
+  mode,chainId,verified:true,tokenType:'freely mintable BTEST only',valuableWifFunded:false,
+  independentReview:false,roleDisclosure:'Synthetic sponsor/solver/reviewers controlled by one operator, not independent reviewers.',
+  address:demo.address,escrow,token,target,roles,challengeIds:ids,
+  transactions,
+  explorerLinks:local?{}:Object.fromEntries(Object.entries(transactions).map(([k,v])=>[k,explorer+'/tx/'+v])),
+  proof:{stage:3,initialEscrowBalance:baseline.toString(),finalEscrowBalance:(await readAmount(url,token,escrow)).toString(),paid:100,invalidBondSlashed:10,expiredRewardRefunded:100,expiredBondRefunded:10,canceledRewardRefunded:100,invalidRewardRefunded:100}
+ };
+ const dir=path.join(root,'out');await mkdir(dir,{recursive:true});
+ const reportFile=path.join(dir,local?'bounty-local-report.json':'bounty-testnet-report.json');
+ await writeFile(reportFile,JSON.stringify(report,null,2)+'\n');
+ if(!local){
+   // Only a completed REAL 46630-chain run can enable this public product proof.
+   const publicProof={
+     verified:true,chainId:46630,demo:demo.address,escrow,token,target,operator:sender,
+     transactions:{deploy:transactions.deploy,start:transactions.start,settle:transactions.settle,cleanup:transactions.cleanup},
+     reviewType:'synthetic',valuableWifFunded:false
+   };
+   await writeFile(path.join(root,'web/bounty-proof.json'),JSON.stringify(publicProof,null,2)+'\n');
+ }
+ console.log(JSON.stringify({result:'PASS',mode,chainId,reportFile,address:demo.address,transactions,escrowMockBalance:report.proof.finalEscrowBalance,independentReview:false},null,2));
+}
+try{await main()}finally{if(anvilProcess){anvilProcess.kill('SIGTERM');}}

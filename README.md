@@ -1,10 +1,49 @@
 # BEFORE
 
-**Protect. Challenge. Proof.**
+**Know what you approved. Prove what happened.**
 
-BEFORE is a prototype for the [World Is Flat](https://worldisflat.fun/build) hackathon on Robinhood Chain. It demonstrates enforceable ERC-20 transfer policies, an isolated intentionally vulnerable practice vault, deterministic verification of a policy bypass, and a separate commit/reveal escrow for independently verifiable security findings.
+BEFORE is a [World Is Flat](https://worldisflat.fun/build) Robinhood Chain prototype with two clearly separated, working experiences: **read-only $WIF spending-permission inspection on mainnet** and **BTEST-only security-bounty settlement on testnet**.
 
-> **Research only. The mock-only contracts are deployed and independently verified on Robinhood Chain testnet; they are not audited and must not receive real assets.** The WIF-capable escrow is empty, no real WIF reward is funded, and no mainnet custody is claimed.
+For WIF holders, BEFORE inspects an identified wallet/spender allowance against the official $WIF token contract without wallet connection, signing or custody. For builders and researchers, the Bounty Studio demonstrates sponsor → researcher → appointed reviewer → verifiable settlement using valueless BTEST. The optional Protect → Challenge → Proof training experience shows enforceable policy vaults, intentional vulnerabilities and actual testnet receipts.
+
+> **Scope:** The WIF feature only reads public mainnet state; it does not enumerate all permissions or revoke them. Bounty contracts are unaudited, deployed only on testnet and must **never** receive real assets. The historical BTEST reviewer approvals used synthetic roles controlled by one operator; they are not independent vulnerability reviews. No real WIF has been funded, approved, moved or held by BEFORE.
+
+## Product routes
+
+- **Landing:** https://before-web-theta.vercel.app/
+- **Bounty Studio (main guided app, testnet-only):** https://before-web-theta.vercel.app/app/bounty/
+- **WIF Permission Check (mainnet, read-only):** https://before-web-theta.vercel.app/app/wif/
+- **Protect → Challenge → Proof demonstration:** https://before-web-theta.vercel.app/app/
+
+The website uses dependency-free static routes. Legacy `/#protect`, `/#challenge`, and `/#proof` links redirect to the corresponding section of `/app/`. Contracts, chain IDs and proof manifests are fixed to their documented networks. The source is public, and the mainnet WIF reader uses the official `0x5173b8eA6923c2d40267890D45C46a3480954773` token contract on chain **4663**. The bounty and training contracts use Robinhood Testnet **46630** only.
+
+See [WIF Permission Check](docs/WIF_PERMISSION_CHECK.md), [Bounty Studio guide](docs/BOUNTY_STUDIO.md) and [public testnet evidence](docs/BOUNTY_TESTNET_EVIDENCE.md).
+
+## Real WIF utility: read-only permission inspection
+
+Paste a confirmed WIF `approve(spender, amount)` transaction hash or enter a wallet address and a specific spender. BEFORE checks the token contract's current `allowance(owner, spender)` and `balanceOf(owner)` at the same mainnet block. It makes large permissions readable, shows whether spender bytecode exists, links the approval and wallet addresses to the public explorer, and refuses mismatched network/token data. Nothing is signed, sent, revoked or deposited. An allowance of zero applies **only to the selected spender**.
+
+The permission checker was exercised against the real Robinhood mainnet RPC in Chromium and is covered by independent ABI tests and 320/375/768/1280px accessibility regressions. Read [exact capabilities and limits](docs/WIF_PERMISSION_CHECK.md).
+
+## Guided application and Bounty Studio
+
+The landing page now launches the **main product at `/app/bounty/`**. New users first choose what they want to do: **Post a reward**, **Submit a finding**, **Review a finding**, or **Recover an unfinished deposit**. BEFORE shows one task at a time, asks for a wallet only when an action needs signing, and gives the sponsor distinct researcher/reviewer links after creation. Its core workflow is **post a BTEST reward → submit a finding → reviewer checks and approves → researcher reveals → escrow settles**. The separate **Protect → Challenge → Proof educational demonstration** remains at `/app/` and needs no wallet for simulations and public receipts.
+
+Bounty Studio uses the existing testnet escrow, freely mintable BTEST and the fixed training-vault target. A sponsor can deploy a per-bounty, immutable `ReviewedFindingVerifier` with chosen reviewer wallets and a quorum, mint and approve the exact mock reward, and open a timed challenge. A different solver wallet can commit a private evidence hash and BTEST bond. Appointed reviewers can record their approval of the exact context and evidence; the solver can reveal and settle only during the reveal window with the required approvals. Sponsors/solvers can cancel or recover expired funds when onchain conditions allow.
+
+The **full wallet workflow** passed real local Anvil transactions in Playwright across sponsor, solver and reviewer wallets, including reviewed payout, unappointed-reviewer rejection, premature and unapproved reveal protection, cancellation and expiry refunds, with no remaining test escrow BTEST. This is distinct from the already-verified **public synthetic-reviewer** testnet lifecycle. We have not claimed that the newly added self-service UI has broadcast its own public wallet transactions.
+
+See [how to use Bounty Studio](docs/BOUNTY_STUDIO.md) and [public BTEST testnet evidence](docs/BOUNTY_TESTNET_EVIDENCE.md). **No WIF token can be selected in the studio; no real WIF bounty, independent audit or mainnet custody is claimed.**
+
+## Complete BTEST bounty lifecycle
+
+The [BTEST-only end-to-end demo](docs/BOUNTY_TESTNET_DEMO.md) now exercises the real `WifSecurityChallenge` settlement code end to end: sponsor deposits, solver commits, two explicit reviewer approvals, payout, invalid-evidence slashing, cancellation, expiry and bond refunds. Synthetic demo actors have separate onchain addresses, but **all are controlled by one operator**. This is not independent security review.
+
+```sh
+node script/run-bounty-lifecycle.mjs --local
+```
+
+The local runner deploys contracts and advances disposable Anvil time. The public runner targets **only Robinhood Chain Testnet (46630)**, requires the previously authorized `before-testnet` keystore and real block timestamps, and writes public proof metadata only after all signed receipts are verified. The public BTEST-only lifecycle has completed and its receipts are recorded in [BOUNTY_TESTNET_EVIDENCE.md](docs/BOUNTY_TESTNET_EVIDENCE.md); `web/bounty-proof.json` is `verified:true`. No WIF token is funded.
 
 ## Protect
 
@@ -16,7 +55,7 @@ TrainingVault intentionally omits the aggregate daily limit. TrainingArena lets 
 
 ## Proof
 
-The exercise verifies token balance changes and a one-time solution state using contract execution, not an AI opinion. The verified deployment manifest also lets the app read the actual empty challenge escrow's record count without enabling WIF funding. Public-chain receipts and immutable-aware bytecode evidence are recorded in [TESTNET_PROOF.md](docs/TESTNET_PROOF.md).
+The exercise verifies token balance changes and a one-time solution state using contract execution, not an AI opinion. The verified deployment manifest also lets the app read the actual challenge escrow's record count without enabling WIF funding. Public-chain receipts and immutable-aware bytecode evidence are recorded in [TESTNET_PROOF.md](docs/TESTNET_PROOF.md).
 
 ## Reproduce locally
 
@@ -25,9 +64,14 @@ Requires [Foundry](https://getfoundry.sh/) and Node.js.
 ~~~sh
 forge build
 forge test --fuzz-runs 1024 -vvv
-node --test checks/reference.test.mjs checks/deployment-proof.test.mjs checks/deployment-cli.test.mjs checks/broadcast-args.test.mjs web/test/core.test.mjs web/test/onchain.test.mjs
+node --test checks/reference.test.mjs checks/deployment-proof.test.mjs checks/deployment-cli.test.mjs checks/broadcast-args.test.mjs web/test/core.test.mjs web/test/onchain.test.mjs web/test/bounty-core.test.mjs web/test/wif-core.test.mjs
 node script/anvil-e2e.mjs
+node script/run-bounty-lifecycle.mjs --local
 node script/check-chain.mjs
+# After installing browser QA dependencies and Chromium:
+node qa/verify.mjs
+node qa/bounty-e2e.mjs
+node qa/wif-verify.mjs
 ~~~
 
 The network check is read-only; it requires internet access.
@@ -47,9 +91,9 @@ GitHub Actions [run 123](https://github.com/Iniwura/before-protocol/actions/runs
 
 ## Live research prototype
 
-**Verified preview:** https://before-1xhzzheka-iniwura-akurus-projects.vercel.app/
+**Current approved public site:** https://before-web-theta.vercel.app/
 
-The responsive, dependency-free frontend has three experiences:
+The responsive, dependency-free application at `/app/` has three experiences:
 
 - **Protect:** local, clearly labeled policy preview. No real transaction occurs.
 - **Challenge:** local simulation of the intentional split-transfer flaw using mock amounts. The onchain practice path uses BTEST only and pays no bounty.
@@ -57,7 +101,7 @@ The responsive, dependency-free frontend has three experiences:
 
 The web code is in `web/`; the Node test commands cover policy, ABI, deployment-proof and browser-facing logic. GitHub Actions checks Solidity, policy-model, deployment and web tests. CI is at https://github.com/Iniwura/before-protocol/actions.
 
-The verified preview reads the public testnet deployment through the checked-in manifest. Production remains unchanged until separately approved.
+The security demonstration and Bounty Studio read the verified public testnet deployment through the checked-in manifest. The WIF checker independently reads the official mainnet WIF contract without changing any token permissions or transmitting wallet secrets.
 
 ## Architecture
 
@@ -76,7 +120,7 @@ The verified preview reads the public testnet deployment through the checked-in 
 
 The `BeforeFactory` source adds self-service creation of **testnet-only, mock-token** vaults and independent practice arenas. A single wallet transaction can create an owner-controlled protected vault pre-funded with valueless BTEST; another creates a separate challenge funded only with BTEST. Factory registry reads let observers check whether an address was created by the configured factory.
 
-The versioned `web/deployment.json` now contains independently verified Robinhood Chain testnet addresses and genuine deployment transaction hashes. The UI exposes only the mock-token Protect/Challenge paths; the empty escrow remains read-only and cannot fund WIF.
+The versioned `web/deployment.json` now contains independently verified Robinhood Chain testnet addresses and genuine deployment transaction hashes. The UI exposes only the mock-token Protect/Challenge paths; the WIF-capable escrow remains read-only in the app and receives no WIF funding from the demonstration.
 
 This is not a real-WIF bounty or a mainnet custody release.
 
@@ -92,7 +136,7 @@ The contract can hold WIF when configured with the intended Robinhood Chain WIF 
 
 ## Proving a testnet deployment
 
-After a mock-only testnet deployment, `script/verify-testnet.mjs` can check the actual factory, test-token and empty escrow creation receipts, their contract addresses, 12 confirmation blocks, and immutable-aware runtime provenance against Foundry artifacts. Its full interaction mode also checks the two factory-call receipts, exact calldata and factory event data, deployer-owned registry outputs, created vault/arena constructor state, exact BTEST transfer logs, block-specific 150/130/40 BTEST balances, and public Protect/Challenge receipts for an allowed withdrawal, a denied withdrawal and the 60+50 practice proof. It is read-only and cannot make a false testnet claim from only a pasted address.
+After a mock-only testnet deployment, `script/verify-testnet.mjs` can check the actual factory, test-token and challenge escrow creation receipts, their contract addresses, 12 confirmation blocks, and immutable-aware runtime provenance against Foundry artifacts. Its full interaction mode also checks the two factory-call receipts, exact calldata and factory event data, deployer-owned registry outputs, created vault/arena constructor state, exact BTEST transfer logs, block-specific 150/130/40 BTEST balances, and public Protect/Challenge receipts for an allowed withdrawal, a denied withdrawal and the 60+50 practice proof. It is read-only and cannot make a false testnet claim from only a pasted address.
 
 The same eleven-argument verifier is exercised against real local Anvil state by `node script/anvil-e2e.mjs`; genuine evidence must pass and swapped receipts must fail. Local evidence is never eligible to enable the hosted manifest.
 
