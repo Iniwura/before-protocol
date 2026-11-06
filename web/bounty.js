@@ -265,7 +265,7 @@ $('create-form').addEventListener('submit',async event=>{
   const wallet=await getWallet();
   const reviewers=$('reviewers').value.split(/[\s,]+/).map(x=>x.trim()).filter(Boolean);
   if(reviewers.length<1||reviewers.length>3||reviewers.some(x=>!isAddress(x))||new Set(reviewers.map(x=>x.toLowerCase())).size!==reviewers.length)throw Error('Enter 1–3 different valid reviewer wallet addresses.');
-  if(reviewers.some(x=>same(x,wallet)))throw Error('Choose a reviewer wallet different from the sponsor wallet.');
+  if(reviewers.some(x=>/^0x0{40}$/i.test(x)||same(x,wallet)))throw Error('Choose a nonzero reviewer wallet different from the sponsor wallet.');
   const threshold=Number($('threshold').value);
   if(threshold<1||threshold>reviewers.length)throw Error('Approval threshold exceeds the reviewer count.');
   const reward=amount($('reward-amount').value.trim()),bond=amount($('bond-amount').value.trim());
@@ -295,7 +295,7 @@ async function refreshCommitment(){
   const commitment=parseCommitment(await read(state.config.challengeEscrow,encodeCommitmentStatus(state.id,state.wallet)));
   setText('commitment-state',statuses[commitment.status]||'Unknown commitment status');
   const saved=localStorage.getItem(saltKey(state.id,state.wallet));
-  if(saved&&/^0x[0-9a-f]{64}$/.test(saved))$('salt').value=saved;
+  $('salt').value=saved&&/^0x[0-9a-f]{64}$/.test(saved)?saved:'';
   if(commitment.status===1)setText('commitment-state','Bond locked, commitment pending. Get reviewer approval, then reveal after the commit deadline.');
  }catch{setText('commitment-state','Could not read your onchain commitment.')}
 }
@@ -312,7 +312,7 @@ $('generate-salt').addEventListener('click',async()=>{
 $('copy-salt').addEventListener('click',async()=>{
  if(!/^0x[0-9a-fA-F]{64}$/.test($('salt').value))return activity('Generate a salt first.');
  try{await navigator.clipboard.writeText($('salt').value);activity('Salt copied. Keep it private until reveal.')}
- catch{activity('Select and copy your salt manually.')}
+ catch{$('salt').select();activity('Select and copy your salt manually.')}
 });
 const requireChallenge=()=>{
  if(!state.challenge||!state.id)throw Error('Load a verified BTEST challenge first.');
@@ -361,6 +361,7 @@ $('review-form').addEventListener('submit',e=>{
  return runAction('Reviewer approval',async()=>{
   const c=requireChallenge(),wallet=await getWallet(),solver=$('solver-address').value.trim(),evidence=$('review-evidence').value;
   if(!isAddress(solver)||!safeEvidence(evidence))throw Error('Enter a valid solver wallet and exact nonempty finding evidence.');
+  if(c.rewardReleased||c.canceled||(await blockTime())>c.revealDeadline)throw Error('The challenge is closed or expired; reviewer approval would have no effect.');
   if(decodeNumber(await read(c.verifier,encodeAddress('isReviewer(address)',wallet)))!==1n)throw Error('This wallet is not an appointed reviewer for this challenge.');
   const commitment=parseCommitment(await read(state.config.challengeEscrow,encodeCommitmentStatus(state.id,solver)));
   if(commitment.status!==1)throw Error('The solver does not have a pending commitment.');
@@ -424,10 +425,11 @@ async function initialize(){
    if(window.ethereum.on){
     window.ethereum.on('accountsChanged',accounts=>{
      state.wallet=accounts?.[0]||null;
+     $('salt').value='';$('evidence').value='';
      setText('wallet-label',state.wallet?state.wallet.slice(0,6)+'…'+state.wallet.slice(-4):'Connect wallet');
      setText('commitment-state','Wallet changed. Load your active commitment again.');
     });
-    window.ethereum.on('chainChanged',()=>{state.wallet=null;setText('wallet-label','Connect wallet');activity('Wallet network changed. Reconnect to Robinhood testnet before signing.');});
+    window.ethereum.on('chainChanged',()=>{state.wallet=null;$('salt').value='';setText('wallet-label','Connect wallet');activity('Wallet network changed. Reconnect to Robinhood testnet before signing.');});
    }
   }
   const id=new URLSearchParams(location.search).get('id');
