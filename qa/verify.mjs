@@ -75,7 +75,7 @@ assert.equal(await landingPage.locator('a.header-launch').getAttribute('href'),'
 for(const section of ['protect','challenge','proof']){
   assert.equal(await landingPage.locator('a.experience-row[href="/app/#'+section+'"]').count(),1,'Landing deep link missing: '+section);
 }
-assert.match(await landingPage.locator('.bounty-caveat').innerText(),/unfunded/i,'Landing must not imply a funded WIF bounty');
+assert.match(await landingPage.locator('.bounty-caveat').innerText(),/No real WIF is deposited/i,'Landing must clearly exclude real WIF deposits');
 await landingPage.goto(origin+'/#proof');
 await landingPage.waitForURL(origin+'/app/#proof');
 assert.equal(await landingPage.locator('#tab-proof').getAttribute('aria-selected'),'true','Legacy Proof link must still open Proof');
