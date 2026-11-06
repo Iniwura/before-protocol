@@ -490,7 +490,8 @@ async function initialize(){
      state.wallet=accounts?.[0]||null;
      $('salt').value='';$('evidence').value='';$('review-handoff').hidden=true;$('reveal-finding').hidden=true;
      setText('wallet-label',state.wallet?state.wallet.slice(0,6)+'…'+state.wallet.slice(-4):'Connect wallet');
-     setText('commitment-state','Wallet changed. Load your active commitment again.');
+     setText('commitment-state','Wallet changed. Checking your active commitment…');
+     if(state.wallet)void refreshCommitment();
     });
     window.ethereum.on('chainChanged',()=>{state.wallet=null;$('salt').value='';setText('wallet-label','Connect wallet');activity('Wallet network changed. Reconnect to Robinhood testnet before signing.');});
    }
