@@ -144,7 +144,6 @@ async function main(){
    target=assertAddr(manifest.practiceVault,'public TrainingVault');
    if((await rpc(url,'eth_getCode',[token,'latest']))==='0x'||(await rpc(url,'eth_getCode',[escrow,'latest']))==='0x'||(await rpc(url,'eth_getCode',[target,'latest']))==='0x')throw Error('Public proof contract missing.');
  }
- const initial=await readAmount(url,token,escrow);
  const outDir=path.join(root,'out');await mkdir(outDir,{recursive:true});
  const progressFile=path.join(outDir,'bounty-testnet-progress.json');
  let progress=null;
@@ -166,6 +165,10 @@ async function main(){
    transactions.deploy=demo.tx;
    await saveProgress();
  }
+ for(const [field,expected] of Object.entries({operator:sender,escrow,token,target})){
+   const actual=await readValue(url,demo.address,field+'()(address)');
+   if(!addressPattern.test(actual)||actual.toLowerCase()!==expected.toLowerCase())throw Error('Demo role / contract binding mismatch: '+field);
+ }
  let current=toBigInt(await readValue(url,demo.address,'stage()(uint8)'));
  if(current===0n){
    transactions.start=await send(url,flags,demo.address,['start()']);
@@ -173,11 +176,7 @@ async function main(){
    await saveProgress();
    current=1n;
  }
- const initialBaseline=progress?.initialEscrowBalance===undefined
-   ?initial- (current===0n?0n:330n*10n**18n)
-   :BigInt(progress.initialEscrowBalance);
- // For an existing public run, the escrow baseline is independently recovered
- // from the coordinator's recorded start-state (not today's changing global balance).
+ // The onchain coordinator records its start-state baseline.
  const baseline=toBigInt(await readValue(url,demo.address,'initialEscrowBalance()(uint256)'));
  if(current===1n){
    if(await readAmount(url,token,escrow)<baseline+330n*10n**18n)throw Error('Start accounting mismatch.');
@@ -199,6 +198,15 @@ async function main(){
  }
  if(current!==3n)throw Error('Unexpected demo stage: '+current);
  if(await readAmount(url,token,escrow)<baseline)throw Error('Cleanup unexpectedly lost escrow assets.');
+ for(const field of ['deploy','start','settle','cleanup']){
+   const hash=transactions[field];
+   if(!hashPattern.test(hash||''))throw Error('Cannot issue a public proof with a missing '+field+' transaction hash.');
+   const receipt=await rpc(url,'eth_getTransactionReceipt',[hash]);
+   if(!receipt||receipt.status!=='0x1'||receipt.from?.toLowerCase()!==sender.toLowerCase()){
+     throw Error('Missing or unauthorized successful receipt: '+field);
+   }
+ }
+
  // The coordinator's own enforced 500/60 synthetic-actor balances guarantee
  // this specific run returned all of its BTEST. Other public challenges may exist.
  const roles={};
