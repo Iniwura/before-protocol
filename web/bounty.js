@@ -135,6 +135,7 @@ function showRole(which){
  $('entry-choice').hidden=true;
  document.querySelector('.intro').hidden=true;
  document.querySelector('.workbench').hidden=false;
+ $('wallet-connect').hidden=false;
  document.querySelector('.challenge-inspector').hidden=which==='sponsor';
  setText('current-step-label',roleNames[which]);
 for(const button of all('[role="tab"]')){
@@ -159,6 +160,7 @@ $('change-goal').addEventListener('click',()=>{
  $('entry-choice').hidden=false;
  document.querySelector('.intro').hidden=true;
  document.querySelector('.workbench').hidden=true;
+ $('wallet-connect').hidden=true;
  const url=new URL(location.href);url.hash='';history.replaceState(null,'',url.toString());
  $('entry-title').focus({preventScroll:true});
  document.querySelector('.entry-choice').scrollIntoView({behavior:'instant',block:'start'});
