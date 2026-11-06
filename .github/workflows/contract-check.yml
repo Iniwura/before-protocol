@@ -23,9 +23,9 @@ jobs:
       - name: Independent policy reference tests
         run: node --test checks/reference.test.mjs checks/deployment-proof.test.mjs checks/deployment-cli.test.mjs checks/broadcast-args.test.mjs
       - name: Web policy and validation tests
-        run: node --test web/test/core.test.mjs web/test/onchain.test.mjs web/test/bounty-core.test.mjs
+        run: node --test web/test/core.test.mjs web/test/onchain.test.mjs web/test/bounty-core.test.mjs web/test/wif-core.test.mjs
       - name: Browser source syntax
-        run: node --check web/app.js && node --check web/onchain.mjs && node --check web/landing.js && node --check web/bounty.js && node --check web/bounty-core.mjs && node --check script/run-bounty-lifecycle.mjs && node --check script/verify-testnet.mjs
+        run: node --check web/app.js && node --check web/onchain.mjs && node --check web/landing.js && node --check web/bounty.js && node --check web/wif.js && node --check web/wif-core.mjs && node --check web/bounty-core.mjs && node --check script/run-bounty-lifecycle.mjs && node --check script/verify-testnet.mjs
 
   browser-quality:
     runs-on: ubuntu-latest
@@ -46,3 +46,5 @@ jobs:
         run: node qa/verify.mjs
       - name: Self-service bounty user journey on local Anvil with real wallet transactions
         run: node qa/bounty-e2e.mjs
+      - name: Read-only WIF permission inspector accessibility and fail-closed checks
+        run: node qa/wif-verify.mjs
