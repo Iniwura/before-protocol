@@ -8,9 +8,9 @@ BEFORE is a prototype for the [World Is Flat](https://worldisflat.fun/build) hac
 
 ## Product routes
 
-- **Landing page:** https://before-web-theta.vercel.app/ (the next approved release will point the root URL here)
-- **Working app:** https://before-web-theta.vercel.app/app/ (Protect, Challenge and Proof)
-- The existing release remains public and unchanged while this route split is reviewed on the `feat/bounty-e2e-and-product-shell` PR. The Vercel branch preview is protected by project authentication.
+- **Landing page:** https://before-web-git-feat-bounty-e2e-a-524092-iniwura-akurus-projects.vercel.app/
+- **Working app:** https://before-web-git-feat-bounty-e2e-a-524092-iniwura-akurus-projects.vercel.app/app/ (Protect, Challenge and Proof)
+- The existing production release remains unchanged while this route split is reviewed on draft PR #5. The Vercel branch preview is protected by project authentication.
 - Legacy `/#protect`, `/#challenge`, `/#proof` deep links redirect into the app.
 - The app uses the **single, existing, verified** `web/deployment.json`; contract addresses and protocol logic do not change.
 
