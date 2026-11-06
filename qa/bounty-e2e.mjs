@@ -71,6 +71,11 @@ try {
   const size=await page.evaluate(()=>({scroll:document.documentElement.scrollWidth,client:document.documentElement.clientWidth}));
   assert.ok(size.scroll<=size.client+1,'Bounty layout overflows at '+width);
   await page.addScriptTag({path:path.join(root,'qa/node_modules/axe-core/axe.min.js')});
+  assert.equal(await page.locator('#entry-choice').isVisible(),true,'Initial screen should ask for the user goal');
+  assert.equal(await page.locator('.workbench').isHidden(),true,'No blockchain forms before selecting a goal');
+  assert.equal(await page.locator('.entry-card').count(),3,'Exactly three clear entry choices');
+  await page.locator('[data-start="sponsor"]').click();
+  assert.ok(await page.locator('#role-sponsor').isVisible(),'Choosing sponsor should show only the creation task');
   for(const role of ['sponsor','solver','reviewer','recover']){
    await page.locator('#tab-'+role).click();
    assert.ok(await page.locator('#role-'+role).isVisible(),'Role unavailable '+role);
@@ -113,13 +118,17 @@ try {
  page.on('pageerror',e=>faults.push(e.message));
  await page.goto(base+'/app/bounty/',{waitUntil:'domcontentloaded'});
  await page.waitForFunction(()=>document.querySelector('#activity-text').textContent.includes('Ready.'),{timeout:25000});
+ await page.locator('[data-start="sponsor"]').click();
  await page.locator('#wallet-connect').click();
  await page.waitForFunction(()=>document.querySelector('#wallet-label').textContent.includes('…'));
  await page.locator('#reviewers').fill(reviewer);
+ await page.locator('details.advanced-settings summary').click();
  await page.locator('#commit-minutes').fill('2');
  await page.locator('#reveal-minutes').fill('5');
  await page.locator('#publish-bounty').click();
  await page.waitForFunction(()=>document.querySelector('#activity-text').textContent.includes('is live'),{timeout:55000});
+ assert.equal(await page.locator('#publish-success').isVisible(),true,'Sponsor should see a shareable success state, not solver form');
+ assert.equal(await page.locator('#role-sponsor').isVisible(),true,'Sponsor should remain in their own workflow');
  let id=await page.locator('#challenge-id').inputValue();assert.match(id,/^[1-9]\d*$/);
  result.transactions.push({stage:'create',id});
  await page.evaluate(()=>window.__switchTestAccount(2));
