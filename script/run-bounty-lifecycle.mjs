@@ -77,8 +77,8 @@ async function deploy(rpcURL,flags,name,constructorArgs=[]){
  if(!r||r.status!=='0x1'||r.contractAddress?.toLowerCase()!==addr.toLowerCase())throw Error('Deployment receipt mismatch '+name);
  return {address:addr,tx:hash};
 }
-async function readValue(url,to,signature){
- const {stdout}=await run(cast,['call',to,signature,'--rpc-url',url]);
+async function readValue(url,to,signature,...args){
+ const {stdout}=await run(cast,['call',to,signature,...args,'--rpc-url',url]);
  return stdout.trim().split(' ')[0];
 }
 async function readAmount(url,token,address){
