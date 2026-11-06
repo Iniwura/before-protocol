@@ -73,9 +73,11 @@ try {
   await page.addScriptTag({path:path.join(root,'qa/node_modules/axe-core/axe.min.js')});
   assert.equal(await page.locator('#entry-choice').isVisible(),true,'Initial screen should ask for the user goal');
   assert.equal(await page.locator('.workbench').isHidden(),true,'No blockchain forms before selecting a goal');
+  assert.equal(await page.locator('#wallet-connect').isHidden(),true,'No wallet prompt before choosing a task');
   assert.equal(await page.locator('.entry-card').count(),3,'Exactly three clear entry choices');
   await page.locator('[data-start="sponsor"]').click();
   assert.ok(await page.locator('#role-sponsor').isVisible(),'Choosing sponsor should show only the creation task');
+  assert.equal(await page.locator('#wallet-connect').isVisible(),true,'Wallet connection appears only inside a task');
   for(const role of ['sponsor','solver','reviewer','recover']){
    if(role!=='sponsor'){
     await page.locator('#change-goal').click();
@@ -149,6 +151,8 @@ async function chooseTask(role){
  await page.waitForFunction(()=>document.querySelector('#salt').value.startsWith('0x'));
  await page.locator('#commit-finding').click();
  await page.waitForFunction(()=>document.querySelector('#activity-text').textContent.includes('Finding committed'),{timeout:45000});
+ assert.equal(await page.locator('#review-handoff').isVisible(),true,'Commitment must explain the private reviewer handoff');
+ assert.equal(await page.locator('#copy-review-request').isVisible(),true,'Committed finding must provide a shareable reviewer request');
  result.transactions.push({stage:'commit',id});
  await page.locator('#reveal-finding').click();
  await page.waitForFunction(()=>document.querySelector('#activity-text').textContent.includes('Reveal is allowed only within the active reveal window.'));
