@@ -77,7 +77,10 @@ try {
   await page.locator('[data-start="sponsor"]').click();
   assert.ok(await page.locator('#role-sponsor').isVisible(),'Choosing sponsor should show only the creation task');
   for(const role of ['sponsor','solver','reviewer','recover']){
-   await page.locator('#tab-'+role).click();
+   if(role!=='sponsor'){
+    await page.locator('#change-goal').click();
+    await page.locator('[data-start="'+role+'"]').click();
+   }
    assert.ok(await page.locator('#role-'+role).isVisible(),'Role unavailable '+role);
    const violations=await page.evaluate(async()=>{
     const x=await window.axe.run(document,{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21a','wcag21aa']}});
@@ -115,6 +118,12 @@ try {
   window.__switchTestAccount=index=>{active=index;(handlers.accountsChanged||[]).forEach(fn=>fn([accounts[active]]));};
  },wallets);
  const page=await context.newPage();const faults=[];
+async function chooseTask(role){
+ await page.locator('#change-goal').click();
+ await page.locator('[data-start="'+role+'"]').click();
+ assert.equal(await page.locator('#role-'+role).isVisible(),true,'Task '+role+' should open');
+}
+
  page.on('pageerror',e=>faults.push(e.message));
  await page.goto(base+'/app/bounty/',{waitUntil:'domcontentloaded'});
  await page.waitForFunction(()=>document.querySelector('#activity-text').textContent.includes('Ready.'),{timeout:25000});
@@ -128,11 +137,13 @@ try {
  await page.locator('#publish-bounty').click();
  await page.waitForFunction(()=>document.querySelector('#activity-text').textContent.includes('is live'),{timeout:55000});
  assert.equal(await page.locator('#publish-success').isVisible(),true,'Sponsor should see a shareable success state, not solver form');
+ assert.equal(await page.locator('#copy-published-link').count(),1);
+ assert.equal(await page.locator('#copy-reviewer-link').count(),1);
  assert.equal(await page.locator('#role-sponsor').isVisible(),true,'Sponsor should remain in their own workflow');
  let id=await page.locator('#challenge-id').inputValue();assert.match(id,/^[1-9]\d*$/);
  result.transactions.push({stage:'create',id});
  await page.evaluate(()=>window.__switchTestAccount(2));
- await page.locator('#tab-solver').click();
+ await chooseTask('solver');
  await page.locator('#evidence').fill('BTEST training vault checks individual transfers but misses the daily aggregate limit.');
  await page.locator('#generate-salt').click();
  await page.waitForFunction(()=>document.querySelector('#salt').value.startsWith('0x'));
@@ -145,7 +156,7 @@ try {
  await page.locator('#reveal-finding').click();
  await page.waitForFunction(()=>document.querySelector('#activity-text').textContent.includes('Reviewer quorum has not approved'));
  await page.evaluate(()=>window.__switchTestAccount(0));
- await page.locator('#tab-reviewer').click();
+ await chooseTask('reviewer');
  await page.locator('#solver-address').fill(solver);
  await page.locator('#review-evidence').fill('BTEST training vault checks individual transfers but misses the daily aggregate limit.');
  await page.locator('#approve-finding').click();
@@ -157,7 +168,7 @@ try {
  await page.waitForFunction(()=>document.querySelector('#activity-text').textContent.includes('Reviewer approval recorded'),{timeout:30000});
  result.transactions.push({stage:'review',id});
  await page.evaluate(()=>window.__switchTestAccount(2));
- await page.locator('#tab-solver').click();
+ await chooseTask('solver');
  await page.locator('#evidence').fill('BTEST training vault checks individual transfers but misses the daily aggregate limit.');
  await page.locator('#reveal-finding').click();
  await page.waitForFunction(()=>document.querySelector('#activity-text').textContent.includes('settled'),{timeout:45000});
@@ -165,29 +176,29 @@ try {
  result.transactions.push({stage:'settle',id});
  // Sponsor cancellation, with zero commitments.
  await page.evaluate(()=>window.__switchTestAccount(0));
- await page.locator('#tab-sponsor').click();
+ await chooseTask('sponsor');
  await page.locator('#publish-bounty').click();
  await page.waitForFunction(()=>document.querySelector('#activity-text').textContent.includes('is live'),{timeout:55000});
  id=await page.locator('#challenge-id').inputValue();
- await page.locator('#tab-recover').click();
+ await chooseTask('recover');
  await page.locator('#cancel-bounty').click();
  await page.waitForFunction(()=>document.querySelector('#activity-text').textContent.includes('Cancel unused bounty confirmed onchain'),{timeout:30000});
  assert.equal(await page.locator('#summary-state').innerText(),'Canceled');
  result.transactions.push({stage:'cancel',id});
  // Expiry and both refunds on a third challenge.
- await page.locator('#tab-sponsor').click();
+ await chooseTask('sponsor');
  await page.locator('#publish-bounty').click();
  await page.waitForFunction(()=>document.querySelector('#activity-text').textContent.includes('is live'),{timeout:55000});
  id=await page.locator('#challenge-id').inputValue();
  await page.evaluate(()=>window.__switchTestAccount(2));
- await page.locator('#tab-solver').click();
+ await chooseTask('solver');
  await page.locator('#evidence').fill('BTEST training vault checks individual transfers but misses the daily aggregate limit.');
  await page.locator('#generate-salt').click();
  await page.locator('#commit-finding').click();
  await page.waitForFunction(()=>document.querySelector('#activity-text').textContent.includes('Finding committed'),{timeout:45000});
  await rpc('evm_increaseTime',['0x190']);await rpc('evm_mine',[]);
  await page.evaluate(()=>window.__switchTestAccount(0));
- await page.locator('#tab-recover').click();
+ await chooseTask('recover');
  await page.locator('#refund-reward').click();
  await page.waitForFunction(()=>document.querySelector('#activity-text').textContent.includes('Refund expired reward confirmed onchain'),{timeout:30000});
  await page.evaluate(()=>window.__switchTestAccount(2));
