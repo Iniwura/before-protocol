@@ -39,6 +39,7 @@ test('amount formatting never routes large BigInts through Number',()=>{
  assert.equal(formatWif(10n**18n),'1');
  assert.equal(formatWif(12345678000000000000n),'12.34567');
  assert.equal(formatWif(0n),'0');
+ assert.equal(formatWif(1n),'<0.00001');
  assert.equal(readUint('0x'+'0'.repeat(63)+'a'),10n);
  assert.throws(()=>readUint('0x3'),/Malformed/);
 });
