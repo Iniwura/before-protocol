@@ -1,5 +1,5 @@
 import {CHAIN_ID,RPC_URL,EXPLORER,isAddress,isTxHash,evaluateProtect,evaluateChallenge,parseHexUint,decodeAddress,format18} from './core.mjs';
-import {SELECTORS,encodeAddressCall,encodeDemoCreate,encodePracticeCreate,encodeDemoWithdraw,encodePracticeProof,readAddressResult,readBoolResult,deploymentReady} from './onchain.mjs';
+import {SELECTORS,encodeAddressCall,encodeDemoCreate,encodePracticeCreate,encodeDemoWithdraw,encodePracticeProof,readAddressResult,readBoolResult,readUintResult,deploymentReady} from './onchain.mjs';
 const $=(id)=>document.getElementById(id);
 const all=(selector)=>Array.from(document.querySelectorAll(selector));
 
@@ -100,6 +100,7 @@ async function refreshNetwork(){
 $('refresh-chain').addEventListener('click',refreshNetwork);
 
 function setResult(target,message){target.replaceChildren();target.textContent=message;}
+function compactAddress(address){return address.slice(0,6)+'…'+address.slice(-4);}
 function addLookupRows(target,rows,link){
   const grid=document.createElement('div');grid.className='lookup-grid';
   for(const [label,value] of rows){
@@ -186,13 +187,45 @@ async function initializeOnchain() {
     const config = await response.json();
     if (!deploymentReady(config)) return;
     await assertNetwork();
-    const [factoryCode,tokenCode] = await Promise.all([
+    const [factoryCode,tokenCode,challengeCode] = await Promise.all([
       rpc('eth_getCode',[config.factory,'latest']),
-      rpc('eth_getCode',[config.mockToken,'latest'])
+      rpc('eth_getCode',[config.mockToken,'latest']),
+      rpc('eth_getCode',[config.challengeEscrow,'latest'])
     ]);
-    if (!factoryCode || factoryCode==='0x' || !tokenCode || tokenCode==='0x') return;
+    if (!factoryCode || factoryCode==='0x' || !tokenCode || tokenCode==='0x' || !challengeCode || challengeCode==='0x') return;
+    const hasCreatedOutputs = config.demoVault && config.practiceArena && config.practiceVault;
+    if (hasCreatedOutputs) {
+      const outputCodes = await Promise.all([
+        rpc('eth_getCode',[config.demoVault,'latest']),
+        rpc('eth_getCode',[config.practiceArena,'latest']),
+        rpc('eth_getCode',[config.practiceVault,'latest'])
+      ]);
+      if (outputCodes.some(code => !code || code==='0x')) return;
+    }
+    const nextChallengeId = readUintResult(await call(config.challengeEscrow,SELECTORS.nextChallengeId));
     // The manifest is created only after manual explorer verification; the browser checks chain and existence.
     verifiedDemo = config;
+    $('proof-escrow').textContent=compactAddress(config.challengeEscrow);
+    $('proof-escrow').title=config.challengeEscrow;
+    if (config.demoVault) {
+      $('proof-demo-meta').hidden = false;
+      $('proof-demo').textContent=compactAddress(config.demoVault);
+      $('proof-demo').title=config.demoVault;
+      $('vault-address').value=config.demoVault;
+    }
+    if (config.practiceArena && config.practiceVault) {
+      $('proof-practice-meta').hidden = false;
+      $('proof-practice').textContent=compactAddress(config.practiceArena);
+      $('proof-practice').title=config.practiceArena;
+    }
+    if (config.allowedTx && config.deniedTx && config.practiceProofTx) {
+      $('proof-flow-meta').hidden = false;
+      $('proof-flow').textContent='3 receipts verified';
+    }
+    $('onchain-escrow').hidden = false;
+    $('onchain-escrow-status').textContent = nextChallengeId === 1n
+      ? 'Escrow deployed and empty. No WIF reward is funded.'
+      : String(nextChallengeId - 1n) + ' challenge record(s) exist. No demo reward is funded.';
     $('onchain-protect').hidden = false;
     $('onchain-challenge').hidden = false;
   } catch {
@@ -247,6 +280,21 @@ async function sendDemoTransaction({to,data,status,successText}) {
   }
   if (!receipt) {
     showOnchainStatus(status,'Transaction submitted; receipt not yet confirmed.',hash);
+    return null;
+  }
+  const transaction=await rpc('eth_getTransactionByHash',[hash]);
+  const matchesRequest=transaction
+    && typeof transaction.hash==='string'
+    && transaction.hash.toLowerCase()===hash.toLowerCase()
+    && typeof transaction.from==='string'
+    && transaction.from.toLowerCase()===owner.toLowerCase()
+    && typeof transaction.to==='string'
+    && transaction.to.toLowerCase()===to.toLowerCase()
+    && typeof transaction.input==='string'
+    && transaction.input.toLowerCase()===data.toLowerCase()
+    && parseHexUint(transaction.value??'0x0')===0n;
+  if (!matchesRequest) {
+    showOnchainStatus(status,'The mined transaction did not match the requested call. No success is claimed.',hash);
     return null;
   }
   if (receipt.status!=='0x1') {

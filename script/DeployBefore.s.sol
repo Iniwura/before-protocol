@@ -3,6 +3,7 @@ pragma solidity ^0.8.24;
 
 import {BeforeFactory} from "../src/BeforeFactory.sol";
 import {MockERC20} from "../src/mocks/MockERC20.sol";
+import {WifSecurityChallenge} from "../src/WifSecurityChallenge.sol";
 
 interface VmDeploy {
     function startBroadcast() external;
@@ -20,10 +21,13 @@ contract DeployBefore {
         vm.startBroadcast();
         MockERC20 mock = new MockERC20();
         BeforeFactory factory = new BeforeFactory();
+        // The escrow is deployed empty. No WIF is funded by this test-only script.
+        WifSecurityChallenge challengeEscrow = new WifSecurityChallenge();
         // A real protected vault with 150 valueless BTEST and a fresh 150-BTEST practice arena.
         factory.createDemoVault(address(mock));
         factory.createPractice(address(mock));
         vm.stopBroadcast();
+        challengeEscrow; // The direct creation receipt is recorded for independent bytecode proof.
         // Addresses appear in broadcast receipts and VaultCreated / PracticeCreated events.
         // Check explorer-verified source before publishing a deployment manifest.
     }

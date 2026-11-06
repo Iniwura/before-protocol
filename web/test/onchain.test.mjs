@@ -1,9 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {SELECTORS,encodeAddress,encodeUint,encodeDemoCreate,encodePracticeCreate,encodeDemoWithdraw,encodePracticeProof,readAddressResult,readBoolResult,deploymentReady} from '../onchain.mjs';
+import {SELECTORS,encodeAddress,encodeUint,encodeDemoCreate,encodePracticeCreate,encodeDemoWithdraw,encodePracticeProof,readAddressResult,readBoolResult,readUintResult,deploymentReady} from '../onchain.mjs';
 const ADDR = '0x' + '12'.repeat(20);
 const TX = '0x' + 'ab'.repeat(32);
-const cfg = {chainId:46630,factory:ADDR,mockToken:ADDR,verified:true,factoryTx:TX,mockTokenTx:TX};
+const cfg = {chainId:46630,factory:ADDR,mockToken:ADDR,challengeEscrow:ADDR,verified:true,factoryTx:TX,mockTokenTx:TX,challengeEscrowTx:TX};
 test('ABI address is 32-byte padded',()=>assert.equal(encodeAddress(ADDR),'0'.repeat(24)+'12'.repeat(20)));
 test('ABI address rejects zero and malformed',()=>{assert.throws(()=>encodeAddress('0x'+'0'.repeat(40))); assert.throws(()=>encodeAddress('x'));});
 test('ABI uint256 boundary',()=>{assert.equal(encodeUint(0n),'0'.repeat(64));assert.equal(encodeUint(1n),'0'.repeat(63)+'1');assert.throws(()=>encodeUint(-1));assert.throws(()=>encodeUint(2n**256n));});
@@ -11,5 +11,12 @@ test('create demo and practice calldata have correct selectors',()=>{assert.equa
 test('withdraw encodes destination and fixed mock amount',()=>{const data=encodeDemoWithdraw(ADDR);assert.equal(data.slice(0,10),SELECTORS.withdraw);assert.equal(data.length,138);});
 test('practice calldata uses correct dynamic array ABI',()=>{const data=encodePracticeProof();assert.equal(data.slice(0,10),SELECTORS.proveSplitBypass);assert.equal(data.slice(10,74),encodeUint(32n));assert.equal(data.slice(74,138),encodeUint(2n));assert.equal(data.length,266);});
 test('practice array input is bounded',()=>{assert.throws(()=>encodePracticeProof([1n]));assert.throws(()=>encodePracticeProof(Array(9).fill(1n)));});
-test('ABI return values are strict',()=>{assert.equal(readBoolResult('0x'+encodeUint(1n)),true);assert.equal(readBoolResult('0x'+encodeUint(0n)),false);assert.throws(()=>readBoolResult('0x'+encodeUint(2n)));assert.equal(readAddressResult('0x'+encodeAddress(ADDR)),ADDR);assert.equal(readAddressResult('0x'+'0'.repeat(64)),null);});
-test('deployment manifest is fail-closed by default',()=>{assert.equal(deploymentReady(null),false);assert.equal(deploymentReady({...cfg,verified:false}),false);assert.equal(deploymentReady({...cfg,chainId:4663}),false);assert.equal(deploymentReady({...cfg,factoryTx:null}),false);assert.equal(deploymentReady({...cfg,factory:'0x'+'0'.repeat(40)}),false);assert.equal(deploymentReady(cfg),true);});
+test('ABI return values are strict',()=>{assert.equal(readBoolResult('0x'+encodeUint(1n)),true);assert.equal(readBoolResult('0x'+encodeUint(0n)),false);assert.throws(()=>readBoolResult('0x'+encodeUint(2n)));assert.equal(readAddressResult('0x'+encodeAddress(ADDR)),ADDR);assert.equal(readAddressResult('0x'+'0'.repeat(64)),null);assert.equal(readUintResult('0x'+encodeUint(3n)),3n);assert.throws(()=>readUintResult('0x1'));});
+test('deployment manifest is fail-closed by default',()=>{assert.equal(deploymentReady(null),false);assert.equal(deploymentReady({...cfg,verified:false}),false);assert.equal(deploymentReady({...cfg,chainId:4663}),false);assert.equal(deploymentReady({...cfg,factoryTx:null}),false);assert.equal(deploymentReady({...cfg,challengeEscrowTx:null}),false);assert.equal(deploymentReady({...cfg,factory:'0x'+'0'.repeat(40)}),false);assert.equal(deploymentReady(cfg),true);});
+test('optional deployment and flow evidence must be complete',()=>{
+  const full={...cfg,deployer:ADDR,demoVault:ADDR,practiceArena:ADDR,practiceVault:ADDR,demoTx:TX,practiceTx:TX,allowedTx:TX,deniedTx:TX,practiceProofTx:TX,practiceSolver:ADDR};
+  assert.equal(deploymentReady(full),true);
+  assert.equal(deploymentReady({...full,practiceVault:null}),false);
+  assert.equal(deploymentReady({...full,practiceProofTx:null}),false);
+  assert.equal(deploymentReady({...cfg,demoVault:ADDR}),false);
+});
