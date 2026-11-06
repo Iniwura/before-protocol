@@ -4,12 +4,20 @@
 
 Bounty Studio uses the **existing verified Robinhood Chain Testnet (chain ID 46630)** challenge escrow and freely mintable **BTEST** token. The app intentionally provides **no WIF token selector and no mainnet option**. Its bounty scope is fixed to the BEFORE training vault; it is not a general-audience security reward marketplace yet.
 
+## The product in one line
+
+**A project posts a BTEST reward → a researcher submits a finding → appointed reviewers assess the evidence → the researcher reveals the approved evidence → the existing escrow settles a valueless test-token reward.**
+
+The landing page now launches the **main Bounty Studio at `/app/bounty/`**. The separate **Protect → Challenge → Proof** flow at `/app/` is an educational demonstration.
+
+When you first open Bounty Studio, you **do not need a wallet**. It asks what you want to accomplish: **Post a reward**, **Submit a finding**, **Review a finding**, or **Recover an unfinished bounty**. Choose one to see only the relevant task. Select **Change what I want to do** to start another task. The proof demo is read-only and wallet-free.
+
 ## First time: create a test bounty
 
 1. Use a browser EVM wallet with **Robinhood Chain Testnet ETH** for transaction gas. Open **Bounty Studio**, choose **Create**, and connect the wallet. The app switches to chain 46630 if necessary.
 2. Enter 1–3 reviewer wallet addresses **different from the sponsor wallet**. Choose how many of those reviewers must approve (quorum), a BTEST reward and solver bond, and the commit/reveal windows. BTEST is freely minted and has no monetary value.
 3. Click **Publish BTEST bounty**. Confirm each required wallet transaction: deploy the approved immutable reviewer gate, mint BTEST if needed, approve **only the exact BTEST reward**, and publish the challenge to the verified escrow. Each receipt is checked for the expected sender, contract and calldata.
-4. Copy the resulting bounty link containing the onchain challenge ID. Share it with a solver and your appointed reviewers. It can be opened read-only without a wallet.
+4. After creation, BEFORE stays in the sponsor task and displays **Bounty #N is live**, plus separate **Copy researcher link** and **Copy reviewer link** actions. Send each person the appropriate link. No need for the sponsor to switch to the researcher screen.
 
 The app stores the last reviewer-gate address **locally** for reuse only when the reviewer set and quorum still match the chain. No secret keys are stored.
 
@@ -17,9 +25,9 @@ The app stores the last reviewer-gate address **locally** for reuse only when th
 
 1. Open the shared bounty URL or enter its ID. The app reads the actual reward, bond, deadlines, verifier and status from Robinhood Chain.
 2. Switch to **Solve**, connect a **separate solver wallet**, enter a finding description, and click **Generate** for a secure 32-byte random commitment salt.
-3. **Copy the private salt** and keep it. Bounty Studio saves it only in your current browser's local storage, keyed by challenge and wallet, to help with a later reveal. It does **not** back it up to a server. Switching browsers or clearing storage can cause loss of your ability to reveal the committed finding unless you saved the salt yourself.
+3. **Copy the recovery key** (the technical term is *commitment salt*) and keep it. Bounty Studio saves it only in your current browser's local storage, keyed by challenge and wallet, to help with a later reveal. It does **not** back it up to a server. Switching browsers or clearing storage can cause loss of your ability to reveal the committed finding unless you saved the salt yourself.
 4. Click **Commit finding**. The app derives the solver-bound commitment using the escrow's onchain `commitmentFor`, mints valueless BTEST for the bond if needed, approves the exact bond and submits the commitment.
-5. Share the exact evidence privately with your reviewer. After the commit deadline passes **and the configured reviewer quorum has approved this evidence**, reopen the challenge using the original wallet. Reenter the exact evidence, restore your saved salt and click **Reveal & settle**. The app checks the pending commitment, exact digest, reviewer count and block deadline before offering the wallet transaction.
+5. Click **Copy message for reviewer** and send that message privately to the appointed reviewer. BEFORE does not deliver messages for you. After the commit deadline passes **and the configured reviewer quorum has approved this evidence**, reopen the challenge using the original wallet. Reenter the exact evidence, restore your saved salt and click **Reveal & settle**. The app checks the pending commitment, exact digest, reviewer count and block deadline before offering the wallet transaction.
 
 **Important:** The Solidity escrow itself slashes the solver bond if the evidence fails its reviewer gate. BEFORE's UI deliberately blocks a reveal when the required approvals are missing, but a user can still call the contract directly. This is a test-token-only workflow, not a guarantee of paid security review.
 
