@@ -4,7 +4,25 @@
 
 BEFORE is a prototype for the [World Is Flat](https://worldisflat.fun/build) hackathon on Robinhood Chain. It demonstrates enforceable ERC-20 transfer policies, an isolated intentionally vulnerable practice vault, deterministic verification of a policy bypass, and a separate commit/reveal escrow for independently verifiable security findings.
 
-> **Research only. The mock-only contracts are deployed and independently verified on Robinhood Chain testnet; they are not audited and must not receive real assets.** The WIF-capable escrow is empty, no real WIF reward is funded, and no mainnet custody is claimed.
+> **Research only. The mock-only contracts are deployed and independently verified on Robinhood Chain testnet; they are not audited and must not receive real assets.** The WIF-capable escrow has received no real WIF reward from the BEFORE team. Any BTEST challenge demonstration is valueless and separately labeled. No mainnet custody is claimed.
+
+## Product routes
+
+- **Landing page:** https://before-web-theta.vercel.app/ (the next approved release will point the root URL here)
+- **Working app:** https://before-web-theta.vercel.app/app/ (Protect, Challenge and Proof)
+- The existing release remains public and unchanged while this route split is reviewed on the `feat/bounty-e2e-and-product-shell` PR. The Vercel branch preview is protected by project authentication.
+- Legacy `/#protect`, `/#challenge`, `/#proof` deep links redirect into the app.
+- The app uses the **single, existing, verified** `web/deployment.json`; contract addresses and protocol logic do not change.
+
+## Complete BTEST bounty lifecycle
+
+The [BTEST-only end-to-end demo](docs/BOUNTY_TESTNET_DEMO.md) now exercises the real `WifSecurityChallenge` settlement code end to end: sponsor deposits, solver commits, two explicit reviewer approvals, payout, invalid-evidence slashing, cancellation, expiry and bond refunds. Synthetic demo actors have separate onchain addresses, but **all are controlled by one operator**. This is not independent security review.
+
+```sh
+node script/run-bounty-lifecycle.mjs --local
+```
+
+The local runner deploys contracts and advances disposable Anvil time. The public runner targets **only Robinhood Chain Testnet (46630)**, requires the previously authorized `before-testnet` keystore and real block timestamps, and will write public proof metadata only after all signed receipts are verified. **The public bounty lifecycle broadcast has not yet been completed or claimed.** Until then `web/bounty-proof.json` is `verified:false`, keeping the app's bounty-evidence panel hidden. No WIF token is funded.
 
 ## Protect
 
@@ -16,7 +34,7 @@ TrainingVault intentionally omits the aggregate daily limit. TrainingArena lets 
 
 ## Proof
 
-The exercise verifies token balance changes and a one-time solution state using contract execution, not an AI opinion. The verified deployment manifest also lets the app read the actual empty challenge escrow's record count without enabling WIF funding. Public-chain receipts and immutable-aware bytecode evidence are recorded in [TESTNET_PROOF.md](docs/TESTNET_PROOF.md).
+The exercise verifies token balance changes and a one-time solution state using contract execution, not an AI opinion. The verified deployment manifest also lets the app read the actual challenge escrow's record count without enabling WIF funding. Public-chain receipts and immutable-aware bytecode evidence are recorded in [TESTNET_PROOF.md](docs/TESTNET_PROOF.md).
 
 ## Reproduce locally
 
@@ -27,6 +45,7 @@ forge build
 forge test --fuzz-runs 1024 -vvv
 node --test checks/reference.test.mjs checks/deployment-proof.test.mjs checks/deployment-cli.test.mjs checks/broadcast-args.test.mjs web/test/core.test.mjs web/test/onchain.test.mjs
 node script/anvil-e2e.mjs
+node script/run-bounty-lifecycle.mjs --local
 node script/check-chain.mjs
 ~~~
 
@@ -47,9 +66,9 @@ GitHub Actions [run 123](https://github.com/Iniwura/before-protocol/actions/runs
 
 ## Live research prototype
 
-**Verified preview:** https://before-1xhzzheka-iniwura-akurus-projects.vercel.app/
+**Current approved public site:** https://before-web-theta.vercel.app/
 
-The responsive, dependency-free frontend has three experiences:
+The responsive, dependency-free application at `/app/` has three experiences:
 
 - **Protect:** local, clearly labeled policy preview. No real transaction occurs.
 - **Challenge:** local simulation of the intentional split-transfer flaw using mock amounts. The onchain practice path uses BTEST only and pays no bounty.
@@ -57,7 +76,7 @@ The responsive, dependency-free frontend has three experiences:
 
 The web code is in `web/`; the Node test commands cover policy, ABI, deployment-proof and browser-facing logic. GitHub Actions checks Solidity, policy-model, deployment and web tests. CI is at https://github.com/Iniwura/before-protocol/actions.
 
-The verified preview reads the public testnet deployment through the checked-in manifest. Production remains unchanged until separately approved.
+The live application reads the verified public testnet deployment through the checked-in manifest. The separate landing/app experience remains on a draft PR until explicitly approved.
 
 ## Architecture
 
@@ -76,7 +95,7 @@ The verified preview reads the public testnet deployment through the checked-in 
 
 The `BeforeFactory` source adds self-service creation of **testnet-only, mock-token** vaults and independent practice arenas. A single wallet transaction can create an owner-controlled protected vault pre-funded with valueless BTEST; another creates a separate challenge funded only with BTEST. Factory registry reads let observers check whether an address was created by the configured factory.
 
-The versioned `web/deployment.json` now contains independently verified Robinhood Chain testnet addresses and genuine deployment transaction hashes. The UI exposes only the mock-token Protect/Challenge paths; the empty escrow remains read-only and cannot fund WIF.
+The versioned `web/deployment.json` now contains independently verified Robinhood Chain testnet addresses and genuine deployment transaction hashes. The UI exposes only the mock-token Protect/Challenge paths; the WIF-capable escrow remains read-only in the app and receives no WIF funding from the demonstration.
 
 This is not a real-WIF bounty or a mainnet custody release.
 
@@ -92,7 +111,7 @@ The contract can hold WIF when configured with the intended Robinhood Chain WIF 
 
 ## Proving a testnet deployment
 
-After a mock-only testnet deployment, `script/verify-testnet.mjs` can check the actual factory, test-token and empty escrow creation receipts, their contract addresses, 12 confirmation blocks, and immutable-aware runtime provenance against Foundry artifacts. Its full interaction mode also checks the two factory-call receipts, exact calldata and factory event data, deployer-owned registry outputs, created vault/arena constructor state, exact BTEST transfer logs, block-specific 150/130/40 BTEST balances, and public Protect/Challenge receipts for an allowed withdrawal, a denied withdrawal and the 60+50 practice proof. It is read-only and cannot make a false testnet claim from only a pasted address.
+After a mock-only testnet deployment, `script/verify-testnet.mjs` can check the actual factory, test-token and challenge escrow creation receipts, their contract addresses, 12 confirmation blocks, and immutable-aware runtime provenance against Foundry artifacts. Its full interaction mode also checks the two factory-call receipts, exact calldata and factory event data, deployer-owned registry outputs, created vault/arena constructor state, exact BTEST transfer logs, block-specific 150/130/40 BTEST balances, and public Protect/Challenge receipts for an allowed withdrawal, a denied withdrawal and the 60+50 practice proof. It is read-only and cannot make a false testnet claim from only a pasted address.
 
 The same eleven-argument verifier is exercised against real local Anvil state by `node script/anvil-e2e.mjs`; genuine evidence must pass and swapped receipts must fail. Local evidence is never eligible to enable the hosted manifest.
 
