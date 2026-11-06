@@ -131,8 +131,8 @@ button,input{font:inherit}
  .receipt-arrow{grid-column:3;grid-row:1;align-self:start;font-size:27px}
  .bounty-layout{grid-template-columns:1fr;gap:22px;padding:45px 0 30px}
  .bounty{padding-bottom:105px}.bounty-graphic{height:340px}
- .last-cta{padding-bottom:75px}.last-cta h2{font-size:clamp(74px,13vw,120px)}
- .last-arrow{font-size:95px}
+ .last-cta{padding-bottom:75px}.last-cta>div{flex-direction:column;align-items:stretch}.last-cta h2{font-size:clamp(68px,12.5vw,120px)}
+ .last-arrow{font-size:88px;align-self:flex-end;margin-top:12px}
  .site-footer{padding:20px}
  .footer-logo{font-size:22.3vw}
  .footer-top,.footer-bottom{font-size:9px}
