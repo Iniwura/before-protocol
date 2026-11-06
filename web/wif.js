@@ -1,6 +1,6 @@
 import {WIF_TOKEN,WIF_MAINNET_CHAIN_ID,WIF_RPC,WIF_EXPLORER,
  isAddress,isHash,same,balanceData,allowanceData,readUint,
- parseApprovalTransaction,formatWif,permissionSummary,formatRPCBlock} from './wif-core.mjs';
+ parseApprovalTransaction,isWifSymbol,formatWif,permissionSummary,formatRPCBlock} from './wif-core.mjs';
 
 const $=id=>document.getElementById(id);
 const state={request:0};
@@ -73,8 +73,7 @@ $('check-form').addEventListener('submit',async event=>{
    rpc('eth_call',[{to:WIF_TOKEN,data:'0x313ce567'},snapshot]),
    checkApproval()
   ]);
-  if(BigInt(decimals)!==18n||!/^0x[0-9a-fA-F]+$/.test(symbol)||
-     !symbol.toLowerCase().includes('574946'))throw Error('Mainnet contract metadata did not match WIF.');
+  if(BigInt(decimals)!==18n||!isWifSymbol(symbol))throw Error('Mainnet contract metadata did not match WIF.');
   const [bal,allowance,spenderCode]=await Promise.all([
    rpc('eth_call',[{to:WIF_TOKEN,data:balanceData(approval.owner)},snapshot]),
    rpc('eth_call',[{to:WIF_TOKEN,data:allowanceData(approval.owner,approval.spender)},snapshot]),
