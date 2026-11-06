@@ -133,7 +133,7 @@ const roleNames={sponsor:'Create a bounty',solver:'Submit a finding',reviewer:'R
 function showRole(which){
  if(!roleNames[which])return;
  $('entry-choice').hidden=true;
- $('intro').hidden=false;
+ document.querySelector('.intro').hidden=false;
  document.querySelector('.workbench').hidden=false;
  document.querySelector('.challenge-inspector').hidden=which==='sponsor'&&!state.id;
  setText('current-step-label',roleNames[which]);
@@ -157,7 +157,7 @@ for(const button of all('[role="tab"]')){
 }
 $('change-goal').addEventListener('click',()=>{
  $('entry-choice').hidden=false;
- $('intro').hidden=true;
+ document.querySelector('.intro').hidden=true;
  document.querySelector('.workbench').hidden=true;
  const url=new URL(location.href);url.hash='';history.replaceState(null,'',url.toString());
  $('entry-title').focus({preventScroll:true});
