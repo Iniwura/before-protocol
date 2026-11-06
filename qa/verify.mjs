@@ -9,10 +9,10 @@ import {encodeDemoCreate,encodeDemoWithdraw,encodePracticeCreate,encodePracticeP
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(here, '../web');
 const mime = { '.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.mjs':'text/javascript; charset=utf-8','.json':'application/json','.svg':'image/svg+xml','.css':'text/css; charset=utf-8' };
-const allowed = new Set(['index.html','styles.css','app.js','core.mjs','onchain.mjs','deployment.json','favicon.svg']);
+const allowed = new Set(['index.html','landing.css','landing.js','app/index.html','styles.css','app.js','core.mjs','onchain.mjs','deployment.json','favicon.svg']);
 const server = createServer(async(req,res)=>{
   const pathname = new URL(req.url,'http://localhost').pathname;
-  const file = pathname==='/'?'index.html':pathname.slice(1);
+  const file = pathname==='/'?'index.html':pathname==='/app/'||pathname==='/app'?'app/index.html':pathname.slice(1);
   if (!allowed.has(file)) {res.writeHead(404);res.end('Not found');return;}
   try {
     const data=await readFile(path.join(root,file));
@@ -21,7 +21,8 @@ const server = createServer(async(req,res)=>{
   } catch {res.writeHead(404);res.end('Not found');}
 });
 await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
-const base='http://127.0.0.1:'+server.address().port;
+const origin='http://127.0.0.1:'+server.address().port;
+const base=origin+'/app/';
 const browser=await chromium.launch({headless:true});
 const fixture={owner:'0x'+'3'.repeat(40),factory:'0x'+'1'.repeat(40),mockToken:'0x'+'2'.repeat(40),challengeEscrow:'0x'+'6'.repeat(40),vault:'0x'+'4'.repeat(40),arena:'0x'+'5'.repeat(40),practiceVault:'0x'+'7'.repeat(40),tx:'0x'+'a'.repeat(64),demoTx:'0x'+'b'.repeat(64),practiceTx:'0x'+'c'.repeat(64),allowedTx:'0x'+'d'.repeat(64),deniedTx:'0x'+'e'.repeat(64),practiceProofTx:'0x'+'f'.repeat(64)};
 const failClosedManifest={chainId:46630,factory:null,mockToken:null,challengeEscrow:null,arena:null,demoTx:null,practiceTx:null,deployer:null,demoVault:null,practiceArena:null,practiceVault:null,allowedTx:null,deniedTx:null,practiceProofTx:null,practiceSolver:null,verified:false,factoryTx:null,mockTokenTx:null,challengeEscrowTx:null};
@@ -64,6 +65,22 @@ async function axeViolations(page){
     return violations.map(v=>({id:v.id,impact:v.impact,nodes:v.nodes.length}));
   });
 }
+// Public landing should not masquerade as an active wallet product; every link has a working app target.
+const landingContext=await browser.newContext({viewport:{width:375,height:820},reducedMotion:'reduce'});
+const landingPage=await landingContext.newPage();
+await landingPage.goto(origin+'/',{waitUntil:'domcontentloaded'});
+assert.match(await landingPage.title(),/BEFORE/,'Landing title must identify the product');
+assert.equal(await landingPage.locator('h1').innerText(),'BEFORE®','Landing has its own editorial hero');
+assert.equal(await landingPage.locator('a.header-launch').getAttribute('href'),'/app/','Primary CTA opens app');
+for(const section of ['protect','challenge','proof']){
+  assert.equal(await landingPage.locator('a.experience-row[href="/app/#'+section+'"]').count(),1,'Landing deep link missing: '+section);
+}
+assert.match(await landingPage.locator('.bounty-caveat').innerText(),/unfunded/i,'Landing must not imply a funded WIF bounty');
+await landingPage.goto(origin+'/#proof');
+await landingPage.waitForURL(origin+'/app/#proof');
+assert.equal(await landingPage.locator('#tab-proof').getAttribute('aria-selected'),'true','Legacy Proof link must still open Proof');
+await landingContext.close();
+
 const problems=[];
 let audited=0;
 try {
