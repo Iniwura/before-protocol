@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {WIF_MAINNET_CHAIN_ID,WIF_TOKEN,MAX_UINT256,isAddress,isHash,same,wordAddress,balanceData,
- allowanceData,readUint,decodeAddressWord,parseApprovalTransaction,formatWif,
+ allowanceData,readUint,decodeAddressWord,parseApprovalTransaction,isWifSymbol,formatWif,
  permissionSummary,formatRPCBlock} from '../wif-core.mjs';
 
 const owner='0x'+'1'.repeat(40),spender='0x'+'2'.repeat(40),hash='0x'+'a'.repeat(64);
@@ -25,12 +25,14 @@ test('ERC20 reads include exactly the intended owner and spender',()=>{
 });
 test('approval transaction is verified against WIF, success and standard calldata',()=>{
  const tx={hash,from:owner,to:WIF_TOKEN,input:'0x095ea7b3'+wordAddress(spender)+(100n*10n**18n).toString(16).padStart(64,'0')};
- const receipt={transactionHash:hash,to:WIF_TOKEN,status:'0x1',blockNumber:'0x1111'};
+ const receipt={transactionHash:hash,from:owner,to:WIF_TOKEN,status:'0x1',blockNumber:'0x1111'};
  const parsed=parseApprovalTransaction(tx,receipt);
  assert.equal(parsed.spender,'0x'+'2'.repeat(40));
  assert.equal(parsed.approvedAmount,100n*10n**18n);
  assert.equal(parsed.approvalBlock,4369);
  assert.throws(()=>parseApprovalTransaction({...tx,to:spender},receipt),/not a confirmed/);
+ assert.throws(()=>parseApprovalTransaction(tx,{...receipt,from:spender}),/not a confirmed/);
+ assert.throws(()=>parseApprovalTransaction({...tx,chainId:'0xb626'},receipt),/not a confirmed/);
  assert.throws(()=>parseApprovalTransaction({...tx,input:'0x095ea7b3'},receipt),/not a confirmed/);
  assert.throws(()=>parseApprovalTransaction(tx,{...receipt,status:'0x0'}),/not a confirmed/);
  assert.throws(()=>parseApprovalTransaction(tx,{...receipt,transactionHash:'0x'+'b'.repeat(64)}),/not a confirmed/);
@@ -49,4 +51,12 @@ test('permission labels distinguish zero, actual, excess and near-unlimited allo
  assert.equal(permissionSummary(101n,100n).level,'attention');
  assert.equal(permissionSummary(MAX_UINT256,100n).label,'Very large approval');
  assert.equal(formatRPCBlock('0x1237'),4663);
+});
+test('WIF symbol validation rejects arbitrary matching substrings and malformed ABI',()=>{
+ const word=n=>BigInt(n).toString(16).padStart(64,'0');
+ assert.ok(isWifSymbol('0x'+word(32)+word(3)+'574946'.padEnd(64,'0')));
+ assert.ok(isWifSymbol('0x'+'574946'.padEnd(64,'0')));
+ assert.equal(isWifSymbol('0x'+word(64)+word(3)+'574946'.padEnd(64,'0')),false);
+ assert.equal(isWifSymbol('0x'+word(32)+word(4)+'57494600'.padEnd(64,'0')),false);
+ assert.equal(isWifSymbol('0x1111574946'),false);
 });
