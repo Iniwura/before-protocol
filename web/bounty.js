@@ -16,11 +16,29 @@ const same=(a,b)=>typeof a==='string'&&typeof b==='string'&&a.toLowerCase()===b.
 const state={config:null,verifierArtifact:null,wallet:null,id:null,challenge:null,scope:null,busy:false};
 const setText=(id,content)=>{$(id).textContent=String(content)};
 const statuses=['Not submitted','Committed','Settled','Slashed','Bond refunded'];
-function activity(message,receipt){
- setText('activity-text',message);
+let statusHideTimer=null;
+function activity(message,receipt,tone='info'){
+ const panel=$('action-status');
+ const text=String(message);
+ setText('activity-text',text);
  const link=$('activity-link');link.hidden=!isTxHash(receipt);
  if(isTxHash(receipt))link.href=EXPLORER_TX(receipt);
+ if(statusHideTimer!==null){clearTimeout(statusHideTimer);statusHideTimer=null;}
+ if(text.startsWith('Ready.')){panel.hidden=true;return;}
+ const awaitingWallet=text.includes('confirm in your wallet');
+ const pending=text.includes('waiting for a mined receipt.');
+ const isError=tone==='error';
+ panel.dataset.tone=isError?'error':awaitingWallet||pending?'pending':'info';
+ setText('activity-label',isError?'ACTION NEEDS ATTENTION':awaitingWallet?'CONFIRM IN WALLET':pending?'WAITING FOR CONFIRMATION':'ACTIVITY');
+ panel.hidden=false;
+ if(!awaitingWallet&&!pending){
+  statusHideTimer=setTimeout(()=>{panel.hidden=true;statusHideTimer=null;},isError?22000:14000);
+ }
 }
+$('activity-dismiss').addEventListener('click',()=>{
+ $('action-status').hidden=true;
+ if(statusHideTimer!==null){clearTimeout(statusHideTimer);statusHideTimer=null;}
+});
 function errorText(error){
  const message=error?.shortMessage||error?.message||String(error);
  if(/user rejected|user denied|rejected the request|4001/i.test(message))return 'Wallet confirmation was declined. No success is claimed.';
@@ -126,7 +144,7 @@ async function runAction(label,fn){
  state.busy=true;
  for(const b of all('.role-form button,.recovery-actions button'))b.disabled=true;
  try{await fn()}
- catch(e){activity(label+' · '+errorText(e))}
+ catch(e){activity(label+' · '+errorText(e),null,'error')}
  finally{state.busy=false;for(const b of all('.role-form button,.recovery-actions button'))b.disabled=false}
 }
 const roleNames={sponsor:'Create a bounty',solver:'Submit a finding',reviewer:'Review a finding',recover:'Recover funds'};
