@@ -36,6 +36,8 @@ export function parseApprovalTransaction(tx,receipt){
  return {owner:tx.from,spender,approvedAmount,hash:tx.hash,approvalBlock:Number(BigInt(receipt.blockNumber))};
 }
 export function formatWif(value,precision=5){
+ if(value<0n)throw Error('Negative WIF amount.');
+ if(value>0n&&value<10n**BigInt(18-precision))return '<0.'+'0'.repeat(precision-1)+'1';
  const whole=value/10n**18n;
  const fraction=(value%10n**18n).toString().padStart(18,'0').slice(0,precision).replace(/0+$/,'');
  return whole.toLocaleString('en-US')+(fraction?'.'+fraction:'');
