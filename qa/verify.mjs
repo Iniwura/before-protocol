@@ -9,10 +9,10 @@ import {encodeDemoCreate,encodeDemoWithdraw,encodePracticeCreate,encodePracticeP
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(here, '../web');
 const mime = { '.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.mjs':'text/javascript; charset=utf-8','.json':'application/json','.svg':'image/svg+xml','.css':'text/css; charset=utf-8' };
-const allowed = new Set(['index.html','landing.css','landing.js','app/index.html','styles.css','app.js','core.mjs','onchain.mjs','deployment.json','bounty-proof.json','favicon.svg']);
+const allowed = new Set(['index.html','landing.css','landing.js','app/index.html','app/bounty/index.html','bounty.css','bounty.js','bounty-core.mjs','bounty-verifier.json','styles.css','app.js','core.mjs','onchain.mjs','deployment.json','bounty-proof.json','favicon.svg']);
 const server = createServer(async(req,res)=>{
   const pathname = new URL(req.url,'http://localhost').pathname;
-  const file = pathname==='/'?'index.html':pathname==='/app/'||pathname==='/app'?'app/index.html':pathname.slice(1);
+  const file = pathname==='/'?'index.html':pathname==='/app/'||pathname==='/app'?'app/index.html':pathname==='/app/bounty/'||pathname==='/app/bounty'?'app/bounty/index.html':pathname.slice(1);
   if (!allowed.has(file)) {res.writeHead(404);res.end('Not found');return;}
   try {
     const data=await readFile(path.join(root,file));
@@ -82,6 +82,7 @@ await landingPage.goto(origin+'/',{waitUntil:'domcontentloaded'});
 assert.match(await landingPage.title(),/BEFORE/,'Landing title must identify the product');
 assert.equal(await landingPage.locator('h1').innerText(),'BEFORE®','Landing has its own editorial hero');
 assert.equal(await landingPage.locator('a.header-launch').getAttribute('href'),'/app/','Primary CTA opens app');
+assert.equal(await landingPage.locator('a[href="/app/bounty/"]').count(),1,'Public landing must open Bounty Studio');
 for(const section of ['protect','challenge','proof']){
   assert.equal(await landingPage.locator('a.experience-row[href="/app/#'+section+'"]').count(),1,'Landing deep link missing: '+section);
 }
