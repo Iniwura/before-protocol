@@ -257,7 +257,7 @@ async function initializeOnchain() {
     $('onchain-escrow').hidden = false;
     $('onchain-escrow-status').textContent = nextChallengeId === 1n
       ? 'Escrow deployed and empty. No WIF reward is funded.'
-      : String(nextChallengeId - 1n) + ' challenge record(s) exist. No demo reward is funded.';
+      : String(nextChallengeId - 1n) + ' testnet challenge record(s) exist. No WIF reward is funded.';
     $('onchain-protect').hidden = false;
     $('onchain-challenge').hidden = false;
   } catch {
