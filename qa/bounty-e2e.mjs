@@ -149,6 +149,7 @@ try {
  result.transactions.push({stage:'review',id});
  await page.evaluate(()=>window.__switchTestAccount(2));
  await page.locator('#tab-solver').click();
+ await page.locator('#evidence').fill('BTEST training vault checks individual transfers but misses the daily aggregate limit.');
  await page.locator('#reveal-finding').click();
  await page.waitForFunction(()=>document.querySelector('#activity-text').textContent.includes('settled'),{timeout:45000});
  assert.equal(await page.locator('#summary-state').innerText(),'Closed');
