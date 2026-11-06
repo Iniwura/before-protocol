@@ -26,7 +26,9 @@ export const decodeAddressWord=hex=>{
 export function parseApprovalTransaction(tx,receipt){
  if(!tx||!receipt||!isHash(tx.hash)||!same(tx.hash,receipt.transactionHash)
   ||!same(tx.to,WIF_TOKEN)||!same(receipt.to,WIF_TOKEN)
-  ||receipt.status!=='0x1'||!isAddress(tx.from)
+  ||receipt.status!=='0x1'||!isAddress(tx.from)||!same(receipt.from,tx.from)
+  ||(tx.chainId!==undefined&&BigInt(tx.chainId)!==BigInt(WIF_MAINNET_CHAIN_ID))
+  ||(tx.blockHash&&receipt.blockHash&&!same(tx.blockHash,receipt.blockHash))
   ||!/^0x095ea7b3[0-9a-fA-F]{128}$/.test(tx.input||'')){
   throw Error('This is not a confirmed standard WIF approve(spender, amount) transaction on Robinhood mainnet.');
  }
@@ -34,6 +36,17 @@ export function parseApprovalTransaction(tx,receipt){
  if(!isAddress(spender))throw Error('The approval spender is a zero address.');
  const approvedAmount=BigInt('0x'+tx.input.slice(74,138));
  return {owner:tx.from,spender,approvedAmount,hash:tx.hash,approvalBlock:Number(BigInt(receipt.blockNumber))};
+}
+// Token metadata must be WIF, not just arbitrary bytes containing 574946.
+export function isWifSymbol(hex){
+ if(typeof hex!=='string'||!/^0x[0-9a-fA-F]+$/.test(hex))return false;
+ const body=hex.slice(2).toLowerCase();
+ // Standard ABI: offset=32, length=3, UTF-8 string bytes "WIF".
+ if(body.length===192)return body.slice(0,64)===(32n).toString(16).padStart(64,'0')
+  &&body.slice(64,128)===(3n).toString(16).padStart(64,'0')
+  &&body.slice(128)==='574946'.padEnd(64,'0');
+ // Rare legacy bytes32 response.
+ return body.length===64&&body==='574946'.padEnd(64,'0');
 }
 export function formatWif(value,precision=5){
  if(value<0n)throw Error('Negative WIF amount.');
