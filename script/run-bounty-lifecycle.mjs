@@ -229,6 +229,15 @@ async function main(){
  const dir=path.join(root,'out');await mkdir(dir,{recursive:true});
  const reportFile=path.join(dir,local?'bounty-local-report.json':'bounty-testnet-report.json');
  await writeFile(reportFile,JSON.stringify(report,null,2)+'\n');
+ if(!local){
+   // Only a completed REAL 46630-chain run can enable this public product proof.
+   const publicProof={
+     verified:true,chainId:46630,demo:demo.address,escrow,token,target,operator:sender,
+     transactions:{deploy:transactions.deploy,start:transactions.start,settle:transactions.settle,cleanup:transactions.cleanup},
+     reviewType:'synthetic',valuableWifFunded:false
+   };
+   await writeFile(path.join(root,'web/bounty-proof.json'),JSON.stringify(publicProof,null,2)+'\n');
+ }
  console.log(JSON.stringify({result:'PASS',mode,chainId,reportFile,address:demo.address,transactions,escrowMockBalance:report.proof.finalEscrowBalance,independentReview:false},null,2));
 }
 try{await main()}finally{if(anvilProcess){anvilProcess.kill('SIGTERM');}}
