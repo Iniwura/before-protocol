@@ -17,7 +17,7 @@
     <div class="header-middle"><span class="header-coordinate">INDEPENDENT ONCHAIN SECURITY</span><span class="header-index">EST. 2026</span></div>
     <div class="top-actions">
       <span class="network-indicator"><span class="status-dot" id="network-dot"></span><span id="network-status-text">Testnet · Checking</span></span>
-      <a class="source-link" href="/" aria-label="Back to BEFORE landing page">HOME <span aria-hidden="true">↗</span></a>
+      <a class="source-link" href="/app/bounty/" aria-label="Open Bounty Studio">BOUNTIES <span aria-hidden="true">↗</span></a><a class="source-link source-home" href="/" aria-label="Back to BEFORE landing page">HOME <span aria-hidden="true">↗</span></a>
     </div>
   </header>
   <main class="main">
@@ -35,7 +35,7 @@
       </div>
     </section>
 
-    <div class="experience-topline"><span>THE EXPERIENCES <sup>03</sup></span><span>DESIGNED TO BE VERIFIED, NOT TRUSTED.</span></div>
+    <div class="experience-topline"><span>START WITH A RULE <sup>01 / 03</sup></span><span>NO WALLET NEEDED TO TRY THE EXAMPLES</span></div>
     <nav class="app-tabs" role="tablist" aria-label="BEFORE sections">
       <button class="tab active" type="button" role="tab" id="tab-protect" aria-controls="panel-protect" aria-selected="true" data-tab="protect"><span class="tab-num">01 /</span><span class="tab-name">Protect</span><span class="tab-arrow" aria-hidden="true">↗</span></button>
       <button class="tab" type="button" role="tab" id="tab-challenge" aria-controls="panel-challenge" aria-selected="false" data-tab="challenge" tabindex="-1"><span class="tab-num">02 /</span><span class="tab-name">Challenge</span><span class="tab-arrow" aria-hidden="true">↗</span></button>
@@ -73,7 +73,7 @@
         <div class="onchain-copy"><span class="onchain-number">01 / LIVE TESTNET</span><strong>Create a real protected vault.</strong><p>150 freely mintable BTEST. Test ETH needed for gas.</p></div>
         <div class="onchain-actions"><div class="onchain-buttons"><button id="create-demo-vault" type="button" class="secondary-button">Create test vault <span aria-hidden="true">↗</span></button><button id="demo-withdraw" type="button" class="secondary-button" hidden>Withdraw 20 BTEST <span aria-hidden="true">↗</span></button></div><div id="onchain-protect-status" class="onchain-status" role="status" aria-live="polite"></div></div>
       </div>
-      <div class="disclosure"><span class="disclosure-mark">i</span> Above is a local simulation. Only wallet-signed testnet actions create onchain receipts.</div>
+      <div class="disclosure"><span class="disclosure-mark">i</span> Above is a local simulation. Only wallet-signed testnet actions create onchain receipts.</div><a class="journey-next" href="#challenge"><span>02 / NEXT: FIND THE WEAKNESS</span><strong>Challenge <span aria-hidden="true">↗</span></strong></a>
     </section>
 
     <section class="view" role="tabpanel" id="panel-challenge" aria-labelledby="tab-challenge" hidden>
@@ -110,12 +110,13 @@
         <div class="onchain-copy"><span class="onchain-number">ESCROW / READ ONLY</span><strong>Reward infrastructure.</strong><p>WIF-capable contract deployed without WIF funding.</p></div>
         <div class="onchain-actions"><div id="onchain-escrow-status" class="onchain-status" role="status" aria-live="polite"></div></div>
       </div>
-      <div class="bounty-proof" id="bounty-proof" hidden>
+      <a class="studio-entry" href="/app/bounty/"><span>BOUNTY STUDIO · REAL TESTNET WORKFLOW</span><strong>Publish a BTEST challenge. Submit and review a finding. Settle onchain.</strong><span class="entry-arrow" aria-hidden="true">↗</span></a><div class="bounty-proof" id="bounty-proof" hidden>
         <div class="bounty-proof-top"><span>PUBLIC BTEST BOUNTY LIFECYCLE</span><span>READ ONLY / SYNTHETIC REVIEWERS</span></div>
         <div class="bounty-proof-heading"><h3>From finding<br>to settlement.</h3><p>Inspect real Robinhood testnet receipts for the mock-token lifecycle. All demo roles are controlled by one test operator. These approvals are not independent security review.</p></div>
         <div class="bounty-proof-steps" id="bounty-proof-steps"></div>
         <p class="bounty-proof-disclosure">Freely mintable BTEST only. No real WIF reward, paid bounty, audit or mainnet custody is claimed.</p>
       </div>
+      <a class="journey-next" href="#proof"><span>03 / NEXT: INSPECT THE RECEIPTS</span><strong>Proof <span aria-hidden="true">↗</span></strong></a>
     </section>
 
     <section class="view" role="tabpanel" id="panel-proof" aria-labelledby="tab-proof" hidden>
@@ -154,7 +155,7 @@
           <div class="lookup-result" id="tx-result" aria-live="polite">No transaction has been inspected.</div></div>
         </div>
       </div>
-      <div class="disclosure"><span class="disclosure-mark">i</span> Receipts and contract state are live when RPC is available. Neither is a security audit.</div>
+      <div class="disclosure"><span class="disclosure-mark">i</span> Receipts and contract state are live when RPC is available. Neither is a security audit.</div><a class="journey-next" href="/app/bounty/"><span>READY FOR A REAL TESTNET WORKFLOW?</span><strong>Open Bounty Studio <span aria-hidden="true">↗</span></strong></a>
     </section>
   </main>
   <footer class="footer">
