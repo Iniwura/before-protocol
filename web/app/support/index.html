@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#f8f8f5">
+<meta name="description" content="BEFORE Support — voluntary repeat WIF support with a fresh wallet confirmation and independently verified receipts.">
+<title>BEFORE® — Support with WIF proof</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="stylesheet" href="/pay.css">
+<link rel="stylesheet" href="/support.css">
+<script type="module" src="/support.js"></script>
+</head>
+<body>
+<header class="pay-header">
+  <a class="pay-brand" href="/" aria-label="BEFORE home">BEFORE<sup>®</sup></a>
+  <span class="pay-header-center">BEFORE SUPPORT / WIF</span>
+  <nav class="pay-header-nav" aria-label="Support navigation"><a href="/">Protocol <span aria-hidden="true">↗</span></a><a href="/app/pay/">Pay</a><a href="#support-limits">Limits</a></nav>
+</header>
+
+<main>
+  <section class="pay-hero" aria-labelledby="support-title">
+    <div class="pay-topline"><span>ROBINHOOD CHAIN / MAINNET · 4663</span><span>NONCUSTODIAL · NO AUTOMATION</span></div>
+    <div class="pay-hero-grid"><div><div class="pay-kicker">01 / OFFER → CHECK → SUPPORT → PROOF</div><h1 id="support-title">Support<br><em>with proof.</em></h1></div><div class="pay-symbol" aria-hidden="true">↗</div></div>
+    <div class="pay-hero-bottom"><span>OFFICIAL TOKEN / WIF</span><p>A creator publishes an exact offer. A supporter checks it, chooses when to return, and confirms every contribution in their own wallet.</p></div>
+  </section>
+
+  <div id="support-feedback" class="pay-feedback" role="status" aria-live="polite" hidden></div>
+
+  <section id="open-support-card" class="support-open" aria-labelledby="open-support-title">
+    <div><h2 id="open-support-title">Have a support link?</h2><p>Supporting someone? Paste their signed link. Publishing a page? Create an offer below.</p></div>
+    <form id="open-support-form" class="open-request-form"><label class="sr-only" for="support-link">BEFORE Support link</label><input id="support-link" type="url" inputmode="url" autocomplete="off" placeholder="Paste your BEFORE Support link" required><button class="pay-button" type="submit">Open support page <span aria-hidden="true">↗</span></button></form>
+  </section>
+
+  <section id="create-support-card" class="pay-section" aria-labelledby="create-support-title">
+    <div class="section-bar"><span>01 / CREATE A SUPPORT PAGE</span><span>RECIPIENT SIGNATURE ONLY</span></div>
+    <div class="section-heading"><h2 id="create-support-title">Make support<br><em>repeatable.</em></h2><p>Publish one stable, signed offer for voluntary WIF contributions. Signing authenticates the page; it never approves, schedules or moves tokens.</p></div>
+    <form id="create-support-form" class="pay-form support-form">
+      <div class="form-field"><label for="support-amount">Contribution <span>WIF · 18 decimals</span></label><input id="support-amount" type="text" inputmode="decimal" autocomplete="off" placeholder="0.0" required><small>The exact amount is shown to every supporter. Zero and overflow are rejected.</small></div>
+      <div class="form-field"><label for="support-interval">Return cadence</label><select id="support-interval"><option value="anytime">Repeat when you choose</option><option value="weekly">Weekly reminder</option><option value="monthly">Monthly reminder</option></select><small>Cadence is a reminder, not an automatic payment or subscription.</small></div>
+      <div class="form-field"><label for="support-expiry">Offer expires in <span>days · max 30</span></label><input id="support-expiry" type="number" inputmode="numeric" min="1" max="30" value="30" required><small>A bounded offer prevents an old signed amount from living forever.</small></div>
+      <button id="create-support" class="pay-button" type="submit">Connect recipient and publish offer <span aria-hidden="true">↗</span></button>
+    </form>
+  </section>
+
+  <section id="offer-card" class="pay-section request-card support-offer" hidden aria-labelledby="offer-title">
+    <div class="section-bar"><span>SUPPORT OFFER / AUTHENTICATED</span><span id="offer-state">Signed · public</span></div>
+    <div class="section-heading"><h2 id="offer-title">The exact<br><em>offer.</em></h2><p>This recipient-signed offer is bound to Robinhood Chain mainnet, official WIF, one amount, one cadence and one unpredictable campaign ID.</p></div>
+    <div class="request-grid"><div><span>RECIPIENT</span><strong id="support-recipient">—</strong></div><div><span>CONTRIBUTION</span><strong id="support-amount-display">—</strong></div><div><span>CADENCE</span><strong id="support-interval-display">—</strong></div><div><span>EXPIRES</span><strong id="support-expiry-display">—</strong></div></div>
+    <p class="note">Campaign <strong id="support-campaign-display">—</strong>. A new contribution cycle always requires a fresh, deliberate wallet confirmation.</p>
+  </section>
+
+  <section id="share-card" class="pay-section share-card" hidden aria-labelledby="share-support-title">
+    <div class="section-bar"><span>SUPPORT PAGE / PORTABLE LINK</span><span>NO SERVER OR DATABASE</span></div>
+    <div class="section-heading"><h2 id="share-support-title">Share the<br><em>support page.</em></h2><p>The link contains only a signed public offer. It never contains a private key, seed, allowance or automatic payment permission.</p></div>
+    <div class="share-row"><input id="support-share-link" type="text" readonly aria-label="Signed BEFORE Support link"><button id="copy-support-link" class="pay-button" type="button">Copy link <span aria-hidden="true">↗</span></button></div>
+  </section>
+
+  <section id="check-card" class="pay-section check-card" hidden aria-labelledby="check-support-title">
+    <div class="section-bar"><span>02 / CHECK BEFORE SUPPORTING</span><span>PUBLIC RPC · FAIL CLOSED</span></div>
+    <div class="section-heading"><h2 id="check-support-title">Check every<br><em>important fact.</em></h2><p>BEFORE rechecks the official token, signed recipient, WIF balance and gas before opening a standard transfer confirmation.</p></div>
+    <form id="check-support-form" class="pay-form check-form"><button id="check-support" class="pay-button" type="submit">Connect supporter and check offer <span aria-hidden="true">↗</span></button></form>
+    <div id="check-results" class="check-results" hidden>
+      <div class="request-grid"><div><span>SUPPORTER</span><strong id="support-payer">—</strong></div><div><span>WIF BALANCE</span><strong id="support-balance">—</strong></div><div><span>ESTIMATED GAS</span><strong id="support-gas">—</strong></div><div><span>CYCLE</span><strong id="support-cycle">—</strong></div></div>
+      <div class="warning"><strong>Every contribution is deliberate.</strong><span>There are no approvals, timers or custody. A pending or uncertain wallet response locks this cycle. “Support again” creates a new cycle and asks for a new wallet confirmation.</span></div>
+      <button id="support-now" class="pay-button pay-button-dark" type="button" disabled>Confirm this WIF contribution in my wallet <span aria-hidden="true">↗</span></button>
+    </div>
+  </section>
+
+  <section id="history-card" class="pay-section support-history" hidden aria-labelledby="history-title">
+    <div class="section-bar"><span>03 / CONTRIBUTION HISTORY</span><span>REVALIDATED PUBLIC RECEIPTS</span></div>
+    <div class="section-heading"><h2 id="history-title">Come back<br><em>with proof.</em></h2><p>Verified receipts saved on this device make returning simple. Each record is checked again against public RPC, exact payer, recipient, amount and official WIF before it appears.</p></div>
+    <ul id="history-list" class="support-history-list"></ul>
+    <p id="history-empty" class="support-history-empty">No verified contributions saved on this device yet.</p>
+    <p class="support-limit-note">This is device-local history, not a global campaign ledger. It cannot prove every supporter, total creator revenue or cross-device duplicate prevention.</p>
+  </section>
+
+  <section id="proof-card" class="pay-section proof-card" hidden aria-labelledby="support-proof-title">
+    <div class="section-bar"><span>04 / RECEIPT PROOF</span><span id="support-proof-state">Verified · final</span></div>
+    <div class="section-heading"><h2 id="support-proof-title">Support with<br><em>proof.</em></h2><p id="support-proof-description">Success is claimed only after the public receipt, exact transfer calldata, sender, official WIF destination and matching Transfer event pass again.</p></div>
+    <div class="proof-grid"><div><span>TRANSACTION</span><strong id="support-proof-hash">—</strong></div><div><span>BLOCK</span><strong id="support-proof-block">—</strong></div><div><span>CONFIRMATIONS</span><strong id="support-proof-confirmations">—</strong></div></div>
+    <a id="support-proof-explorer" class="proof-link" target="_blank" rel="noopener noreferrer">Inspect verified receipt on Blockscout ↗</a>
+    <button id="support-proof-retry" class="plain-button" type="button" hidden>Retry verification ↗</button>
+    <button id="support-again" class="pay-button support-again" type="button" hidden>Support again with a new wallet confirmation <span aria-hidden="true">↗</span></button>
+    <button id="new-support-offer" class="plain-button" type="button">Create a new support page ↗</button>
+  </section>
+
+  <section id="support-limits" class="pay-limits" aria-labelledby="support-limits-title"><div class="section-bar"><span>BOUNDARIES</span><span>READ THIS BEFORE USING WIF</span></div><div class="limits-grid"><h2 id="support-limits-title">Simple by<br><em>design.</em></h2><div><p>BEFORE never custody-holds WIF, asks for an approval, receives a private key or chooses a transaction automatically.</p><p>Cadence is a reminder only. Support is voluntary and repeatable, not a subscription, escrow, crowdfunding ledger or enforced one-time invoice.</p><p>Every contribution is an irreversible mainnet transfer and needs gas. History is public-receipt proof saved on this device, not a complete global record.</p></div></div></section>
+</main>
+<footer class="pay-footer"><span>BEFORE® / NONCUSTODIAL WIF SUPPORT</span><span>NO REAL PAYMENT IS RUN BY CI OR DEMO MODE</span><a href="https://github.com/Iniwura/before-protocol" target="_blank" rel="noopener noreferrer">SOURCE ↗</a></footer>
+</body>
+</html>

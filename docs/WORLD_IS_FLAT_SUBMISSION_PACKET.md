@@ -30,7 +30,7 @@ BEFORE Pay's EIP-712, exact calldata, delayed-receipt, duplicate-send lock, reve
 
 **Technology:** Solidity/Foundry, vanilla JavaScript ES modules, static HTML/CSS, Node.js, EIP-1193 browser wallets, EIP-712 signed typed data, ERC-20 ABI calls/events, Robinhood Chain mainnet (4663), Robinhood Chain Testnet (46630), Anvil, Playwright, axe-core, GitHub Actions and Vercel. No backend service or proprietary server signer in the payment flow.
 
-**Why BEFORE is useful today:** A recipient can sign a one-off WIF request without custody or allowance. The payer can verify the signed intent before approving an exact ERC-20 transfer, and anyone can independently verify the receipt. **The present one-off flow is not a proven flywheel.** A focused repeat-use support experience is being evaluated in [Issue #16](https://github.com/Iniwura/before-protocol/issues/16); it must not be described as shipped until implemented and verified.
+**Why BEFORE is useful today:** A recipient can sign a one-off WIF request or a stable voluntary Support offer without custody or allowance. The payer can verify the signed intent before approving an exact ERC-20 transfer, and anyone can independently verify the receipt. Support adds a concrete return loop: the same creator/community page, a labeled cadence reminder, revalidated device-local receipts and an explicit new cycle that requires a fresh wallet confirmation. It is a credible repeat-use mechanism, but it is not a subscription, global ledger or proven long-term retention loop until owner-confirmed mainnet receipts exist.
 
 **Security limits:** ERC-20 transfer requests are not onchain single-use invoices. Anyone can pay the same signed request again from another device or wallet. BEFORE's client locks an attempted payment during wallet uncertainty, receipts or reloads, but cannot enforce global uniqueness. Real mainnet WIF payments cost real gas and cannot be reversed. Contract tests and automated browser QA are not an independent external security audit.
 
@@ -76,10 +76,11 @@ This is a storyboard for an **actual screen recording**, not a claim that a fini
 - [x] Public BTEST testnet receipt and accounting evidence
 - [x] Mainnet WIF token code/metadata and read-only checks
 - [x] WIF Pay code and adversarial simulated-wallet QA
+- [x] BEFORE Support code, distinct typed offer, repeat-cycle lock and adversarial simulated-wallet QA
 - [ ] Independent live-route browser smoke test against production (Vercel confirms deployment and domain alias, but external browser HTTP check not yet completed)
 - [ ] **Mandatory:** independently inspectable real $WIF onchain transfer through BEFORE Pay on Robinhood Chain mainnet 4663, with matching WIF Transfer log and wallet-confirmed transaction. No such transaction has been verified yet. Never substitute BTEST testnet receipts.
 - [ ] 1080p video showing product functioning and honest mainnet/testnet distinction; upload to an organizer-accepted publicly accessible destination
-- [ ] **Mandatory:** working repeat-use $WIF flywheel, not just a one-off transfer. Prove a reasonable recurring use case and returning-user action. See Issue #16.
+- [ ] **Mandatory:** owner-confirmed public mainnet evidence of the first Support contribution and a second deliberate new cycle. The code path is implemented and tested, but repeat-use WIF behavior is not yet proven. See [Support security gate](BEFORE_SUPPORT_SECURITY_AND_RELEASE.md).
 - [x] Official closing date from organizer rules: November 12, 2026, 17:30 UTC; round one ends November 14, final ends November 16 at 17:30 UTC
 - [ ] Keep live production accessible through November 16 final; basic availability monitoring set up
 - [ ] Confirm signed-in submission fields, allowed categories and video duration

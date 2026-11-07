@@ -82,6 +82,7 @@ await landingPage.goto(origin+'/',{waitUntil:'domcontentloaded'});
 assert.match(await landingPage.title(),/BEFORE/,'Landing title must identify the product');
 assert.equal(await landingPage.locator('h1').innerText(),'BEFORE®','Landing has its own editorial hero');
 assert.equal(await landingPage.locator('a.header-launch').getAttribute('href'),'/app/pay/','Primary CTA must open BEFORE Pay as the WIF utility');
+assert.equal(await landingPage.locator('a.header-support').getAttribute('href'),'/app/support/','Support must be a clear, separate WIF entry point');
 assert.ok(await landingPage.locator('a[href="/app/pay/"]').count()>=3,'Pay must be clearly discoverable from first screen, explanation and final CTA');
 assert.match(await landingPage.locator('.statement-layout p').innerText(),/recipient.*signature.*wallet/i,'Landing must explain the signed WIF payment workflow');
 assert.match(await landingPage.locator('.experiences .section-index').innerText(),/TESTNET SECURITY LAB/i,'Mock-token exercises must be visibly separated from live WIF Pay');

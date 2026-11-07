@@ -158,11 +158,11 @@ The real challenge is not whether the project can encode a transfer, but whether
 | Rule | Official requirement | BEFORE as of this checkpoint | Verdict |
 | --- | --- | --- | --- |
 | 1,2,10 | Teams up to four, age ≥18, no requirement to buy/hold WIF | Team and age to be entered accurately; no token ownership is required merely to enter | **Owner declaration needed** |
-| 3 | The **project must use $WIF onchain on Robinhood Chain** | Mainnet contract and token checks pass read-only; Pay can construct a transfer, but no actual app-originated WIF mainnet payment has been verified | **FAIL / unproven** |
+| 3 | The **project must use $WIF onchain on Robinhood Chain** | Pay and the new Support flow construct only exact official-WIF transfers after human wallet confirmation; no actual app-originated WIF mainnet payment has been verified | **FAIL / unproven; owner acceptance required** |
 | 4 | App remains live/working until final closes November 16 | Vercel deployment READY and production alias confirmed; future uptime requires monitoring | **CURRENTLY LIVE; future obligation open** |
 | 5 | Public repo + demo video + **real transactions** | Public repository; genuine BTEST testnet transactions only; no real WIF app-originated tx; video not completed | **PARTIAL / currently NO-GO** |
 | 6 | Existing work allowed if WIF has a real use | BEFORE Pay is implemented and verified in automated tests, but not yet live-transaction-proven | **PARTIAL** |
-| 7 | **Flywheel** returning people to WIF | Request → Check → Pay → Proof is a strong one-time payment verification workflow, **not automatically a retention loop** | **FAIL / missing demonstrated flywheel** |
+| 7 | **Flywheel** returning people to WIF | BEFORE Support now provides a stable recipient-authenticated page, explicit new cycles, revalidated device-local receipts and honest cadence reminders; repeat behavior and real WIF movement are not yet demonstrated | **PARTIAL / public owner acceptance required** |
 | 8,11–16 | Team/judge eligibility, no unauthorized brands or malware, possible winner eligibility/payout verification | BEFORE brand is distinct; official Robinhood Chain naming is used descriptively. Team/payout checks depend on the actual entrant; never claim completed | **Owner attestation / remaining checks** |
 | Categories | Choose every applicable category | Consumer & Payments; Tools & Infra; optionally Onboarding after demonstrated novice UX | **Category recommendation** |
 | Judge criteria | A real reason to use WIF, flywheel, working product and build quality | Build quality strong. Live WIF usage and repeated behavioral reason not demonstrated | **Competition NO-GO** |
@@ -174,3 +174,9 @@ The engineering build still rates **7.7/10** after approved Pay-first UX fixes a
 **Priority:** New narrow work order [Issue #16](https://github.com/Iniwura/before-protocol/issues/16) investigates **BEFORE Support**: repeat voluntary WIF contributions on a recipient-authenticated support page, user-confirmed each time, with reverified contribution receipts and honest device-local history limits. This is a proposed implementation, **not shipped functionality**, and no onchain single-use guarantee or automatic subscriptions are claimed. Production work should not be described as meeting the flywheel rule before users can actually repeat WIF activity.
 
 **No requirement to purchase WIF just to enter:** rule 2 expressly says entrants need not buy or hold WIF; that does not remove rule 3 requiring the product to use WIF onchain. If a human-owned funded wallet is unavailable for a controlled test, record the limit rather than fabricate a mainnet transaction.
+
+## Issue #16 implementation addendum — 2026-11-07
+
+The narrow Support loop is implemented at `/app/support/` without a new contract or custody layer. `SupportOffer` is a distinct EIP-712 type bound to the official WIF contract, recipient, amount, cadence, bounded expiry and campaign ID. Each deliberate cycle is converted into Pay's exact transfer and independent receipt proof. Reloads, pending/uncertain responses, edited URLs, RPC failures and repeated clicks remain locked; “Support again” is available only after verified proof and creates a new cycle.
+
+Local pure and browser QA covers the threat model and five responsive viewports, but all mocked receipts remain non-evidence for rule 3. The real-mainnet acceptance workflow is documented in [BEFORE_SUPPORT_SECURITY_AND_RELEASE.md](BEFORE_SUPPORT_SECURITY_AND_RELEASE.md). Until the wallet owner chooses and confirms the intended recipient/amount and supplies public receipt hashes, rule 3 and rule 7 remain **NO-GO**. Do not mark rule 5 complete without the real transaction evidence and separately authorized video/submission work.
