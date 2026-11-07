@@ -203,6 +203,25 @@ try {
   assert.deepEqual(await noAxeViolations(creator), []);
   await creatorContext.close();
 
+  // A first-time payer can open a signed request from the main Pay page, safely.
+  const linkContext = await browser.newContext({viewport: {width: 390, height: 900}, reducedMotion: 'reduce'});
+  const linkPage = await linkContext.newPage();
+  routeRPC(linkPage); await wallet(linkPage);
+  await linkPage.goto(base + '/app/pay/', {waitUntil: 'domcontentloaded'});
+  await linkPage.locator('#payment-link').fill('https://unrelated.example/app/pay/?request=fake');
+  await linkPage.locator('#open-request-form button').click();
+  await linkPage.waitForFunction(() => document.querySelector('#pay-feedback')?.textContent.includes('this website'));
+  assert.equal(await linkPage.evaluate(() => window.__walletTransactions.length), 0, 'Untrusted URLs may never request a wallet payment');
+  await linkPage.locator('#payment-link').fill(link);
+  await linkPage.locator('#open-request-form button').click();
+  await linkPage.waitForURL(url => url.searchParams.has('request'));
+  await linkPage.locator('#check-card').waitFor({state: 'visible'});
+  assert.equal((await linkPage.locator('#request-recipient').innerText()).toLowerCase(), recipient.toLowerCase(), 'Full payment destination must remain visible to mobile payers');
+  const populatedSize = await linkPage.evaluate(() => ({scroll: document.documentElement.scrollWidth, client: document.documentElement.clientWidth}));
+  assert.ok(populatedSize.scroll <= populatedSize.client + 1, 'Full recipient address must not overflow on mobile');
+  assert.equal(await linkPage.evaluate(() => window.__walletTransactions.length), 0, 'Opening a signed link is read only');
+  await linkContext.close();
+
   const interruptedContext = await browser.newContext({viewport: {width: 390, height: 900}, reducedMotion: 'reduce'});
   const interruptedPage = await interruptedContext.newPage();
   routeRPC(interruptedPage);
@@ -261,6 +280,7 @@ try {
   await delayedPage.locator('#proof-card').waitFor({state: 'visible'});
   await delayedPage.waitForFunction(() => document.querySelector('#pay-feedback').textContent.includes('proof verified'));
   assert.equal(await delayedPage.evaluate(() => window.__walletTransactions.length), 1, 'Delayed receipt and repeated clicks must broadcast exactly once');
+  assert.equal(await delayedPage.evaluate(() => window.__walletTransactions[0].gas), undefined, 'Wallet must estimate the final gas limit; preflight estimate is not an exact gas cap');
   assert.ok(delayedMetrics.receiptCalls >= 4, 'Receipt polling must observe pending and confirmation stages');
   await delayedContext.close();
 

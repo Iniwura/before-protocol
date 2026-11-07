@@ -1,6 +1,6 @@
 # BEFORE Bounty Studio — testnet user guide
 
-**Preview route:** `/app/bounty/` (available on PR #5's Vercel preview). The existing approved product remains at `/app/`; this feature has not been merged into production.
+**Live route:** https://before-web-theta.vercel.app/app/bounty/ — Bounty Studio is deployed in production. It uses only valueless BTEST on Robinhood Chain Testnet (46630). The separate WIF Pay mainnet application is at `/app/pay/`.
 
 Bounty Studio uses the **existing verified Robinhood Chain Testnet (chain ID 46630)** challenge escrow and freely mintable **BTEST** token. The app intentionally provides **no WIF token selector and no mainnet option**. Its bounty scope is fixed to the BEFORE training vault; it is not a general-audience security reward marketplace yet.
 
@@ -8,7 +8,7 @@ Bounty Studio uses the **existing verified Robinhood Chain Testnet (chain ID 466
 
 **A project posts a BTEST reward → a researcher submits a finding → appointed reviewers assess the evidence → the researcher reveals the approved evidence → the existing escrow settles a valueless test-token reward.**
 
-The landing page now launches the **main Bounty Studio at `/app/bounty/`**. The separate **Protect → Challenge → Proof** flow at `/app/` is an educational demonstration.
+The main landing page starts with **BEFORE Pay**, the WIF payment workflow. Bounty Studio is the separate **testnet-only research and proof experience** at `/app/bounty/`. The separate Protect → Challenge → Proof flow at `/app/` is an educational demonstration.
 
 When you first open Bounty Studio, you **do not need a wallet**. It asks what you want to accomplish: **Post a reward**, **Submit a finding**, **Review a finding**, or **Recover an unfinished bounty**. Choose one to see only the relevant task. Select **Change what I want to do** to start another task. The proof demo is read-only and wallet-free.
 

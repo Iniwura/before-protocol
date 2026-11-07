@@ -127,7 +127,8 @@ function updatePaymentControls() {
 }
 
 function renderRequest(request, signature) {
-  setText('request-recipient', shortAddress(request.recipient));
+  // Show the full irreversible destination on every screen, not only a desktop hover tooltip.
+  setText('request-recipient', request.recipient);
   $('request-recipient').title = request.recipient;
   setText('request-amount', formatTokenAmount(request.amount) + ' WIF');
   setText('request-expiry', new Date(Number(request.expiresAt) * 1000).toLocaleString());
@@ -357,7 +358,9 @@ async function payNow() {
     if (!Array.isArray(accounts) || !sameAddress(accounts[0], state.payer)) throw new Error('The connected payer account changed. Re-check before paying.');
     const fresh = await runPreflight({sender: state.payer, request: state.request, signature: state.signature});
     if (!sameAddress(fresh.request.recipient, state.preflight.request.recipient) || fresh.request.amount !== state.preflight.request.amount || fresh.request.nonce !== state.preflight.request.nonce) throw new Error('The payment intent changed. No transaction was requested.');
-    const tx = buildPaymentTransaction(state.payer, state.request, fresh.gas);
+    // Estimate gas for the preflight, but let the wallet choose its final gas limit.
+    // Passing exactly eth_estimateGas can become insufficient if ERC-20 state changes before mining.
+    const tx = buildPaymentTransaction(state.payer, state.request);
     state.lifecycle = PAYMENT_STAGE.WALLET_PENDING;
     updatePaymentControls();
     persistPaymentUrl(PAYMENT_STAGE.WALLET_PENDING);
@@ -432,6 +435,35 @@ async function loadFromUrl() {
     showFeedback(error?.message || 'This shared request failed closed. No payment action is available.', 'error');
   }
 }
+
+// Sharing works without a wallet. Decode only this site's own request links.
+$('open-request-form')?.addEventListener('submit', event => {
+  event.preventDefault();
+  try {
+    const raw = $('payment-link').value.trim();
+    if (raw.length > 8192) throw new Error('Payment link is too long.');
+    const link = new URL(raw);
+    if (link.origin !== location.origin || link.pathname !== '/app/pay/' || link.protocol !== 'https:' && link.hostname !== 'localhost' && link.hostname !== '127.0.0.1') {
+      throw new Error('Open a BEFORE Pay link from this website. Do not enter wallet keys or unrelated links.');
+    }
+    const payload = link.searchParams.get('request');
+    if (!payload) throw new Error('This link has no signed payment request.');
+    decodeSharePayload(payload); // structure/length checked here; signature checked on load
+    const safe = new URL('/app/pay/', location.origin);
+    safe.searchParams.set('request', payload);
+    const tx = link.searchParams.get('tx');
+    if (tx) {
+      if (!isHash(tx)) throw new Error('This proof link contains an invalid transaction hash.');
+      safe.searchParams.set('tx', tx);
+    }
+    const status = link.searchParams.get('status');
+    // Preserve any uncertain / pending state across pasted recovery links.
+    if (status) safe.searchParams.set('status', status);
+    location.assign(safe.pathname + safe.search);
+  } catch (error) {
+    showFeedback(error?.message || 'Paste a valid BEFORE Pay request link.', 'error');
+  }
+});
 
 $('create-form')?.addEventListener('submit', createRequest);
 $('check-form')?.addEventListener('submit', checkPayment);
