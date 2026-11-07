@@ -24,7 +24,7 @@ This feature has no server, database, private-key access, custody, allowance req
 
 The client uses explicit monotonic stages: `not-submitted`, `wallet-pending`, `submitted`, `mined-awaiting-confirmations`, `verified`, `known-reverted` and `uncertain`. After `eth_sendTransaction` returns a hash, the request and hash are persisted in the URL before any confirmation attempt. Receipt polling uses bounded backoff and a visible **Retry verification** action; retry is read-only and cannot call `eth_sendTransaction`.
 
-If a receipt is delayed, the RPC times out, confirmations are below three, the receipt reverts, or the wallet returns an ambiguous error, the Pay control remains disabled. Account and network changes while a payment is pending do not clear the recorded hash or unlock Pay. A wallet rejection with explicit EIP-1193 code `4001` is the only path that returns to `not-submitted`; an unknown wallet error becomes `uncertain` and tells the user to inspect wallet history before any retry.
+If a receipt is delayed, the RPC times out, confirmations are below three, the receipt reverts, or the wallet returns an ambiguous error, the Pay control remains disabled. Account and network changes while a payment is pending do not clear the recorded hash or unlock Pay. A wallet rejection with explicit EIP-1193 code `4001` is the only path that returns to `not-submitted`; an unknown wallet error becomes `uncertain` and tells the user to inspect wallet history before any retry. On reload, every serialized non-`not-submitted` status without a hash—including `wallet-pending`, edited `verified`, or malformed status text—is treated as `uncertain`, never as a fresh payment opportunity.
 
 ## Threat model and fail-closed policy
 
@@ -74,6 +74,7 @@ The isolated tests cover:
 - Transaction sender/destination/value/status identity and exact `Transfer` log accounting.
 - Missing wallet, wrong network, signature rejection, repeated-click protection, no-broadcast request creation, exact mocked transfer fields and read-only proof reload.
 - Delayed `eth_getTransactionReceipt`, one-to-two-confirmation progression, receipt RPC failure, reload recovery, reverted receipt, ambiguous wallet response and account-change/chain-change locking; every adversarial scenario asserts exactly one mocked `eth_sendTransaction`.
+- Interrupted wallet confirmation with a delayed `eth_sendTransaction` response, reload before a hash exists, lost-response reload, and edited non-idle status URLs; every path restores the locked uncertain state and keeps Pay disabled.
 
 Run locally:
 

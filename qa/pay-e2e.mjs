@@ -140,6 +140,13 @@ async function checkAndPay(page) {
     document.querySelector('#pay-now').click();
   });
 }
+async function checkAndPayOnce(page) {
+  await page.locator('#check-card').waitFor({state: 'visible'});
+  await page.locator('#check-payment').click();
+  await page.locator('#check-results').waitFor({state: 'visible'});
+  assert.equal(await page.locator('#pay-now').isDisabled(), false);
+  await page.locator('#pay-now').click();
+}
 
 try {
   browser = await chromium.launch({headless: true});
@@ -195,6 +202,51 @@ try {
   await creator.addScriptTag({path: path.join(here, 'node_modules/axe-core/axe.min.js')});
   assert.deepEqual(await noAxeViolations(creator), []);
   await creatorContext.close();
+
+  const interruptedContext = await browser.newContext({viewport: {width: 390, height: 900}, reducedMotion: 'reduce'});
+  const interruptedPage = await interruptedContext.newPage();
+  routeRPC(interruptedPage);
+  await wallet(interruptedPage, {sendDelay: 5_000});
+  await interruptedPage.goto(link, {waitUntil: 'domcontentloaded'});
+  await checkAndPayOnce(interruptedPage);
+  await interruptedPage.waitForFunction(() => window.__beforePay?.state.lifecycle === 'wallet-pending');
+  assert.match(interruptedPage.url(), /[?&]status=wallet-pending/);
+  assert.equal(await interruptedPage.evaluate(() => window.__walletTransactions.length), 1, 'Wallet confirmation interruption must have only one attempted send before reload');
+  await interruptedPage.reload({waitUntil: 'domcontentloaded'});
+  await interruptedPage.waitForFunction(() => window.__beforePay?.state.lifecycle === 'uncertain');
+  assert.match(interruptedPage.url(), /[?&]status=uncertain/);
+  assert.equal(await interruptedPage.locator('#pay-now').isDisabled(), true, 'Reloaded wallet-pending state must never unlock Pay');
+  assert.match(await interruptedPage.locator('#pay-feedback').innerText(), /no second payment from this request/i);
+  assert.equal(await interruptedPage.evaluate(() => window.__walletTransactions.length), 0, 'Reload recovery must not initiate a second wallet call');
+  await interruptedPage.evaluate(() => document.querySelector('#pay-now').click());
+  assert.equal(await interruptedPage.evaluate(() => window.__walletTransactions.length), 0, 'A locked reload must ignore a repeated Pay click');
+  await interruptedContext.close();
+
+  const editedStatusContext = await browser.newContext({viewport: {width: 390, height: 900}, reducedMotion: 'reduce'});
+  const editedStatusPage = await editedStatusContext.newPage();
+  routeRPC(editedStatusPage); await wallet(editedStatusPage);
+  await editedStatusPage.goto(link + '&status=verified', {waitUntil: 'domcontentloaded'});
+  await editedStatusPage.waitForFunction(() => window.__beforePay?.state.lifecycle === 'uncertain');
+  assert.equal(await editedStatusPage.locator('#pay-now').isDisabled(), true, 'Edited non-idle status without a hash must fail closed');
+  assert.match(await editedStatusPage.locator('#pay-feedback').innerText(), /no second payment from this request/i);
+  assert.equal(await editedStatusPage.evaluate(() => window.__walletTransactions.length), 0);
+  await editedStatusContext.close();
+
+  const walletEventContext = await browser.newContext({viewport: {width: 390, height: 900}, reducedMotion: 'reduce'});
+  const walletEventPage = await walletEventContext.newPage();
+  routeRPC(walletEventPage); await wallet(walletEventPage, {sendDelay: 5_000});
+  await walletEventPage.goto(link, {waitUntil: 'domcontentloaded'});
+  await checkAndPayOnce(walletEventPage);
+  await walletEventPage.waitForFunction(() => window.__beforePay?.state.lifecycle === 'wallet-pending');
+  await walletEventPage.evaluate(() => {
+    window.__emitWalletEvent('accountsChanged', ['0x3333333333333333333333333333333333333333']);
+    window.__emitWalletEvent('chainChanged', '0xb626');
+  });
+  await walletEventPage.waitForFunction(() => window.__beforePay?.state.lifecycle === 'uncertain');
+  assert.equal(await walletEventPage.locator('#pay-now').isDisabled(), true, 'Wallet events during confirmation must preserve the lock');
+  assert.match(walletEventPage.url(), /[?&]status=uncertain/);
+  assert.equal(await walletEventPage.evaluate(() => window.__walletTransactions.length), 1);
+  await walletEventContext.close();
 
   const delayedContext = await browser.newContext({viewport: {width: 1280, height: 900}, reducedMotion: 'reduce'});
   const delayedPage = await delayedContext.newPage();
@@ -267,6 +319,10 @@ try {
   assert.equal(await uncertainPage.locator('#pay-now').isDisabled(), true);
   assert.match(await uncertainPage.locator('#pay-feedback').innerText(), /Do not retry|uncertain/i);
   assert.equal(await uncertainPage.evaluate(() => window.__walletTransactions.length), 1, 'Unknown wallet result must fail closed after one attempted send');
+  await uncertainPage.reload({waitUntil: 'domcontentloaded'});
+  await uncertainPage.waitForFunction(() => window.__beforePay?.state.lifecycle === 'uncertain');
+  assert.equal(await uncertainPage.locator('#pay-now').isDisabled(), true, 'Reloaded lost-response state must remain locked');
+  assert.match(await uncertainPage.locator('#pay-feedback').innerText(), /no second payment from this request/i);
   await uncertainContext.close();
 
   assert.equal(problems.length, 0, problems.join('\n'));
@@ -275,6 +331,7 @@ try {
     missingWallet: 'PASS', wrongNetwork: 'PASS', rejectedSignature: 'PASS', requestCreationNoBroadcast: 'PASS',
     delayedReceiptPolling: 'PASS', lowConfirmationPolling: 'PASS', repeatedClickSingleSend: 'PASS',
     reloadRecoveryReadOnly: 'PASS', rpcFailureNoDuplicate: 'PASS', revertedReceiptFailClosed: 'PASS',
+    walletPendingReloadLock: 'PASS', editedStatusFailClosed: 'PASS', walletPendingEventsLock: 'PASS',
     walletPendingUncertainty: 'PASS', results: 'PASS'
   }, null, 2));
 } finally {

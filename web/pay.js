@@ -416,9 +416,15 @@ async function loadFromUrl() {
       state.lifecycle = PAYMENT_STAGE.SUBMITTED;
       renderPending(PAYMENT_STAGE.SUBMITTED, 'Resuming read-only verification for the recorded transaction. The Pay action is permanently disabled for this request.');
       void startVerification(tx);
-    } else if (status === PAYMENT_STAGE.UNCERTAIN) {
-      renderPending(PAYMENT_STAGE.UNCERTAIN, 'A previous wallet response was uncertain and returned no hash. Check wallet history before considering any retry.');
-      showFeedback('Uncertain wallet response. No payment action is available until wallet history is checked.', 'error');
+    } else if (status && status !== PAYMENT_STAGE.NOT_SUBMITTED) {
+      // A browser can be closed or refreshed while the wallet confirmation
+      // promise is still pending. The wallet may broadcast without returning a
+      // hash, so every serialized non-idle status is treated as uncertain when
+      // no tx hash is present. Never reconstruct a sendable state from URL text.
+      state.lifecycle = PAYMENT_STAGE.UNCERTAIN;
+      renderPending(PAYMENT_STAGE.UNCERTAIN, 'Check wallet activity; no second payment from this request. The previous wallet confirmation may still have been accepted, but it returned no transaction hash.');
+      persistPaymentUrl(PAYMENT_STAGE.UNCERTAIN);
+      showFeedback('Check wallet activity; no second payment from this request.', 'error');
     }
   } catch (error) {
     state.request = null; state.signature = null;
