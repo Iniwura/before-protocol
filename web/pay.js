@@ -433,6 +433,35 @@ async function loadFromUrl() {
   }
 }
 
+// Sharing works without a wallet. Decode only this site's own request links.
+$('open-request-form')?.addEventListener('submit', event => {
+  event.preventDefault();
+  try {
+    const raw = $('payment-link').value.trim();
+    if (raw.length > 8192) throw new Error('Payment link is too long.');
+    const link = new URL(raw);
+    if (link.origin !== location.origin || link.pathname !== '/app/pay/' || link.protocol !== 'https:' && link.hostname !== 'localhost' && link.hostname !== '127.0.0.1') {
+      throw new Error('Open a BEFORE Pay link from this website. Do not enter wallet keys or unrelated links.');
+    }
+    const payload = link.searchParams.get('request');
+    if (!payload) throw new Error('This link has no signed payment request.');
+    decodeSharePayload(payload); // structure/length checked here; signature checked on load
+    const safe = new URL('/app/pay/', location.origin);
+    safe.searchParams.set('request', payload);
+    const tx = link.searchParams.get('tx');
+    if (tx) {
+      if (!isHash(tx)) throw new Error('This proof link contains an invalid transaction hash.');
+      safe.searchParams.set('tx', tx);
+    }
+    const status = link.searchParams.get('status');
+    // Preserve any uncertain / pending state across pasted recovery links.
+    if (status) safe.searchParams.set('status', status);
+    location.assign(safe.pathname + safe.search);
+  } catch (error) {
+    showFeedback(error?.message || 'Paste a valid BEFORE Pay request link.', 'error');
+  }
+});
+
 $('create-form')?.addEventListener('submit', createRequest);
 $('check-form')?.addEventListener('submit', checkPayment);
 $('pay-now')?.addEventListener('click', payNow);
