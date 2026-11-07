@@ -189,7 +189,7 @@ function renderPending(stage, message) {
   if (state.txHash) { $('support-proof-explorer').href = explorerTransactionUrl(state.txHash); setHidden('support-proof-explorer', false); }
   else setHidden('support-proof-explorer', true);
   setHidden('support-proof-retry', !state.txHash || stage === SUPPORT_STAGE.KNOWN_REVERTED);
-  setHidden('support-again', true);
+  setHidden('support-again', true); setHidden('support-next-suggestion', true);
   setHidden('proof-card', false); setHidden('check-card', true); setHidden('offer-card', true); setHidden('share-card', true);
 }
 function renderProof(proof) {
@@ -202,6 +202,23 @@ function renderProof(proof) {
   setText('support-proof-confirmations', proof.confirmations + ' confirmations');
   $('support-proof-explorer').href = explorerTransactionUrl(proof.hash); setHidden('support-proof-explorer', false);
   setHidden('support-proof-retry', true); setHidden('support-again', false);
+  const next = $('support-next-suggestion');
+  if (next) {
+    const intervalDays = SUPPORT_INTERVALS[state.offer.interval]?.days;
+    if (intervalDays) {
+      // This is a local suggestion, NOT a notification or onchain subscription.
+      // Re-verification preserves the previously saved local date rather than moving it forward.
+      const saved = readStoredHistory().find(entry => entry.hash?.toLowerCase() === proof.hash.toLowerCase());
+      const prior = Number(saved?.createdAt);
+      const verifiedAt = Number.isSafeInteger(prior) && prior > 0 ? prior : Math.floor(Date.now() / 1000);
+      const returnAt = verifiedAt + intervalDays * 86400;
+      const expiry = Number(state.offer.expiresAt);
+      next.textContent = returnAt >= expiry
+        ? 'This offer will expire before the suggested return date. Ask the recipient for a renewed signed link. No payment is scheduled.'
+        : 'Suggested return date: ' + new Date(returnAt * 1000).toLocaleDateString() + '. No notification or automatic payment will occur.';
+      next.hidden = false;
+    } else next.hidden = true;
+  }
   setHidden('proof-card', false); setHidden('check-card', true); setHidden('offer-card', true); setHidden('share-card', true);
 }
 
@@ -258,7 +275,7 @@ async function createSupportOffer(event) {
     const interval = $('support-interval').value;
     if (!SUPPORT_INTERVALS[interval]) throw new Error('Choose a supported contribution cadence.');
     const days = Number.parseInt($('support-expiry').value, 10);
-    if (!Number.isInteger(days) || days < 1 || BigInt(days) * 24n * 60n * 60n > 30n * 24n * 60n * 60n) throw new Error('Support offer expiry must be between 1 and 30 days.');
+    if (!Number.isInteger(days) || days < 1 || BigInt(days) * 24n * 60n * 60n > 120n * 24n * 60n * 60n) throw new Error('Support offer expiry must be between 1 and 120 days.');
     await readTokenFacts(); validateRecipientCode(await rpc('eth_getCode', [recipient, 'latest']));
     if (!window.crypto?.getRandomValues) throw new Error('Secure randomness is unavailable; no support offer was created.');
     const campaignBytes = new Uint8Array(32); window.crypto.getRandomValues(campaignBytes);
