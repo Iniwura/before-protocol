@@ -13,7 +13,7 @@ BEFORE Support is a stable recipient-authenticated page for voluntary repeat WIF
 5. BEFORE claims success only after public RPC revalidates transaction/receipt identity, sender, WIF destination, zero native value, exact calldata, success status, three confirmations and exactly one matching WIF `Transfer` event.
 6. A verified receipt is saved as public proof in device-local history. Records are revalidated before display and are not a global campaign ledger.
 
-`SupportOffer` uses its own domain (`BEFORE Support`) and primary type. A Pay request cannot be silently downgraded to a Support offer. Cadence is a reminder label only; it never authorizes an automatic payment.
+`SupportOffer` uses its own domain (`BEFORE Support`) and primary type. A Pay request cannot be silently downgraded to a Support offer. Cadence is a device-local suggested return date only. It never sends a notification or authorizes an automatic payment. An offer can remain valid for at most 120 days so weekly/monthly returns are possible. Its signed terms cannot be revoked before expiry; creators should not use a longer expiry than needed. Each WIF transfer always requires fresh human approval.
 
 ## Duplicate-send policy
 
@@ -48,7 +48,7 @@ No hash is recorded here until those owner-confirmed transactions exist. BTEST r
 
 The implementation answers the two reviewer questions with a concrete loop:
 
-- Reason to return: the same stable creator/community page remains useful for ongoing voluntary support, and the supporter can inspect their own verified receipts plus a labeled cadence reminder.
+- Reason to return: the same stable creator/community page remains useful for ongoing voluntary support, and the supporter can inspect their own verified receipts plus a device-local suggested next-support date (no notifications).
 - What moves more WIF: only an explicit new support cycle can call the standard WIF transfer; it cannot be triggered by a timer, page reload, retry or stored history.
 
 This is a credible product mechanism, not proof of retention. Rule 7 remains **NO-GO until owner-confirmed public mainnet evidence demonstrates the first contribution and a second deliberate new cycle**. There is no official fixed transaction count; two receipts demonstrate repeat capability but do not prove long-term retention.
