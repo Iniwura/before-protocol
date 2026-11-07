@@ -11,7 +11,7 @@ const owner='0x'+'1'.repeat(40),spender='0x'+'2'.repeat(40),hash='0x'+'a'.repeat
 const word=v=>BigInt(v).toString(16).padStart(64,'0');
 const symbol='0x'+word(32)+word(3)+'574946'.padEnd(64,'0');
 const mime={'.html':'text/html','.css':'text/css','.js':'text/javascript','.mjs':'text/javascript','.svg':'image/svg+xml'};
-const allowed=new Set(['app/wif/index.html','wif.css','wif.js','wif-core.mjs','favicon.svg']);
+const allowed=new Set(['app/wif/index.html','wif.css','wif.js','wif-core.mjs','wif-revoke.mjs','favicon.svg']);
 const site=createServer(async(req,res)=>{
  const uri=new URL(req.url,'http://localhost');
  const rel=uri.pathname==='/app/wif/'?'app/wif/index.html':uri.pathname.slice(1);
