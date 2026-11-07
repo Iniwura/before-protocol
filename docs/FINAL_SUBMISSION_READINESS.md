@@ -1,35 +1,55 @@
-# Final submission readiness
+# BEFORE — combined release and submission readiness
 
-## Current scope
+Assessment date: 2026-11-07. Combined source branch: `release/before-pay-bounty-evidence-2026-11-07`.
+**Release status: PENDING exact-head CI and production verification.**
+**Hackathon submission status: NOT YET SUBMITTED.** The user's latest authorization covers code integration and production release, but no real-asset transaction has been executed.
 
-Issue #10 adds BEFORE Pay as a noncustodial, mainnet-aware WIF request → check → pay → proof experience. The request is recipient-authenticated with EIP-712, the payment calldata is restricted to the official WIF `transfer(recipient,amount)` call, and proof is independently revalidated from public RPC.
+## Product scope
 
-The feature does not custody keys, request an allowance, deploy a mainnet contract, or automatically broadcast a transaction. Automated tests use only deterministic mock wallets/RPC. Existing BTEST bounty evidence remains a separate Robinhood Chain **testnet** demonstration and is not WIF evidence.
+BEFORE runs three distinct experiences: noncustodial **BEFORE Pay** (signed WIF payment request → verified preflight → user-confirmed transfer → independently checkable proof), the **WIF Permission Check** (read-only mainnet allowance inspection), and the **BTEST Bounty Studio/Protect → Challenge → Proof** educational testnet flows. The optional WIF approval revocation remains in separate unmerged PR #7 and is **not** included in this release.
 
-The payment lifecycle is now fail-closed after send intent: `eth_sendTransaction` is allowed once per signed request in the active URL flow; a returned hash is persisted before confirmation RPC; delayed, failed or low-confirmation verification can only be retried read-only. Reloads recover the public hash and keep Pay disabled. If reload happens before a hash exists, every non-idle serialized status is restored as `uncertain`, including edited status values, so Pay cannot unlock. This is a duplicate-send guard, not a protocol-level unique-invoice guarantee for arbitrary generic ERC-20 transfers.
+BEFORE Pay uses official $WIF `0x5173b8eA6923c2d40267890D45C46a3480954773`, Robinhood mainnet `4663`. Payment only occurs after the human explicitly approves a standard `transfer` in their wallet. It has no custody, spender allowance, auto-transfer, payment router, new mainnet contract or third-party fee. It does not enforce one-time invoices onchain: a signed request could be paid more than once on another device or outside BEFORE. A real transfer is irreversible and incurs real gas.
 
 ## Gates
 
-| Gate | Status | Evidence / limit |
+| Gate | Status | Evidence and limits |
 | --- | --- | --- |
-| Issue #10 implementation | **READY FOR DRAFT REVIEW** | PR [#11](https://github.com/Iniwura/before-protocol/pull/11), final head `2d75d58250b0efeb359818bf40784060e9d86ca4` |
-| Pure request/signature/calldata/proof tests | **PASS** | 11 Pay tests; 84 local Node tests; canonical receipt/block identity checks included |
-| Mock wallet/browser/security QA | **PASS** | `node qa/pay-e2e.mjs`; 320/375/390/768/1280, axe clean, delayed receipts, low confirmations, interrupted wallet-confirmation reload, lost-response reload, edited-status fail-closed, wallet events, RPC failure, reverted receipt and repeated clicks all covered; exactly one mocked send per attempt |
-| Existing Foundry/Node/Anvil suites | **PASS IN CI** | Hosted `test` job passed Foundry build/fuzz, Anvil, bounty lifecycle and 84 Node tests; local container lacks `forge`/`anvil` binaries. WIF revoke tests remain on separate unmerged PR #7 |
-| GitHub CI | **PASS** | [run 42383687821](https://github.com/Iniwura/before-protocol/actions/runs/42383687821): `test` and `browser-quality` both passed; push run [42383683691](https://github.com/Iniwura/before-protocol/actions/runs/42383683691) also passed; PR metadata is `mergeable=true`, `clean` |
-| Vercel preview | **READY** | [Pay preview](https://before-9po5q1v5q-iniwura-akurus-projects.vercel.app/app/pay/) · [root](https://before-9po5q1v5q-iniwura-akurus-projects.vercel.app/) · [app](https://before-9po5q1v5q-iniwura-akurus-projects.vercel.app/app/) · deployment [dashboard](https://vercel.com/iniwura-akurus-projects/before-web/GD5pXXELhMAFtXUJTzyoucmNyyeH) |
-| Real WIF/mainnet transaction | **NO-GO** | Explicitly not authorized |
-| Production promotion | **NO-GO** | Explicitly not authorized |
-| Merge | **NO-GO** | Draft PR only |
-| Demo video | **PAUSED** | Explicitly not requested |
-| Final organizer submission | **NO-GO** | Owner-controlled decision |
+| BTEST public network / sponsor-reviewer-researcher lifecycle | **PASS, public testnet 46630 only** | Challenge #7 creation, commitment, appointed-reviewer approval, reveal/settlement, actual token balance and event accounting independently checked. See [public testnet evidence](ISSUE_8_PUBLIC_TESTNET_EVIDENCE.md) and `node qa/issue-8-fresh-bounty-audit.mjs`. Three authorized wallets, one operator; **not** independent human review. |
+| Bounty #5 preservation | **PASS, public read-only audit** | Existing expired bounty left under original sponsor account, no unauthorized refund or cancellation; see [Issue #8 evidence](ISSUE_8_PUBLIC_TESTNET_EVIDENCE.md). |
+| Pay recipient EIP-712 signature and exact WIF calldata | **PASS in automated tests** | Request-bound address/amount/chain/token/nonce/expiry, fail-closed EOA signature recovery, `transfer` only. |
+| Pay duplicate-send and pending receipts | **PASS in mocked wallet/browser regression** | Wallet-pending reload, lost hash, RPC outage, 1–2 confirmations, reverted receipt, edited URL status, wallet/account change, read-only verification retry. One simulated send per attempt. |
+| Foundry / Node / Anvil / responsive and axe | **PASS on individual PR heads; combined CI pending** | Pay PR #11 at `73735b8`: [CI](https://github.com/Iniwura/before-protocol/actions/runs/42383839833) passed. BTEST audit PR #9 at `67125b7`: [CI](https://github.com/Iniwura/before-protocol/actions/runs/42376037978) passed. Counts must be reported afresh for combined release. |
+| Real public WIF payment | **NOT PERFORMED** | Mainnet contract code, symbol and 18 decimals verified read-only; no real WIF transfer, approval, or live receipt has been broadcast by Codex/CI. Mock browser receipts are **not** mainnet evidence. |
+| Production deployment | **PENDING** | Do not mark deployed until verified Vercel production alias has the combined release commit and route HTTP checks pass. |
+| Demo video and organizer submission | **PENDING** | No video has been created or uploaded. Registration is **not** a final submission. Confirm actual portal fields and deadline against organizers. |
 
-## Truthful product limits
+## Public BTEST evidence (challenge 7)
 
-- The signed request proves recipient intent, not unique invoice settlement.
-- The same signed request can match more than one generic ERC-20 transfer initiated outside this client; no unique invoice settlement is claimed.
-- Within the active URL recovery flow, a sent or uncertain request never re-enables Pay. The URL-persisted hash and public RPC proof are used for recovery; Retry verification never broadcasts.
-- EIP-1271 smart-contract recipients are unsupported and fail closed.
-- Public RPC availability and a stable confirmation depth are required for proof.
-- A real payment costs real mainnet gas and is irreversible.
-- No independent security audit is claimed.
+- [Create](https://explorer.testnet.chain.robinhood.com/tx/0x5b54ab0f8db383cde66ff40a59ab7b926090d17f1854183a88ca2486b288a9a1)
+- [Researcher commitment](https://explorer.testnet.chain.robinhood.com/tx/0x4a00d1d9133670b738571823ee9e93d0dc861f938fcf832c1cbe121a4ab0ddd3)
+- [Reviewer approval](https://explorer.testnet.chain.robinhood.com/tx/0x7682cbf90feac893c20cae875d4c1b8b216eae8a4faca813c2f31b505fab6bec)
+- [Final settlement](https://explorer.testnet.chain.robinhood.com/tx/0x17ecb3839f4c249fa1ca7c0283a191675d6f38256a498afda83059ec21750f5c)
+
+These are genuine public testnet BTEST transactions. They do not prove live WIF usage. The separate historical synthetic-coordinator lifecycle is described honestly in the public evidence document.
+
+## Reproduction
+
+```sh
+forge build --no-cache
+forge test --fuzz-runs 1024
+node --test checks/reference.test.mjs checks/deployment-proof.test.mjs checks/deployment-cli.test.mjs checks/broadcast-args.test.mjs web/test/core.test.mjs web/test/onchain.test.mjs web/test/pay-core.test.mjs web/test/bounty-core.test.mjs web/test/wif-core.test.mjs
+node script/anvil-e2e.mjs
+node script/run-bounty-lifecycle.mjs --local
+node qa/verify.mjs
+node qa/pay-e2e.mjs
+node qa/bounty-e2e.mjs
+node qa/wif-verify.mjs
+node qa/issue-8-public-testnet-audit.mjs
+node qa/issue-8-fresh-bounty-audit.mjs
+```
+
+The two last scripts require a working public Robinhood testnet RPC. They are **read-only**, never sign transactions. The public acceptance signing runner requires explicitly provisioned local test-only keystores, is not run in CI and must never be run with real assets.
+
+## Hackathon final gate
+
+The previous official event API listed **2026-11-12 17:30 UTC** as the build cutoff, subject to a live portal check. Verify actual eligibility, required fields and media size. Prepare the required demo video with clear actual-source evidence and without showing synthetic data as mainnet WIF. The lack of a real WIF transfer remains a potentially material judging/eligibility gap even once Pay is deployed; do not claim otherwise. The final organizer Submit action must be confirmed by an actual platform receipt.
