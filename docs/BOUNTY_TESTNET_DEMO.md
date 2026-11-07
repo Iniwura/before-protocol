@@ -66,6 +66,12 @@ The authorized testnet run completed successfully on chain `46630`. The coordina
 
 The proof is still explicitly synthetic: all demo roles are controlled by one operator, `independentReview` is false, `valuableWifFunded` is false, and no mainnet or production action is implied.
 
+## Fresh three-wallet acceptance evidence
+
+On 2026-11-07, the owner-authorized sponsor funded the two isolated disposable wallets with `0.0001 ETH` each, then a separate script-driven run used the sponsor, researcher and reviewer keystores to complete fresh BTEST challenge `7`. The run deployed reviewer gate [`0x375798eab2f3becd8cba137659b8f8ed028d2d46`](https://explorer.testnet.chain.robinhood.com/address/0x375798eab2f3becd8cba137659b8f8ed028d2d46), submitted a researcher commitment, recorded the appointed reviewer's quorum approval and settled the reveal with `RewardPaid`.
+
+The complete receipt matrix and the read-only audit command are in [ISSUE_8_PUBLIC_TESTNET_EVIDENCE.md](ISSUE_8_PUBLIC_TESTNET_EVIDENCE.md) and [`qa/issue-8-fresh-bounty-audit.mjs`](../qa/issue-8-fresh-bounty-audit.mjs). The three wallets were controlled by one owner-authorized environment, so this proves the public contract path and accounting but does not claim independent human review. It used only valueless BTEST; no real `$WIF`, mainnet or production transaction was involved.
+
 ## What the product verifies
 
 After approved publication of the proof file, `/app/#challenge` checks the chain ID, signer, escrow/token/target contract bindings, deployed code, coordinator stage 3, and all three public lifecycle transaction/receipt pairs before showing the read-only receipt trail. A static JSON flag alone never unlocks a payout claim.
