@@ -145,3 +145,32 @@ The real challenge is not whether the project can encode a transfer, but whether
 ### Final gate
 
 **GO** for further preview and controlled release work once CI passes. **NO-GO** for claims of a completed real-WIF payment, independent security audit, guaranteed prize eligibility, or final submitted entry until each has actual evidence.
+
+
+---
+
+## 10. Rule-by-rule correction after reading the full official organizer rules
+
+**Source:** Organizer rules pasted by the project owner on November 7, 2026; official event https://worldisflat.fun/build. These are stronger and more explicit than the abbreviated public-search description relied upon in the earlier review. This section takes precedence over earlier speculative eligibility language.
+
+**Hard deadline:** submissions close November 12, 2026 at **17:30 UTC**. Submitted project content locks then except logo. Round one November 12–14, final November 14–16, 17:30 UTC. Product must remain accessible through the final. Award: one winner, 10,000 USDG; community vote counts as one seat among judges, with the ten leading projects becoming finalists. This mechanism affects outreach but is not a reason for spam, inducements or claims of guaranteed voting advantage.
+
+| Rule | Official requirement | BEFORE as of this checkpoint | Verdict |
+| --- | --- | --- | --- |
+| 1,2,10 | Teams up to four, age ≥18, no requirement to buy/hold WIF | Team and age to be entered accurately; no token ownership is required merely to enter | **Owner declaration needed** |
+| 3 | The **project must use $WIF onchain on Robinhood Chain** | Mainnet contract and token checks pass read-only; Pay can construct a transfer, but no actual app-originated WIF mainnet payment has been verified | **FAIL / unproven** |
+| 4 | App remains live/working until final closes November 16 | Vercel deployment READY and production alias confirmed; future uptime requires monitoring | **CURRENTLY LIVE; future obligation open** |
+| 5 | Public repo + demo video + **real transactions** | Public repository; genuine BTEST testnet transactions only; no real WIF app-originated tx; video not completed | **PARTIAL / currently NO-GO** |
+| 6 | Existing work allowed if WIF has a real use | BEFORE Pay is implemented and verified in automated tests, but not yet live-transaction-proven | **PARTIAL** |
+| 7 | **Flywheel** returning people to WIF | Request → Check → Pay → Proof is a strong one-time payment verification workflow, **not automatically a retention loop** | **FAIL / missing demonstrated flywheel** |
+| 8,11–16 | Team/judge eligibility, no unauthorized brands or malware, possible winner eligibility/payout verification | BEFORE brand is distinct; official Robinhood Chain naming is used descriptively. Team/payout checks depend on the actual entrant; never claim completed | **Owner attestation / remaining checks** |
+| Categories | Choose every applicable category | Consumer & Payments; Tools & Infra; optionally Onboarding after demonstrated novice UX | **Category recommendation** |
+| Judge criteria | A real reason to use WIF, flywheel, working product and build quality | Build quality strong. Live WIF usage and repeated behavioral reason not demonstrated | **Competition NO-GO** |
+
+### Corrected scores and executive conclusion
+
+The engineering build still rates **7.7/10** after approved Pay-first UX fixes and confirmed CI/deployment. **Contest readiness is only 4/10** until genuine WIF usage, a repeat-use loop, demo and submission are established. The lower contest score is **not** a claim of a new security regression: it reflects that two named rules are unmet or unproven.
+
+**Priority:** New narrow work order [Issue #16](https://github.com/Iniwura/before-protocol/issues/16) investigates **BEFORE Support**: repeat voluntary WIF contributions on a recipient-authenticated support page, user-confirmed each time, with reverified contribution receipts and honest device-local history limits. This is a proposed implementation, **not shipped functionality**, and no onchain single-use guarantee or automatic subscriptions are claimed. Production work should not be described as meeting the flywheel rule before users can actually repeat WIF activity.
+
+**No requirement to purchase WIF just to enter:** rule 2 expressly says entrants need not buy or hold WIF; that does not remove rule 3 requiring the product to use WIF onchain. If a human-owned funded wallet is unavailable for a controlled test, record the limit rather than fabricate a mainnet transaction.
