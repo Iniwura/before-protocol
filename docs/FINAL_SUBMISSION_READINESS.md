@@ -12,12 +12,12 @@ The payment lifecycle is now fail-closed after send intent: `eth_sendTransaction
 
 | Gate | Status | Evidence / limit |
 | --- | --- | --- |
-| Issue #10 implementation | **READY FOR DRAFT REVIEW** | PR [#11](https://github.com/Iniwura/before-protocol/pull/11); final commit and exact-head CI are recorded in the PR evidence comment |
-| Pure request/signature/calldata/proof tests | **PASS** | 11 Pay tests; canonical receipt/block identity checks included |
+| Issue #10 implementation | **READY FOR DRAFT REVIEW** | PR [#11](https://github.com/Iniwura/before-protocol/pull/11), merge-resolved head `1df02916811a55d9c70df7402b5263764cfb25af` |
+| Pure request/signature/calldata/proof tests | **PASS** | 11 Pay tests; 84 local Node tests; canonical receipt/block identity checks included |
 | Mock wallet/browser/security QA | **PASS** | `node qa/pay-e2e.mjs`; 320/375/390/768/1280, axe clean, delayed receipts, low confirmations, reload recovery, RPC failure, reverted receipt, repeated clicks and wallet uncertainty all covered |
-| Existing Foundry/Node/Anvil suites | **PASS** | Foundry 66, Node 67, Anvil release gate; WIF revoke tests remain on separate unmerged PR #7 |
-| GitHub CI | **PASS** | [run 42379107869](https://github.com/Iniwura/before-protocol/actions/runs/42379107869): `test` and `browser-quality`; Vercel preview check also passed |
-| Vercel preview | **READY** | [preview](https://before-a1jcqrbe9-iniwura-akurus-projects.vercel.app/app/pay/) · deployment [dashboard](https://vercel.com/iniwura-akurus-projects/before-web/DXSq4P9ALgijRnrmRa1huDjGdMY1) |
+| Existing Foundry/Node/Anvil suites | **PASS IN CI** | Hosted `test` job passed Foundry build/fuzz, Anvil, bounty lifecycle and 84 Node tests; local container lacks `forge`/`anvil` binaries. WIF revoke tests remain on separate unmerged PR #7 |
+| GitHub CI | **PASS** | [run 42382610363](https://github.com/Iniwura/before-protocol/actions/runs/42382610363): `test` and `browser-quality` both passed; PR metadata is `mergeable=true`, `clean` |
+| Vercel preview | **READY** | [Pay preview](https://before-3nlhuhf7a-iniwura-akurus-projects.vercel.app/app/pay/) · [root](https://before-3nlhuhf7a-iniwura-akurus-projects.vercel.app/) · [app](https://before-3nlhuhf7a-iniwura-akurus-projects.vercel.app/app/) · deployment [dashboard](https://vercel.com/iniwura-akurus-projects/before-web/HYTg33Sccs2YqDu4UDWy3ZjiRaL6) |
 | Real WIF/mainnet transaction | **NO-GO** | Explicitly not authorized |
 | Production promotion | **NO-GO** | Explicitly not authorized |
 | Merge | **NO-GO** | Draft PR only |
