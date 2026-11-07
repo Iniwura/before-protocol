@@ -277,6 +277,7 @@ try {
   await delayedPage.locator('#proof-card').waitFor({state: 'visible'});
   await delayedPage.waitForFunction(() => document.querySelector('#pay-feedback').textContent.includes('proof verified'));
   assert.equal(await delayedPage.evaluate(() => window.__walletTransactions.length), 1, 'Delayed receipt and repeated clicks must broadcast exactly once');
+  assert.equal(await delayedPage.evaluate(() => window.__walletTransactions[0].gas), undefined, 'Wallet must estimate the final gas limit; preflight estimate is not an exact gas cap');
   assert.ok(delayedMetrics.receiptCalls >= 4, 'Receipt polling must observe pending and confirmation stages');
   await delayedContext.close();
 
