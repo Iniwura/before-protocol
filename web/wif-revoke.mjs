@@ -12,6 +12,13 @@ async function publicRpc(method, params=[]){
  return body.result;
 }
 function message(text, error=false){
+ if($('result').hidden){
+  const feedback=$('feedback');
+  feedback.textContent=text;
+  feedback.dataset.kind=error?'error':'info';
+  feedback.hidden=false;
+  return;
+ }
  $('revoke-status').textContent=text;
  $('revoke-status').dataset.kind=error?'error':'info';
  $('revoke-status').hidden=false;
