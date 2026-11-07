@@ -61,7 +61,7 @@ The verified preview reads the public testnet deployment through the checked-in 
 
 ## BEFORE Pay (draft, mainnet-aware and noncustodial)
 
-The `/app/pay/` preview adds a focused request → check → pay → proof flow for the official WIF token on Robinhood Chain mainnet. A recipient signs an EIP-712 exact-amount request; a payer independently verifies the recipient, token, chain, balance and gas before an explicit standard ERC-20 transfer. Public proof rechecks the mined transaction and WIF `Transfer` event. The automated flow uses mock wallets and RPC only; it never broadcasts real WIF. See [WIF_PAY_SECURITY_AND_RELEASE.md](docs/WIF_PAY_SECURITY_AND_RELEASE.md) for the threat model, duplicate-payment limit and owner-controlled real-WIF gate.
+The `/app/pay/` preview adds a focused request → check → pay → proof flow for the official WIF token on Robinhood Chain mainnet. A recipient signs an EIP-712 exact-amount request; a payer independently verifies the recipient, token, chain, balance and gas before an explicit standard ERC-20 transfer. Public proof rechecks the mined transaction and WIF `Transfer` event. After send intent, the request/hash is persisted in the URL, Pay stays locked through delayed receipts and reloads, and retry is read-only; generic ERC-20 transfers still cannot enforce unique invoice settlement outside this flow. The automated flow uses mock wallets and RPC only; it never broadcasts real WIF. See [WIF_PAY_SECURITY_AND_RELEASE.md](docs/WIF_PAY_SECURITY_AND_RELEASE.md) for the threat model and owner-controlled real-WIF gate.
 
 ## Architecture
 

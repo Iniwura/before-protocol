@@ -110,9 +110,10 @@ test('share payload round-trips only public request material and rejects malform
 test('mined proof requires sender, destination, exact calldata, success and one matching Transfer log', () => {
   const hash = '0x' + 'de'.repeat(32);
   const block = '0x64';
-  const tx = {hash, from: payer, to: WIF_TOKEN, input: transferData(request), value: '0x0'};
+  const blockHash = '0x' + 'aa'.repeat(32);
+  const tx = {hash, from: payer, to: WIF_TOKEN, input: transferData(request), value: '0x0', blockNumber: block, blockHash, transactionIndex: '0x0'};
   const receipt = {
-    transactionHash: hash, status: '0x1', blockNumber: block, from: payer, to: WIF_TOKEN,
+    transactionHash: hash, status: '0x1', blockNumber: block, blockHash, transactionIndex: '0x0', from: payer, to: WIF_TOKEN,
     logs: [{address: WIF_TOKEN, topics: [TRANSFER_TOPIC, '0x' + payer.slice(2).padStart(64, '0'), '0x' + recipient.slice(2).padStart(64, '0')], data: '0x' + request.amount.toString(16).padStart(64, '0')}]
   };
   const proof = validateMinedTransfer({transaction: tx, receipt, request, sender: payer, currentBlock: '0x66', confirmations: 3});
@@ -120,7 +121,8 @@ test('mined proof requires sender, destination, exact calldata, success and one 
   assert.equal(explorerTransactionUrl(hash), 'https://robinhoodchain.blockscout.com/tx/' + hash);
   for (const mutation of [
     {...tx, from: recipient}, {...tx, to: recipient}, {...tx, input: transferData({...request, amount: request.amount + 1n})},
-    {...receipt, status: '0x0'}, {...receipt, logs: []}, {...receipt, transactionHash: '0x' + 'ad'.repeat(32)}
+    {...receipt, status: '0x0'}, {...receipt, logs: []}, {...receipt, transactionHash: '0x' + 'ad'.repeat(32)},
+    {...receipt, blockHash: '0x' + 'bb'.repeat(32)}, {...receipt, transactionIndex: '0x1'}
   ]) {
     const isReceipt = mutation === receipt || Object.prototype.hasOwnProperty.call(mutation, 'logs');
     assert.throws(() => validateMinedTransfer({transaction: isReceipt ? tx : mutation, receipt: isReceipt ? mutation : receipt, request, sender: payer, currentBlock: '0x66', confirmations: 3}));

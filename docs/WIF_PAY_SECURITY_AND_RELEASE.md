@@ -17,7 +17,14 @@ This feature has no server, database, private-key access, custody, allowance req
 3. The share link carries only the request and 65-byte signature in URL-safe encoded JSON. It contains no key, seed or token permission.
 4. A payer opens the link and explicitly connects a wallet. BEFORE independently reads public RPC state, validates the official WIF runtime code and metadata, verifies the recipient is an EOA, recovers the signer with the chain `ecrecover` precompile, checks WIF balance and estimates native gas.
 5. Only the explicit **Pay exact WIF amount in my wallet** action calls `eth_sendTransaction`. The requested transaction is exactly `to=WIF_TOKEN`, `value=0x0`, and `data=0xa9059cbb` followed by the recipient and amount ABI words. BEFORE cannot access the payer's keys.
-6. A receipt becomes proof only after public RPC revalidation of transaction/receipt identity, sender, destination, zero native value, exact calldata, successful status, three confirmations and exactly one matching official WIF `Transfer` event.
+6. Once wallet-send intent begins, the request is permanently locked in the page lifecycle. A returned hash is written to the URL before any receipt RPC; a reload therefore resumes read-only verification and never re-enables Pay for that signed request.
+7. A receipt becomes proof only after public RPC revalidation of transaction/receipt identity, sender, destination, zero native value, exact calldata, successful status, three confirmations and exactly one matching official WIF `Transfer` event.
+
+## Pending-payment recovery
+
+The client uses explicit monotonic stages: `not-submitted`, `wallet-pending`, `submitted`, `mined-awaiting-confirmations`, `verified`, `known-reverted` and `uncertain`. After `eth_sendTransaction` returns a hash, the request and hash are persisted in the URL before any confirmation attempt. Receipt polling uses bounded backoff and a visible **Retry verification** action; retry is read-only and cannot call `eth_sendTransaction`.
+
+If a receipt is delayed, the RPC times out, confirmations are below three, the receipt reverts, or the wallet returns an ambiguous error, the Pay control remains disabled. Account and network changes while a payment is pending do not clear the recorded hash or unlock Pay. A wallet rejection with explicit EIP-1193 code `4001` is the only path that returns to `not-submitted`; an unknown wallet error becomes `uncertain` and tells the user to inspect wallet history before any retry.
 
 ## Threat model and fail-closed policy
 
@@ -29,8 +36,9 @@ This feature has no server, database, private-key access, custody, allowance req
 | Signature malleability or malformed signature | Exact 65-byte signature, `v` 27/28 normalization and low-`s` enforcement; recovery delegated to EVM precompile | Wallet/provider must implement `eth_signTypedData_v4` correctly |
 | Stale wallet account or network | Account and chain are rechecked immediately before the wallet request; provider changes invalidate the check | User-controlled wallets can change state after the final check |
 | Wrong transaction supplied by wallet/provider | Exact transaction fields are checked after mining | Wallet confirmation UI remains the user's responsibility |
-| False local success or tampered proof URL | Proof reload reads transaction, receipt and logs from public RPC; no localStorage success state | A public RPC can be unavailable or reorg before confirmation depth |
-| Duplicate or replayed signed request | Fresh nonce and expiry reduce accidental reuse; the UI warns that generic ERC-20 transfers have no unique invoice binding | The same valid request can be paid more than once; no unique settlement is claimed |
+| False local success or tampered proof URL | Proof reload reads transaction, receipt, block identity and logs from public RPC; the URL is recovery input, never a success claim | A public RPC can be unavailable or reorg before confirmation depth |
+| Duplicate send after a pending receipt | Monotonic lifecycle lock, URL-persisted hash, bounded read-only polling, disabled Pay control and explicit retry-verification action | A generic ERC-20 transfer cannot enforce unique invoice settlement across devices, cleared URLs or independently initiated transfers |
+| Replay of a signed request outside this page | Fresh nonce and expiry plus exact recipient/amount binding; the UI discloses the limitation | The same valid request can still match more than one generic ERC-20 transfer; no protocol-level invoice settlement is claimed |
 | Native-gas surprise | Estimated gas and current native balance are shown before Pay | Gas price can change after the estimate; the wallet confirmation remains authoritative |
 | Secrets in the application | No private-key APIs, keystore files, server signer or approval flow exist in the product | Users must keep their own wallet and signing device secure |
 
@@ -51,6 +59,8 @@ eth_sendTransaction({
 
 No `approve`, `permit`, `transferFrom`, helper contract or native-value transfer is requested. A real mainnet payment costs real native gas and is irreversible. This repository's automated tests use a deterministic mock EIP-1193 wallet and mock RPC only; they do not fabricate a mainnet receipt or send WIF.
 
+After the wallet returns a transaction hash, the recovery URL contains the signed request and hash only. It is safe to share as public transaction context, but it is not a settlement receipt until the public RPC proof checks pass. The UI never stores a private key, seed, wallet password or secret signer state.
+
 ## Test evidence
 
 The isolated tests cover:
@@ -63,6 +73,7 @@ The isolated tests cover:
 - Short, extra, mutated-recipient and mutated-amount calldata.
 - Transaction sender/destination/value/status identity and exact `Transfer` log accounting.
 - Missing wallet, wrong network, signature rejection, repeated-click protection, no-broadcast request creation, exact mocked transfer fields and read-only proof reload.
+- Delayed `eth_getTransactionReceipt`, one-to-two-confirmation progression, receipt RPC failure, reload recovery, reverted receipt, ambiguous wallet response and account-change/chain-change locking; every adversarial scenario asserts exactly one mocked `eth_sendTransaction`.
 
 Run locally:
 

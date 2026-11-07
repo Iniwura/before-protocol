@@ -321,6 +321,9 @@ export function buildPaymentTransaction(sender, request, gasLimit) {
 export function validateMinedTransfer({transaction, receipt, request, sender, currentBlock, confirmations = 3}) {
   const normalized = normalizeRequest(request);
   if (!transaction || !receipt || !sameHash(transaction.hash, receipt.transactionHash)) throw new Error('Receipt and transaction identity do not match.');
+  if (transaction.blockHash !== undefined && receipt.blockHash !== undefined && !sameHash(transaction.blockHash, receipt.blockHash)) throw new Error('Receipt and transaction block identity do not match.');
+  if (transaction.blockNumber !== undefined && receipt.blockNumber !== undefined && BigInt(transaction.blockNumber) !== BigInt(receipt.blockNumber)) throw new Error('Receipt and transaction block number do not match.');
+  if (transaction.transactionIndex !== undefined && receipt.transactionIndex !== undefined && BigInt(transaction.transactionIndex) !== BigInt(receipt.transactionIndex)) throw new Error('Receipt and transaction index do not match.');
   if (!sameAddress(transaction.from, sender) || !sameAddress(receipt.from, sender)) throw new Error('Mined transaction sender does not match the payer.');
   if (!sameAddress(transaction.to, WIF_TOKEN) || !sameAddress(receipt.to, WIF_TOKEN)) throw new Error('Mined transaction destination is not the official WIF token.');
   if (transaction.value !== undefined && BigInt(transaction.value) !== 0n) throw new Error('Mined transaction moved native value.');

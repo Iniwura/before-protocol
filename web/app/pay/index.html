@@ -65,10 +65,11 @@
   </section>
 
   <section id="proof-card" class="pay-section proof-card" hidden aria-labelledby="proof-title">
-    <div class="section-bar"><span>03 / RECEIPT PROOF</span><span>INDEPENDENT RPC RECHECK</span></div>
-    <div class="section-heading"><h2 id="proof-title">A payment<br><em>you can inspect.</em></h2><p>Success is claimed only after the public receipt, exact transfer calldata, sender, official WIF destination and matching Transfer event pass again.</p></div>
+    <div class="section-bar"><span>03 / RECEIPT PROOF</span><span id="proof-state">Verified · final</span></div>
+    <div class="section-heading"><h2 id="proof-title">A payment<br><em>you can inspect.</em></h2><p id="proof-description">Success is claimed only after the public receipt, exact transfer calldata, sender, official WIF destination and matching Transfer event pass again.</p></div>
     <div class="proof-grid"><div><span>TRANSACTION</span><strong id="proof-hash">—</strong></div><div><span>BLOCK</span><strong id="proof-block">—</strong></div><div><span>CONFIRMATIONS</span><strong id="proof-confirmations">—</strong></div></div>
     <a id="proof-explorer" class="proof-link" target="_blank" rel="noopener noreferrer">Inspect verified receipt on Blockscout ↗</a>
+    <button id="proof-retry" class="plain-button" type="button" hidden>Retry verification ↗</button>
     <button id="new-request" class="plain-button" type="button">Create another request ↗</button>
   </section>
 
