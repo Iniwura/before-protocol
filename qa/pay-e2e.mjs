@@ -216,6 +216,9 @@ try {
   await linkPage.locator('#open-request-form button').click();
   await linkPage.waitForURL(url => url.searchParams.has('request'));
   await linkPage.locator('#check-card').waitFor({state: 'visible'});
+  assert.equal((await linkPage.locator('#request-recipient').innerText()).toLowerCase(), recipient.toLowerCase(), 'Full payment destination must remain visible to mobile payers');
+  const populatedSize = await linkPage.evaluate(() => ({scroll: document.documentElement.scrollWidth, client: document.documentElement.clientWidth}));
+  assert.ok(populatedSize.scroll <= populatedSize.client + 1, 'Full recipient address must not overflow on mobile');
   assert.equal(await linkPage.evaluate(() => window.__walletTransactions.length), 0, 'Opening a signed link is read only');
   await linkContext.close();
 
