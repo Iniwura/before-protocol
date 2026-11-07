@@ -40,6 +40,7 @@ button:disabled{opacity:.48;cursor:not-allowed}
 .status-dot.offline{background:#a65433;border-color:#a65433}
 .source-link{border-radius:100px;background:var(--ink);color:white;padding:12px 19px;font-size:10px;line-height:1;font-weight:800;letter-spacing:.02em;white-space:nowrap;display:flex;gap:15px;align-items:center;transition:transform .24s var(--ease),background .24s}
 .source-link:hover{color:white;background:#3b3b38;transform:translateY(-2px)}
+.pay-entry{background:transparent;color:var(--ink);border:1px solid var(--ink);padding:11px 14px}.pay-entry:hover{color:var(--ink);background:#e6e6e0}
 .main{width:min(1536px,calc(100% - clamp(40px,7vw,128px)));margin:0 auto;flex:1}
 .hero{padding-top:36px}
 .hero-meta,.experience-topline,.section-kicker,.panel-overline,.form-eyebrow,.result-topline,.result-footer,.footer-top,.footer-bottom,.hero-issue,.hero-direction,.field-label,.input-unit>span,.onchain-number{font-size:10px;font-weight:800;letter-spacing:.065em;line-height:1.4}
@@ -248,8 +249,9 @@ button:disabled{opacity:.48;cursor:not-allowed}
  .main{width:calc(100% - 32px)}
  .topbar{height:63px;padding:0 16px}
  .brand{font-size:22px}
- .top-actions{gap:10px}
+ .top-actions{gap:10px;min-width:0;overflow:hidden}
  .source-link{padding:11px 13px;font-size:10px;gap:7px}
+ .pay-entry{display:none}
  .network-indicator{font-size:9px}
  .hero{padding-top:26px}
  .hero-meta{font-size:8px;gap:12px}

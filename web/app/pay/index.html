@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#f8f8f5">
+<meta name="description" content="BEFORE Pay — recipient-authenticated WIF payment requests with independently verified receipts.">
+<title>BEFORE® — Pay with proof</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="stylesheet" href="/pay.css">
+<script type="module" src="/pay.js"></script>
+</head>
+<body>
+<header class="pay-header">
+  <a class="pay-brand" href="/" aria-label="BEFORE home">BEFORE<sup>®</sup></a>
+  <span class="pay-header-center">BEFORE PAY / WIF</span>
+  <nav class="pay-header-nav" aria-label="Payment navigation"><a href="/">Protocol <span aria-hidden="true">↗</span></a><a href="#limits-title">Limits</a></nav>
+</header>
+
+<main>
+  <section class="pay-hero" aria-labelledby="pay-title">
+    <div class="pay-topline"><span>ROBINHOOD CHAIN / MAINNET · 4663</span><span>NONCUSTODIAL · NO APPROVAL</span></div>
+    <div class="pay-hero-grid"><div><div class="pay-kicker">01 / REQUEST → CHECK → PAY → PROOF</div><h1 id="pay-title">Pay with<br><em>proof.</em></h1></div><div class="pay-symbol" aria-hidden="true">↗</div></div>
+    <div class="pay-hero-bottom"><span>OFFICIAL TOKEN / WIF</span><p>A recipient signs the exact amount. A payer checks the chain, then chooses the standard WIF transfer in their own wallet.</p></div>
+  </section>
+
+  <div id="pay-feedback" class="pay-feedback" role="status" aria-live="polite" hidden></div>
+
+  <section id="create-card" class="pay-section" aria-labelledby="create-title">
+    <div class="section-bar"><span>01 / CREATE A REQUEST</span><span>RECIPIENT SIGNATURE ONLY</span></div>
+    <div class="section-heading"><h2 id="create-title">Ask for the<br><em>exact amount.</em></h2><p>The receiving wallet signs an EIP-712 request bound to WIF, chain 4663, amount, expiry and a fresh nonce. Signing does not move or approve tokens.</p></div>
+    <form id="create-form" class="pay-form">
+      <div class="form-field"><label for="pay-amount">Amount <span>WIF · 18 decimals</span></label><input id="pay-amount" type="text" inputmode="decimal" autocomplete="off" placeholder="0.0" required><small>Integer or decimal amount, up to 18 decimals. Zero and overflow are rejected.</small></div>
+      <div class="form-field"><label for="pay-expiry">Request expires in <span>hours</span></label><input id="pay-expiry" type="number" inputmode="numeric" min="1" max="720" value="24" required><small>Short-lived links reduce stale-intent risk. Maximum 30 days.</small></div>
+      <button id="create-request" class="pay-button" type="submit">Connect recipient and sign request <span aria-hidden="true">↗</span></button>
+    </form>
+  </section>
+
+  <section id="request-card" class="pay-section request-card" hidden aria-labelledby="request-title">
+    <div class="section-bar"><span>REQUEST / AUTHENTICATED</span><span id="request-state">Signed · needs check</span></div>
+    <div class="request-grid">
+      <div><span>RECIPIENT</span><strong id="request-recipient">—</strong></div>
+      <div><span>EXACT AMOUNT</span><strong id="request-amount">—</strong></div>
+      <div><span>EXPIRES</span><strong id="request-expiry">—</strong></div>
+      <div><span>REQUEST ID / NONCE</span><strong id="request-id">—</strong></div>
+    </div>
+    <p id="request-title" class="note">The signature is checked against the recipient wallet, official WIF contract and mainnet chain before payment is enabled.</p>
+  </section>
+
+  <section id="share-card" class="pay-section share-card" hidden aria-labelledby="share-title">
+    <div class="section-bar"><span>REQUEST / PORTABLE LINK</span><span>NO SERVER OR DATABASE</span></div>
+    <div class="section-heading"><h2 id="share-title">Share the<br><em>signed request.</em></h2><p>The link contains only the public request and signature. It never contains a private key, seed or spending permission.</p></div>
+    <div class="share-row"><input id="share-link" type="text" readonly aria-label="Signed payment request link"><button id="copy-link" class="pay-button" type="button">Copy link <span aria-hidden="true">↗</span></button></div>
+  </section>
+
+  <section id="check-card" class="pay-section check-card" hidden aria-labelledby="check-title">
+    <div class="section-bar"><span>02 / CHECK BEFORE PAYING</span><span>PUBLIC RPC · FAIL CLOSED</span></div>
+    <div class="section-heading"><h2 id="check-title">Check every<br><em>important fact.</em></h2><p>BEFORE reads the official token and recipient from public RPC, verifies the EIP-712 signature, checks WIF balance and estimates gas. An unsafe or stale request cannot unlock Pay.</p></div>
+    <form id="check-form" class="pay-form check-form"><button id="check-payment" class="pay-button" type="submit">Connect payer and check request <span aria-hidden="true">↗</span></button></form>
+    <div id="check-results" class="check-results" hidden>
+      <div class="request-grid"><div><span>PAYER</span><strong id="check-sender">—</strong></div><div><span>WIF BALANCE</span><strong id="check-balance">—</strong></div><div><span>ESTIMATED GAS</span><strong id="check-gas">—</strong></div><div><span>STATE</span><strong id="check-state">—</strong></div></div>
+      <div class="warning"><strong>Irreversible onchain transfer.</strong><span>Only the recipient, amount and token contract shown above are used. A payment can be duplicated if the same signed request is paid more than once; this flow does not claim unique invoice settlement.</span></div>
+      <button id="pay-now" class="pay-button pay-button-dark" type="button" disabled>Pay exact WIF amount in my wallet <span aria-hidden="true">↗</span></button>
+    </div>
+  </section>
+
+  <section id="proof-card" class="pay-section proof-card" hidden aria-labelledby="proof-title">
+    <div class="section-bar"><span>03 / RECEIPT PROOF</span><span>INDEPENDENT RPC RECHECK</span></div>
+    <div class="section-heading"><h2 id="proof-title">A payment<br><em>you can inspect.</em></h2><p>Success is claimed only after the public receipt, exact transfer calldata, sender, official WIF destination and matching Transfer event pass again.</p></div>
+    <div class="proof-grid"><div><span>TRANSACTION</span><strong id="proof-hash">—</strong></div><div><span>BLOCK</span><strong id="proof-block">—</strong></div><div><span>CONFIRMATIONS</span><strong id="proof-confirmations">—</strong></div></div>
+    <a id="proof-explorer" class="proof-link" target="_blank" rel="noopener noreferrer">Inspect verified receipt on Blockscout ↗</a>
+    <button id="new-request" class="plain-button" type="button">Create another request ↗</button>
+  </section>
+
+  <section class="pay-limits" aria-labelledby="limits-title"><div class="section-bar"><span>BOUNDARIES</span><span>READ THIS BEFORE USING WIF</span></div><div class="limits-grid"><h2 id="limits-title">Simple by<br><em>design.</em></h2><div><p>BEFORE never custody-holds WIF, asks for an approval, receives a private key or chooses a transaction for you automatically.</p><p>The request authenticates a recipient and exact amount. It does not create an invoice, prevent duplicate payments, or reverse an ERC-20 transfer. Mainnet gas is real.</p></div></div></section>
+</main>
+<footer class="pay-footer"><span>BEFORE® / NONCUSTODIAL WIF PAYMENTS</span><span>NO REAL PAYMENT IS RUN BY CI OR DEMO MODE</span><a href="https://github.com/Iniwura/before-protocol" target="_blank" rel="noopener noreferrer">SOURCE ↗</a></footer>
+</body>
+</html>
