@@ -8,7 +8,7 @@ BEFORE Support is a stable recipient-authenticated page for voluntary repeat WIF
 
 1. A recipient creates a `SupportOffer` EIP-712 signature binding the official WIF contract, Robinhood Chain mainnet `4663`, exact recipient, exact amount, reminder cadence, bounded expiry and an unpredictable campaign ID.
 2. A supporter opens the public link and sees the full destination, amount, cadence, network and expiry before connecting a wallet.
-3. A supporter starts a new cycle explicitly. The cycle ID is device-generated and is not presented as onchain nonce enforcement.
+3. A supporter starts a new cycle explicitly. The cycle ID is device-generated and is not presented as onchain nonce enforcement. The signed public offer can last up to 120 days, but each internal transfer intent is capped to the existing BEFORE Pay 30-day validation window. This does not extend one-off Pay validity or authorize an automatic transaction.
 4. BEFORE reuses Pay's fail-closed preflight and exact ERC-20 `transfer(recipient, amount)` transaction boundary. Every cycle requires a fresh wallet confirmation; no approvals, timers, custody or allowance are used.
 5. BEFORE claims success only after public RPC revalidates transaction/receipt identity, sender, WIF destination, zero native value, exact calldata, success status, three confirmations and exactly one matching WIF `Transfer` event.
 6. A verified receipt is saved as public proof in device-local history. Records are revalidated before display and are not a global campaign ledger.
