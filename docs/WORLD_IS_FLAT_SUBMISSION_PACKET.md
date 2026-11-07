@@ -1,6 +1,6 @@
 # BEFORE — World Is Flat submission package
 
-Prepared: November 7, 2026. **Not yet submitted.** The only release considered final here is `main` merge `e78fb17d9440633794d78e799846e10ce9cfdc11`, deployed as Vercel production `dpl_D7x3gqmQ8r1esyT3D77NTnccAiAW`.
+Prepared: November 7, 2026. **Not yet submitted.** The most recent verified live site release was PR #15 at main commit `0c97e38a5eba75f0358e333d797c494a96871df9`, Vercel deployment `dpl_oZhM4KEhBkm7K9cVUrkQPxvHWH3Q`. The official hackathon rules supplied by the owner now establish two unresolved mandatory gates: real WIF onchain use and an actual repeat-use WIF flywheel.
 
 ## Ready-to-paste submission answers
 
@@ -30,7 +30,7 @@ BEFORE Pay's EIP-712, exact calldata, delayed-receipt, duplicate-send lock, reve
 
 **Technology:** Solidity/Foundry, vanilla JavaScript ES modules, static HTML/CSS, Node.js, EIP-1193 browser wallets, EIP-712 signed typed data, ERC-20 ABI calls/events, Robinhood Chain mainnet (4663), Robinhood Chain Testnet (46630), Anvil, Playwright, axe-core, GitHub Actions and Vercel. No backend service or proprietary server signer in the payment flow.
 
-**Why BEFORE is useful:** Repeated $WIF payments can use the same request/check/pay/proof process without giving BEFORE custody or allowance. The signed request authenticates the intended recipient and amount. The receipt checks let another person independently verify the outcome from the chain, rather than trusting the payer's screenshot.
+**Why BEFORE is useful today:** A recipient can sign a one-off WIF request without custody or allowance. The payer can verify the signed intent before approving an exact ERC-20 transfer, and anyone can independently verify the receipt. **The present one-off flow is not a proven flywheel.** A focused repeat-use support experience is being evaluated in [Issue #16](https://github.com/Iniwura/before-protocol/issues/16); it must not be described as shipped until implemented and verified.
 
 **Security limits:** ERC-20 transfer requests are not onchain single-use invoices. Anyone can pay the same signed request again from another device or wallet. BEFORE's client locks an attempted payment during wallet uncertainty, receipts or reloads, but cannot enforce global uniqueness. Real mainnet WIF payments cost real gas and cannot be reversed. Contract tests and automated browser QA are not an independent external security audit.
 
@@ -77,9 +77,13 @@ This is a storyboard for an **actual screen recording**, not a claim that a fini
 - [x] Mainnet WIF token code/metadata and read-only checks
 - [x] WIF Pay code and adversarial simulated-wallet QA
 - [ ] Independent live-route browser smoke test against production (Vercel confirms deployment and domain alias, but external browser HTTP check not yet completed)
-- [ ] Real-WIF transaction proof, **if explicitly required for organizer eligibility** (not yet executed; do not invent)
+- [ ] **Mandatory:** independently inspectable real $WIF onchain transfer through BEFORE Pay on Robinhood Chain mainnet 4663, with matching WIF Transfer log and wallet-confirmed transaction. No such transaction has been verified yet. Never substitute BTEST testnet receipts.
 - [ ] 1080p video showing product functioning and honest mainnet/testnet distinction; upload to an organizer-accepted publicly accessible destination
-- [ ] Confirm exact current organizer deadline, fields, categories and video duration from signed-in submission portal
+- [ ] **Mandatory:** working repeat-use $WIF flywheel, not just a one-off transfer. Prove a reasonable recurring use case and returning-user action. See Issue #16.
+- [x] Official closing date from organizer rules: November 12, 2026, 17:30 UTC; round one ends November 14, final ends November 16 at 17:30 UTC
+- [ ] Keep live production accessible through November 16 final; basic availability monitoring set up
+- [ ] Confirm signed-in submission fields, allowed categories and video duration
+- [ ] Choose suitable categories: Consumer & Payments, Tools & Infra; consider Onboarding only if the resulting workflow is demonstrably novice-friendly
 - [ ] Add accessible video URL, final description, team information and category to organizer form
 - [ ] Submit and preserve actual organizer confirmation/receipt
 
