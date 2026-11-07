@@ -127,7 +127,8 @@ function updatePaymentControls() {
 }
 
 function renderRequest(request, signature) {
-  setText('request-recipient', shortAddress(request.recipient));
+  // Show the full irreversible destination on every screen, not only a desktop hover tooltip.
+  setText('request-recipient', request.recipient);
   $('request-recipient').title = request.recipient;
   setText('request-amount', formatTokenAmount(request.amount) + ' WIF');
   setText('request-expiry', new Date(Number(request.expiresAt) * 1000).toLocaleString());
