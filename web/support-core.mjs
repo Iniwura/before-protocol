@@ -185,12 +185,17 @@ export function normalizeCycleId(cycleId) {
   return '0x' + normalized;
 }
 
-export function supportPaymentRequest(offer, cycleId) {
+// Long-lived signed SupportOffer is distinct from the one-cycle transfer intent.
+// Pay's standard 30-day validation remains intact and is never widened for one-off payments.
+// Only the already-signed recipient/amount/token/chain fields affect the ERC-20 calldata.
+export function supportPaymentRequest(offer, cycleId, now = nowSeconds()) {
   const normalized = normalizeSupportOffer(offer);
+  const payWindowEnd = now + 30n * 24n * 60n * 60n;
   return {
     version: 1, recipient: normalized.recipient, token: normalized.token,
     chainId: normalized.chainId, amount: normalized.amount,
-    expiresAt: normalized.expiresAt, nonce: normalizeCycleId(cycleId)
+    expiresAt: normalized.expiresAt < payWindowEnd ? normalized.expiresAt : payWindowEnd,
+    nonce: normalizeCycleId(cycleId)
   };
 }
 
