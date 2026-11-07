@@ -4,16 +4,16 @@ Audit branch: `audit/issue-8-release-readiness`
 Assessment date: 2026-11-07  
 Verdict: **NO-GO**
 
-The engineering and historical BTEST evidence gates pass. The final submission is not ready because the newly authorized acceptance test needs three distinct authorized signers, the organizer requires a demo video that remains paused, and the product's `$WIF` utility is currently read-only rather than a demonstrated meaningful flywheel. No final organizer submission, mainnet write, WIF transfer or production promotion was performed.
+The engineering and historical BTEST evidence gates pass. The final submission is not ready because the newly authorized acceptance test wallets require legitimate faucet gas, the organizer requires a demo video that remains paused, and the product's `$WIF` utility is currently read-only rather than a demonstrated meaningful flywheel. No final organizer submission, mainnet write, WIF transfer or production promotion was performed.
 
 ## Gate matrix
 
 | Gate | Result | Evidence |
 | --- | --- | --- |
 | Robinhood testnet chain identity | PASS | Read-only RPC returned chain ID `46630`; the same identity was checked through the BlockVectra public endpoint. |
-| Approved signer custody | PASS | `before-testnet` resolves to `0xd1061825504b30f404c0d94b745205925f251f2c`; `/tmp/before-foundry-keystores` is `0700`, keystore/password files are `0600`; no secret is committed. |
+| Approved signer custody | PASS | `before-testnet` resolves to `0xd1061825504b30f404c0d94b745205925f251f2c`; both isolated keystore directories are `0700`, all keystore/password files are `0600`; no secret is committed. |
 | Existing Bounty #5 inspection | PASS | Creation receipt, calldata, event, code, reviewer gate, deadlines, state and untouched-event scan are recorded in [ISSUE_8_PUBLIC_TESTNET_EVIDENCE.md](ISSUE_8_PUBLIC_TESTNET_EVIDENCE.md). |
-| Fresh public three-wallet lifecycle | BLOCKED | Only one authorized signer is available. The owner requires distinct sponsor, researcher and appointed-reviewer addresses; no broadcast was attempted. |
+| Fresh public three-wallet lifecycle | BLOCKED | Three distinct authorized addresses now exist, but the two new wallets have zero test ETH. The official faucet requires Cloudflare Turnstile and Google sign-in; no protection bypass or unauthorized gas transfer was attempted. |
 | Historical public BTEST lifecycle | PASS (limited) | Four successful receipts, exact event matrix, stage 3 and final accounting are independently checked. Roles are synthetic and controlled by one operator. |
 | Solidity build and fuzz suite | PASS | `forge build --no-cache`; `forge test --fuzz-runs 1024`: 70 tests passed. |
 | Node, Anvil and browser QA | PASS | Full Node suite, local lifecycle, Anvil E2E, responsive/axe QA, bounty E2E and WIF fail-closed QA pass; exact rerun commands are listed below. |
@@ -53,6 +53,6 @@ The live [event data](https://worldisflat.fun/build/api/event) lists the buildin
 
 ## Smallest owner actions for a conditional GO
 
-1. Authorize three distinct disposable testnet signers and legitimate faucet ETH, then run the fresh BTEST sponsor → commitment → reviewer approval → reveal/settlement path and append independent receipt/event/balance evidence.
+1. Complete the official faucet's human verification/sign-in flow for the two new addresses, then run the fresh BTEST sponsor → commitment → reviewer approval → reveal/settlement path and append independent receipt/event/balance evidence.
 2. Decide whether to authorize and implement a safe, meaningful `$WIF` utility improvement; do not use real WIF for an eligibility demonstration without explicit approval.
 3. Authorize video production and complete the organizer's authenticated submission form. Keep the final Submit click with the owner.

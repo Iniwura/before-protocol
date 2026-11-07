@@ -29,18 +29,19 @@ This is genuine public-chain execution, but all roles were synthetic contracts c
 
 All four receipts are successful and signer-bound to `0xd1061825504b30f404c0d94b745205925f251f2c`. Independent read-only checks confirm coordinator stage `3`, exact event matrices, final synthetic sponsor balance `410 BTEST`, solver balance `150 BTEST`, and coordinator balance `0 BTEST`. No real `$WIF` was funded.
 
-## Fresh public acceptance lifecycle: blocked before broadcast
+## Fresh public acceptance lifecycle: funded-wallet blocker before broadcast
 
-The owner instruction on Issue #8 requires three distinct, authorized, isolated disposable testnet signing accounts for sponsor, researcher and reviewer. The only authorized local signer available is:
+The owner authorized two additional isolated disposable signers on Issue #8. The three distinct role addresses are now:
 
 - `before-testnet` → `0xd1061825504b30f404c0d94b745205925f251f2c`
-- chain ID: `46630`
-- current testnet ETH balance: `0.009871307120000000`
-- local permissions: keystore directory `0700`; keystore and password file `0600`
+- `before-researcher` → `0x86923864B7a7C7CfA1A56398DA6cA2a622756989`
+- `before-reviewer` → `0xC7E69617ED81A0a7dD0cD74f82B176E22555097F`
 
-No second or third authorized keystore/password pair is present in the isolated signer directory. The other Foundry keystore names belong to pre-existing accounts and are explicitly out of scope. No new secret was generated, extracted, opened, printed, transmitted or used. Therefore no fresh sponsor transaction was broadcast, and there are no fresh creation/commit/approval/reveal receipts to report.
+The existing signer has `0.009871307120000000` test ETH. Both new wallets have `0` test ETH. All three addresses are distinct. The new isolated keystore directory is owner-only (`0700`); each keystore and password file is owner-only (`0600`). No key, password or recovery material is part of this report or repository.
 
-The exact owner action needed is to authorize and provide access to three distinct disposable testnet signers (or conduct their wallet signatures directly), with legitimate faucet ETH for gas. Once that authorization exists, the released browser flow can be exercised and every receipt, event and final BTEST balance can be added here. The existing Bounty #5 remains intact.
+The official [Robinhood faucet](https://faucet.testnet.chain.robinhood.com/) is reachable and advertises `0.01` test ETH per request, but its claim flow requires Cloudflare Turnstile human verification and Google sign-in. It also rejects automated browsers before submission. I did not bypass that protection, use pre-existing accounts, transfer gas from the approved wallet, or source real-value ETH. Therefore no fresh sponsor transaction was broadcast, and there are no fresh creation/commit/approval/reveal receipts to report.
+
+The single actionable external blocker is faucet completion for the two public addresses above, either by the owner completing the official human verification/sign-in flow or by providing another legitimate faucet path. Once each wallet has test ETH, the released browser flow or a clearly labeled local signing script can execute the fresh BTEST lifecycle. The existing Bounty #5 remains intact.
 
 ## Reproduction
 
