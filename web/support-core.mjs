@@ -21,10 +21,10 @@ export {
 export const SUPPORT_DOMAIN_NAME = 'BEFORE Support';
 export const SUPPORT_DOMAIN_VERSION = '1';
 export const SUPPORT_PAYLOAD_VERSION = 1;
-export const SUPPORT_MAX_LIFETIME = 30n * 24n * 60n * 60n;
+export const SUPPORT_MAX_LIFETIME = 120n * 24n * 60n * 60n;
 export const SUPPORT_INTERVALS = Object.freeze({
-  weekly: Object.freeze({code: 1, label: 'Weekly', days: 7}),
-  monthly: Object.freeze({code: 2, label: 'Monthly', days: 30}),
+  weekly: Object.freeze({code: 1, label: 'Weekly suggestion', days: 7}),
+  monthly: Object.freeze({code: 2, label: 'Monthly suggestion', days: 30}),
   anytime: Object.freeze({code: 0, label: 'Repeat when you choose', days: null})
 });
 export const SUPPORT_TYPE = 'SupportOffer(address recipient,address token,uint256 chainId,uint256 amount,uint8 interval,uint256 expiresAt,bytes32 campaignId)';
@@ -95,7 +95,7 @@ export function normalizeSupportOffer(offer) {
 export function validateSupportOffer(offer, now = nowSeconds()) {
   const normalized = normalizeSupportOffer(offer);
   if (normalized.expiresAt <= now) throw new Error('This support offer has expired.');
-  if (normalized.expiresAt - now > SUPPORT_MAX_LIFETIME) throw new Error('Support offer expiry is outside the 30-day limit.');
+  if (normalized.expiresAt - now > SUPPORT_MAX_LIFETIME) throw new Error('Support offer expiry is outside the 120-day limit.');
   return normalized;
 }
 
