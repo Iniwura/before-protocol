@@ -25,7 +25,7 @@ jobs:
       - name: Web policy and validation tests
         run: node --test web/test/core.test.mjs web/test/onchain.test.mjs web/test/bounty-core.test.mjs web/test/wif-core.test.mjs
       - name: Browser source syntax
-        run: node --check web/app.js && node --check web/onchain.mjs && node --check web/landing.js && node --check web/bounty.js && node --check web/wif.js && node --check web/wif-core.mjs && node --check web/bounty-core.mjs && node --check script/run-bounty-lifecycle.mjs && node --check script/verify-testnet.mjs
+        run: node --check web/app.js && node --check web/onchain.mjs && node --check web/landing.js && node --check web/bounty.js && node --check web/wif.js && node --check web/wif-core.mjs && node --check web/bounty-core.mjs && node --check script/run-bounty-lifecycle.mjs && node --check script/run-public-bounty-acceptance.mjs && node --check script/verify-testnet.mjs && node --check qa/issue-8-fresh-bounty-audit.mjs
 
   browser-quality:
     runs-on: ubuntu-latest

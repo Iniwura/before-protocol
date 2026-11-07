@@ -4,7 +4,7 @@ Audit branch: `audit/issue-8-release-readiness`
 Assessment date: 2026-11-07  
 Verdict: **NO-GO**
 
-The engineering and historical BTEST evidence gates pass. The final submission is not ready because the newly authorized acceptance test wallets require legitimate faucet gas, the organizer requires a demo video that remains paused, and the product's `$WIF` utility is currently read-only rather than a demonstrated meaningful flywheel. No final organizer submission, mainnet write, WIF transfer or production promotion was performed.
+The engineering, funding and fresh public BTEST acceptance gates pass. The final submission is still not ready because the owner has paused demo-video production, the product's `$WIF` utility is currently read-only rather than a demonstrated meaningful flywheel, and the final organizer Submit action remains owner-controlled. No final organizer submission, mainnet write, WIF transfer or production promotion was performed.
 
 ## Gate matrix
 
@@ -13,7 +13,7 @@ The engineering and historical BTEST evidence gates pass. The final submission i
 | Robinhood testnet chain identity | PASS | Read-only RPC returned chain ID `46630`; the same identity was checked through the BlockVectra public endpoint. |
 | Approved signer custody | PASS | `before-testnet` resolves to `0xd1061825504b30f404c0d94b745205925f251f2c`; both isolated keystore directories are `0700`, all keystore/password files are `0600`; no secret is committed. |
 | Existing Bounty #5 inspection | PASS | Creation receipt, calldata, event, code, reviewer gate, deadlines, state and untouched-event scan are recorded in [ISSUE_8_PUBLIC_TESTNET_EVIDENCE.md](ISSUE_8_PUBLIC_TESTNET_EVIDENCE.md). |
-| Fresh public three-wallet lifecycle | BLOCKED | Three distinct authorized addresses now exist, but the two new wallets have zero test ETH. The official faucet requires Cloudflare Turnstile and Google sign-in; no protection bypass or unauthorized gas transfer was attempted. |
+| Fresh public three-wallet lifecycle | PASS (BTEST only) | Sponsor `0xd106...f2c` funded exactly `0.0001 ETH` to each approved wallet. Challenge 7 completed through commitment, appointed reviewer approval and reveal/settlement; all receipts, events, bytecode, quorum and accounting pass in [ISSUE_8_PUBLIC_TESTNET_EVIDENCE.md](ISSUE_8_PUBLIC_TESTNET_EVIDENCE.md) and `node qa/issue-8-fresh-bounty-audit.mjs`. |
 | Historical public BTEST lifecycle | PASS (limited) | Four successful receipts, exact event matrix, stage 3 and final accounting are independently checked. Roles are synthetic and controlled by one operator. |
 | Solidity build and fuzz suite | PASS | `forge build --no-cache`; `forge test --fuzz-runs 1024`: 70 tests passed. |
 | Node, Anvil and browser QA | PASS | Full Node suite, local lifecycle, Anvil E2E, responsive/axe QA, bounty E2E and WIF fail-closed QA pass; exact rerun commands are listed below. |
@@ -25,7 +25,7 @@ The engineering and historical BTEST evidence gates pass. The final submission i
 
 ## Public evidence boundaries
 
-The public Bounty #5 was created by `0xa35dc047f9937bf668743efbdf8ea93b31a55888`, not by the approved `before-testnet` wallet. Its deadline has expired and it remains untouched. The historical coordinator transactions were signed by `0xd106...f2c`, but its sponsor, solver and reviewers were synthetic contracts controlled by that operator. Neither dataset establishes independent human review.
+The public Bounty #5 was created by `0xa35dc047f9937bf668743efbdf8ea93b31a55888`, not by the approved `before-testnet` wallet. Its deadline has expired and it remains untouched. The historical coordinator transactions were signed by `0xd106...f2c`, but its sponsor, solver and reviewers were synthetic contracts controlled by that operator. The new challenge 7 used three distinct owner-authorized wallets, but the run was still operated by one owner-controlled environment; neither dataset establishes independent human review.
 
 The complete receipt and explorer matrix is in [ISSUE_8_PUBLIC_TESTNET_EVIDENCE.md](ISSUE_8_PUBLIC_TESTNET_EVIDENCE.md). No private key, password, seed, recovery salt or local progress file is evidence.
 
@@ -43,9 +43,10 @@ PLAYWRIGHT_BROWSERS_PATH=/tmp/before-browsers node qa/verify.mjs
 PLAYWRIGHT_BROWSERS_PATH=/tmp/before-browsers node qa/bounty-e2e.mjs
 PLAYWRIGHT_BROWSERS_PATH=/tmp/before-browsers node qa/wif-verify.mjs
 node qa/issue-8-public-testnet-audit.mjs
+node qa/issue-8-fresh-bounty-audit.mjs
 ```
 
-The public audit is read-only. The local lifecycle and Anvil receipts are test evidence only and are not public-chain evidence.
+Both public audits are read-only. The local lifecycle and Anvil receipts are test evidence only and are not public-chain evidence. The signing runner is [`script/run-public-bounty-acceptance.mjs`](../script/run-public-bounty-acceptance.mjs); it requires explicit local encrypted-keystore paths and was not used in CI.
 
 ## Organizer fit
 
@@ -53,6 +54,6 @@ The live [event data](https://worldisflat.fun/build/api/event) lists the buildin
 
 ## Smallest owner actions for a conditional GO
 
-1. Complete the official faucet's human verification/sign-in flow for the two new addresses, then run the fresh BTEST sponsor → commitment → reviewer approval → reveal/settlement path and append independent receipt/event/balance evidence.
-2. Decide whether to authorize and implement a safe, meaningful `$WIF` utility improvement; do not use real WIF for an eligibility demonstration without explicit approval.
-3. Authorize video production and complete the organizer's authenticated submission form. Keep the final Submit click with the owner.
+1. Decide whether to authorize and implement a safe, meaningful `$WIF` utility improvement; do not use real WIF for an eligibility demonstration without explicit approval.
+2. Authorize video production and complete the organizer's authenticated submission form. Keep the final Submit click with the owner.
+3. Keep production promotion and any mainnet/WIF action separately gated.
