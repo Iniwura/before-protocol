@@ -23,7 +23,7 @@ const server=createServer(async(req,res)=>{
 await new Promise(ok=>server.listen(0,'127.0.0.1',ok));
 const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
 try{
- for(const scenario of ['success','reject','wrong-chain','wrong-account','changed-account','failed-receipt','nonzero-after','no-wallet']){
+ for(const scenario of ['success','reject','wrong-chain','wrong-account','changed-account','failed-receipt','nonzero-after','edited-during-check','no-wallet']){
   const page=await browser.newPage({viewport:{width:375,height:850},reducedMotion:'reduce'});
   const errors=[];page.on('pageerror',e=>errors.push(e.message));
   let allowance=100n*10n**18n,sendCount=0,receiptCount=0;
@@ -49,7 +49,14 @@ try{
    await page.addInitScript(({owner,other,scenario,token,calldata,hash})=>{
     let account=owner;
     window.ethereum={request:async({method,params})=>{
-     if(method==='eth_requestAccounts')return [scenario==='wrong-account'?other:owner];
+     if(method==='eth_requestAccounts'){
+      if(scenario==='edited-during-check'){
+       const input=document.querySelector('#spender');
+       input.value=other;
+       input.dispatchEvent(new Event('input',{bubbles:true}));
+      }
+      return [scenario==='wrong-account'?other:owner];
+     }
      if(method==='eth_accounts')return [scenario==='changed-account'?other:account];
      if(method==='eth_chainId')return scenario==='wrong-chain'?'0xb626':'0x1237';
      if(method==='eth_sendTransaction'){
@@ -78,7 +85,7 @@ try{
    assert.equal(tx.data,calldata);
    assert.equal(tx.value,'0x0');
   }
-  await page.waitForFunction(()=>document.querySelector('#revoke-status')?.dataset.kind==='error'||document.querySelector('#revoke-status')?.textContent.includes('Confirmed on Robinhood mainnet'),{timeout:12000}).catch(()=>{});
+  await page.waitForFunction(()=>document.querySelector('#revoke-status')?.dataset.kind==='error'||document.querySelector('#revoke-status')?.textContent.includes('Confirmed on Robinhood mainnet'),null,{timeout:12000}).catch(()=>{});
   // Need the latest mainnet allowance to become zero only after the wallet tx is sent:
   // mock returns zero after the first receipt in the successful case.
   if(scenario==='success'){
