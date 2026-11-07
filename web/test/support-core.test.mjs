@@ -68,6 +68,14 @@ test('Support payload and explicit cycles are public and round-trip without spen
   const request = supportPaymentRequest(offer, cycleId);
   assert.equal(request.nonce, cycleId);
   assert.equal(request.amount, offer.amount);
+  const now = 2_000_000_000n;
+  const longOffer = {...offer, expiresAt: now + 90n * 86400n};
+  const capped = supportPaymentRequest(longOffer, cycleId, now);
+  assert.equal(capped.expiresAt, now + 30n * 86400n, 'Internal Pay intent must retain the 30-day safety cap');
+  assert.equal(capped.recipient, offer.recipient);
+  assert.equal(capped.amount, offer.amount);
+  const nearExpiry = supportPaymentRequest({...offer, expiresAt: now + 7n * 86400n}, cycleId, now);
+  assert.equal(nearExpiry.expiresAt, now + 7n * 86400n, 'Shorter signed offer expiry must remain binding');
   assert.equal(validateTransferData(transferData(request), request), true);
   for (const bad of ['', '!', payload.slice(0, -1)]) assert.throws(() => decodeSupportPayload(bad));
   assert.throws(() => supportPaymentRequest(offer, '0x' + '00'.repeat(32)));
