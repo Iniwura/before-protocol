@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#f8f8f5">
+<meta name="description" content="Check a real WIF approval on Robinhood Chain mainnet, without signing a transaction. Read-only token permission inspection by BEFORE.">
+<title>BEFORE® — WIF Permission Check</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="stylesheet" href="/wif.css">
+<script type="module" src="/wif.js"></script>
+</head>
+<body>
+<header class="site-header"><a href="/" class="brand" aria-label="BEFORE home">BEFORE<sup>®</sup></a><span class="header-middle">WIF / PERMISSION CHECK</span><a href="/app/bounty/" class="header-link">Bounty Studio <span aria-hidden="true">↗</span></a></header>
+<main>
+  <section class="hero" aria-labelledby="hero-title">
+    <div class="topline"><span>ROBINHOOD CHAIN / MAINNET</span><span>READ ONLY · NO WALLET CONNECTION</span></div>
+    <div class="hero-grid"><h1 id="hero-title">Know what<br>you <em>approved.</em></h1><div class="hero-symbol" aria-hidden="true">↗</div></div>
+    <div class="hero-bottom"><span>BEFORE / WIF</span><p>Check how much <strong>$WIF</strong> a specific wallet has authorized another address to spend. Verified directly against the real token contract.</p></div>
+  </section>
+  <section class="work" aria-labelledby="work-title">
+    <div class="section-bar"><span>01 / CHECK A PERMISSION</span><span>NO SIGNATURE REQUIRED</span></div>
+    <div class="work-head"><h2 id="work-title">Start with<br><span>an approval.</span></h2><p>Paste a WIF approval transaction to identify the spender, or enter both addresses yourself.</p></div>
+    <form id="check-form" class="scan-form">
+      <div class="field"><label for="approval-tx">WIF approval transaction <span>(easiest)</span></label><input id="approval-tx" type="text" spellcheck="false" autocomplete="off" placeholder="0x… transaction hash"><small>Paste a successful WIF <code>approve</code> transaction hash from Robinhood Chain mainnet. We read its owner and spender for you.</small></div>
+      <details id="manual-entry" class="manual-entry"><summary>Or enter wallet and spender manually <span aria-hidden="true">+</span></summary><div class="manual-fields">
+        <div class="field"><label for="owner">Wallet that owns WIF</label><input id="owner" type="text" spellcheck="false" autocomplete="off" placeholder="0x… wallet address"></div>
+        <div class="field"><label for="spender">Address permitted to spend WIF</label><input id="spender" type="text" spellcheck="false" autocomplete="off" placeholder="0x… contract or wallet"><small>Look for the “spender” in a WIF approval transaction. This checker does not discover all approvals automatically.</small></div>
+      </div></details>
+      <button type="submit" class="scan-button" id="scan-button">Check WIF permission <span aria-hidden="true">↗</span></button>
+    </form>
+    <div class="feedback" id="feedback" role="status" aria-live="polite" hidden></div>
+  </section>
+
+  <section class="result" id="result" hidden aria-labelledby="result-title">
+    <div class="section-bar"><span>02 / PUBLIC CHAIN EVIDENCE</span><span id="result-block">BLOCK —</span></div>
+    <div class="result-head"><span>WIF PERMISSION</span><h2 id="result-title">Current<br><em>authorization.</em></h2></div>
+    <div class="result-grid">
+      <div><span>WIF BALANCE / OWNER</span><strong id="balance-value">—</strong><small>WIF held in this wallet right now</small></div>
+      <div><span>WIF ALLOWANCE / SPENDER</span><strong id="allowance-value">—</strong><small>The exact allowance for this spender, not every spender</small></div>
+    </div>
+    <div class="outcome" id="outcome"><span id="outcome-label">—</span><p id="outcome-message">—</p></div>
+    <div class="detail-list">
+      <div><span>OWNER</span><a id="owner-link" target="_blank" rel="noopener noreferrer">—</a></div>
+      <div><span>SPENDER</span><a id="spender-link" target="_blank" rel="noopener noreferrer">—</a></div>
+      <div><span>SPENDER TYPE AT CHECKED BLOCK</span><strong id="spender-type">—</strong></div>
+      <div id="historical-approval" hidden><span>AMOUNT IN PAST APPROVAL TX</span><strong id="historical-amount">—</strong></div>
+      <div id="approval-link-row" hidden><span>ORIGINAL APPROVAL TX</span><a id="approval-link" target="_blank" rel="noopener noreferrer">View transaction ↗</a></div>
+      <div><span>NETWORK</span><strong>ROBINHOOD CHAIN MAINNET · 4663</strong></div>
+      <div><span>OFFICIAL WIF CONTRACT</span><a href="https://robinhoodchain.blockscout.com/token/0x5173b8eA6923c2d40267890D45C46a3480954773" target="_blank" rel="noopener noreferrer">0x5173…4773 ↗</a></div>
+    </div>
+    <p class="result-note">This is a read-only permission check, not a protection vault, revocation, audit or security score. A zero result applies to this spender only. No approvals or tokens were changed.</p>
+  </section>
+  <section class="handoff"><div class="section-bar"><span>03 / EXPLORE BEFORE</span><span>TESTNET DEMONSTRATION</span></div><div class="handoff-content"><h2>Rules you<br>can <em>enforce.</em></h2><p>Try BEFORE’s separate BTEST vault and bounty workflow on Robinhood Testnet. Real $WIF never enters the demo escrow.</p></div><a href="/app/bounty/" class="handoff-link">Open Bounty Studio <span aria-hidden="true">↗</span></a></section>
+</main>
+<footer class="footer"><span>BEFORE® / ONCHAIN EVIDENCE</span><span>NO TRANSACTION SIGNING OR TOKEN CUSTODY</span><a href="https://github.com/Iniwura/before-protocol" target="_blank" rel="noopener noreferrer">SOURCE ↗</a></footer>
+</body>
+</html>

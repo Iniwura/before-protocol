@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#f8f8f5">
+<meta name="description" content="BEFORE. Real rules. Real receipts. Verify onchain security on Robinhood Chain Testnet.">
+<title>BEFORE® — Security, before anything.</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="stylesheet" href="/styles.css">
+<script type="module" src="/app.js"></script>
+</head>
+<body>
+<div class="app-shell">
+  <header class="topbar">
+    <a class="brand" href="/" aria-label="BEFORE homepage">BEFORE<span class="brand-period">®</span></a>
+    <div class="header-middle"><span class="header-coordinate">INDEPENDENT ONCHAIN SECURITY</span><span class="header-index">EST. 2026</span></div>
+    <div class="top-actions">
+      <span class="network-indicator"><span class="status-dot" id="network-dot"></span><span id="network-status-text">Testnet · Checking</span></span>
+      <a class="source-link" href="/app/bounty/" aria-label="Open Bounty Studio">BOUNTIES <span aria-hidden="true">↗</span></a><a class="source-link source-wif" href="/app/wif/" aria-label="Check real WIF permissions">WIF CHECK <span aria-hidden="true">↗</span></a><a class="source-link source-home" href="/" aria-label="Back to BEFORE landing page">HOME <span aria-hidden="true">↗</span></a>
+    </div>
+  </header>
+  <main class="main">
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="hero-meta"><span>PROTOCOL NO. 001</span><span>ROBINHOOD CHAIN / TESTNET</span></div>
+      <div class="hero-masthead">
+        <h1 id="hero-title">BEFORE</h1>
+        <div class="hero-rule" aria-hidden="true"></div>
+        <span class="hero-glyph" aria-hidden="true">↘</span>
+      </div>
+      <div class="hero-bottom">
+        <div class="hero-issue">01 — 03<br>PROTECT. CHALLENGE. PROOF.</div>
+        <p class="hero-statement">Security isn't a promise.<br><span>It's something you can verify.</span></p>
+        <a class="hero-direction" href="#tab-protect" id="explore-experiences"><span>EXPLORE THE PROTOCOL</span><span class="direction-arrow" aria-hidden="true">↘</span></a>
+      </div>
+    </section>
+
+    <div class="experience-topline"><span>START WITH A RULE <sup>01 / 03</sup></span><span>NO WALLET NEEDED TO TRY THE EXAMPLES</span></div>
+    <nav class="app-tabs" role="tablist" aria-label="BEFORE sections">
+      <button class="tab active" type="button" role="tab" id="tab-protect" aria-controls="panel-protect" aria-selected="true" data-tab="protect"><span class="tab-num">01 /</span><span class="tab-name">Protect</span><span class="tab-arrow" aria-hidden="true">↗</span></button>
+      <button class="tab" type="button" role="tab" id="tab-challenge" aria-controls="panel-challenge" aria-selected="false" data-tab="challenge" tabindex="-1"><span class="tab-num">02 /</span><span class="tab-name">Challenge</span><span class="tab-arrow" aria-hidden="true">↗</span></button>
+      <button class="tab" type="button" role="tab" id="tab-proof" aria-controls="panel-proof" aria-selected="false" data-tab="proof" tabindex="-1"><span class="tab-num">03 /</span><span class="tab-name">Proof</span><span class="tab-arrow" aria-hidden="true">↗</span></button>
+    </nav>
+
+    <section class="view active" role="tabpanel" id="panel-protect" aria-labelledby="tab-protect">
+      <div class="view-heading"><div><div class="section-kicker">01 / THE GUARDRAIL</div><h2>Move within<br><span>the rules.</span></h2></div><div class="view-aside"><span class="mode-pill"><span class="mode-dot"></span> Local policy preview</span><p>The transfer either meets the policy or it doesn't.</p></div></div>
+      <div class="work-grid">
+        <div class="panel policy-panel">
+          <div class="panel-overline"><span>01A / RULE SET</span><span>IMMUTABLE POLICY</span></div>
+          <div class="limit-grid">
+            <div><span class="field-label">MAX / TRANSFER</span><div class="limit-value">60<span class="limit-unit">TOKENS</span></div></div>
+            <div><span class="field-label">MAX / UTC DAY</span><div class="limit-value">100<span class="limit-unit">TOKENS</span></div></div>
+          </div>
+          <div class="rule-separator"></div>
+          <form id="protect-form" novalidate>
+            <div class="form-eyebrow">TEST A TRANSFER <span>↙</span></div>
+            <div class="form-fields">
+              <div class="form-field"><label class="input-label" for="protect-amount">Transfer amount</label><div class="input-unit"><input id="protect-amount" name="amount" type="text" inputmode="numeric" pattern="[0-9]*" value="75" autocomplete="off" required><span>TOKENS</span></div></div>
+              <div class="form-field"><label class="input-label" for="protect-spent">Already spent today</label><div class="input-unit"><input id="protect-spent" name="spent" type="text" inputmode="numeric" pattern="[0-9]*" value="40" autocomplete="off" required><span>TOKENS</span></div></div>
+            </div>
+            <fieldset class="destination-field"><legend class="input-label">Destination</legend><div class="radio-options"><label><input type="radio" name="destination" value="approved" checked><span>Approved wallet</span></label><label><input type="radio" name="destination" value="other"><span>Another wallet</span></label></div></fieldset>
+            <button class="primary-button" type="submit"><span>Check the rules</span><span aria-hidden="true">↗</span></button>
+          </form>
+        </div>
+        <div class="result-panel" id="protect-result" aria-live="polite">
+          <div class="result-topline"><span>01B / RESULT</span><span>LOCAL / NO TRANSACTION</span></div>
+          <div class="result-art" aria-hidden="true"><span class="art-ring ring-one"></span><span class="art-ring ring-two"></span><span class="art-axis"></span></div>
+          <div class="result-center"><div class="result-symbol" id="protect-symbol">×</div><div class="result-tag" id="protect-tag">BLOCKED</div><h3 id="protect-result-title">Transfer denied.</h3><p id="protect-result-text">Transfer exceeds the 60-token limit.</p></div>
+          <div class="result-footer"><span>THE POLICY MAKES THE DECISION.</span><span aria-hidden="true">↗</span></div>
+        </div>
+      </div>
+      <div id="onchain-protect" class="onchain-card" hidden>
+        <div class="onchain-copy"><span class="onchain-number">01 / LIVE TESTNET</span><strong>Create a real protected vault.</strong><p>150 freely mintable BTEST. Test ETH needed for gas.</p></div>
+        <div class="onchain-actions"><div class="onchain-buttons"><button id="create-demo-vault" type="button" class="secondary-button">Create test vault <span aria-hidden="true">↗</span></button><button id="demo-withdraw" type="button" class="secondary-button" hidden>Withdraw 20 BTEST <span aria-hidden="true">↗</span></button></div><div id="onchain-protect-status" class="onchain-status" role="status" aria-live="polite"></div></div>
+      </div>
+      <div class="disclosure"><span class="disclosure-mark">i</span> Above is a local simulation. Only wallet-signed testnet actions create onchain receipts.</div><a class="journey-next" href="#challenge"><span>02 / NEXT: FIND THE WEAKNESS</span><strong>Challenge <span aria-hidden="true">↗</span></strong></a>
+    </section>
+
+    <section class="view" role="tabpanel" id="panel-challenge" aria-labelledby="tab-challenge" hidden>
+      <div class="view-heading"><div><div class="section-kicker">02 / THE WEAK POINT</div><h2>Break the<br><span>bad rule.</span></h2></div><div class="view-aside"><span class="mode-pill"><span class="mode-dot"></span> Mock-token practice</span><p>Find what the flawed vault fails to remember.</p></div></div>
+      <div class="challenge-layout">
+        <div class="panel challenge-panel">
+          <div class="panel-overline"><span>02A / THE VULNERABILITY</span><span>INTENTIONAL</span></div>
+          <div class="challenge-feature"><span class="feature-numeral">110</span><span class="feature-denominator">/ 100</span><span class="feature-asterisk" aria-hidden="true">✳</span></div>
+          <h3>Two valid moves.<br><span>One broken limit.</span></h3>
+          <p>The practice vault checks each transfer. It never adds up the day.</p>
+          <form id="challenge-form" novalidate>
+            <div class="two-inputs">
+              <div><label class="input-label" for="challenge-a">First transfer</label><div class="input-unit"><input id="challenge-a" type="text" inputmode="numeric" value="60"><span>BTEST</span></div></div>
+              <div><label class="input-label" for="challenge-b">Second transfer</label><div class="input-unit"><input id="challenge-b" type="text" inputmode="numeric" value="50"><span>BTEST</span></div></div>
+            </div>
+            <button class="primary-button" type="submit"><span>Verify the bypass</span><span aria-hidden="true">↗</span></button>
+          </form>
+        </div>
+        <div class="challenge-result panel">
+          <div class="panel-overline"><span>02B / WHAT HAPPENED</span><span>LOCAL EVALUATION</span></div>
+          <div class="test-track">
+            <div class="test-step"><span class="test-icon" id="challenge-first-icon">✓</span><div><strong>Per-transfer check</strong><span>Each transfer must be ≤60</span></div></div>
+            <div class="test-step"><span class="test-icon" id="challenge-total-icon">!</span><div><strong>Daily spend check</strong><span id="challenge-total-label">110 total vs 100 allowed</span></div></div>
+          </div>
+          <div class="challenge-verdict" id="challenge-verdict" aria-live="polite">The flawed vault would allow an invalid daily total.</div>
+          <div class="small-disclosure">An isolated training vulnerability. No valuable asset, paid bounty or exploit is involved.</div>
+        </div>
+      </div>
+      <div id="onchain-challenge" class="onchain-card" hidden>
+        <div class="onchain-copy"><span class="onchain-number">02 / LIVE TESTNET</span><strong>Prove it onchain.</strong><p>Isolated practice with freely mintable BTEST. No reward.</p></div>
+        <div class="onchain-actions"><div class="onchain-buttons"><button id="create-practice" type="button" class="secondary-button">Create practice <span aria-hidden="true">↗</span></button><button id="solve-practice" type="button" class="secondary-button" hidden>Submit 60 + 50 proof <span aria-hidden="true">↗</span></button></div><div id="onchain-challenge-status" class="onchain-status" role="status" aria-live="polite"></div></div>
+      </div>
+      <div id="onchain-escrow" class="onchain-card onchain-escrow" hidden>
+        <div class="onchain-copy"><span class="onchain-number">ESCROW / READ ONLY</span><strong>Reward infrastructure.</strong><p>WIF-capable contract deployed without WIF funding.</p></div>
+        <div class="onchain-actions"><div id="onchain-escrow-status" class="onchain-status" role="status" aria-live="polite"></div></div>
+      </div>
+      <a class="studio-entry" href="/app/bounty/"><span>BOUNTY STUDIO · REAL TESTNET WORKFLOW</span><strong>Publish a BTEST challenge. Submit and review a finding. Settle onchain.</strong><span class="entry-arrow" aria-hidden="true">↗</span></a><div class="bounty-proof" id="bounty-proof" hidden>
+        <div class="bounty-proof-top"><span>PUBLIC BTEST BOUNTY LIFECYCLE</span><span>READ ONLY / SYNTHETIC REVIEWERS</span></div>
+        <div class="bounty-proof-heading"><h3>From finding<br>to settlement.</h3><p>Inspect real Robinhood testnet receipts for the mock-token lifecycle. All demo roles are controlled by one test operator. These approvals are not independent security review.</p></div>
+        <div class="bounty-proof-steps" id="bounty-proof-steps"></div>
+        <p class="bounty-proof-disclosure">Freely mintable BTEST only. No real WIF reward, paid bounty, audit or mainnet custody is claimed.</p>
+      </div>
+      <a class="journey-next" href="#proof"><span>03 / NEXT: INSPECT THE RECEIPTS</span><strong>Proof <span aria-hidden="true">↗</span></strong></a>
+    </section>
+
+    <section class="view" role="tabpanel" id="panel-proof" aria-labelledby="tab-proof" hidden>
+      <div class="view-heading"><div><div class="section-kicker">03 / THE EVIDENCE</div><h2>Don't trust.<br><span>Verify.</span></h2></div><div class="view-aside"><span class="mode-pill"><span class="mode-dot"></span> Read-only RPC</span><p>No wallet required. The chain is the source.</p></div></div>
+      <div class="proof-grid">
+        <div class="panel proof-intro">
+          <div class="panel-overline"><span>03A / NETWORK</span><span>46630</span></div>
+          <div class="chain-value" id="proof-chain">Checking…</div><div class="field-label">ROBINHOOD CHAIN / TESTNET</div>
+          <div class="rule-separator"></div>
+          <div class="proof-meta"><span>Latest block</span><strong id="proof-block">—</strong></div>
+          <div class="proof-meta"><span>Challenge escrow</span><strong id="proof-escrow">Not configured</strong></div>
+          <div class="proof-meta" id="proof-demo-meta" hidden><span>Verified demo vault</span><strong id="proof-demo">—</strong></div>
+          <div class="proof-meta" id="proof-practice-meta" hidden><span>Verified practice</span><strong id="proof-practice">—</strong></div>
+          <div class="proof-meta" id="proof-flow-meta" hidden><span>Public demo receipts</span><strong id="proof-flow">—</strong></div>
+          <button class="secondary-button" type="button" id="refresh-chain">Refresh network <span aria-hidden="true">↻</span></button>
+        </div>
+        <div class="panel proof-lookup">
+          <div class="panel-overline"><span>03B / CONTRACT INSPECTOR</span><span>READ ONLY</span></div>
+          <h3>What's actually<br>onchain?</h3>
+          <form id="vault-form"><label class="input-label" for="vault-address">Testnet vault address</label><input class="wide-input" id="vault-address" type="text" spellcheck="false" placeholder="0x…" autocomplete="off" required><button class="secondary-button" type="submit">Read vault state <span aria-hidden="true">↗</span></button></form>
+          <div class="lookup-result" id="vault-result" aria-live="polite">No vault address has been inspected.</div>
+        </div>
+      </div>
+      <div class="panel transaction-panel">
+        <div class="panel-overline"><span>03C / TRANSACTION INSPECTOR</span><span>PUBLIC RECEIPT</span></div>
+        <div class="transaction-layout"><h3>Every claim.<br><span>A transaction.</span></h3>
+          <div class="transaction-body"><form id="tx-form" class="tx-form"><label class="input-label" for="tx-hash">Transaction hash</label><div class="tx-row"><input class="wide-input" id="tx-hash" type="text" spellcheck="false" placeholder="0x…" autocomplete="off" required><button class="secondary-button" type="submit">Inspect receipt <span aria-hidden="true">↗</span></button></div></form>
+          <div class="receipt-shortcuts" id="receipt-shortcuts" hidden>
+            <span class="shortcuts-label">EXPLORE REAL TESTNET RECEIPTS</span>
+            <div class="receipt-actions" role="group" aria-label="Public testnet transaction examples">
+              <button class="receipt-shortcut" type="button" data-receipt="allowedTx" aria-pressed="false">Allowed transfer <span aria-hidden="true">↗</span></button>
+              <button class="receipt-shortcut" type="button" data-receipt="deniedTx" aria-pressed="false">Blocked transfer <span aria-hidden="true">↗</span></button>
+              <button class="receipt-shortcut" type="button" data-receipt="practiceProofTx" aria-pressed="false">Practice proof <span aria-hidden="true">↗</span></button>
+            </div>
+          </div>
+          <div class="lookup-result" id="tx-result" aria-live="polite">No transaction has been inspected.</div></div>
+        </div>
+      </div>
+      <div class="disclosure"><span class="disclosure-mark">i</span> Receipts and contract state are live when RPC is available. Neither is a security audit.</div><a class="journey-next" href="/app/bounty/"><span>READY FOR A REAL TESTNET WORKFLOW?</span><strong>Open Bounty Studio <span aria-hidden="true">↗</span></strong></a>
+    </section>
+  </main>
+  <footer class="footer">
+    <div class="footer-top"><span>BEFORE / ONCHAIN SECURITY</span><span>MOCK-ONLY ROBINHOOD TESTNET</span><a href="https://github.com/Iniwura/before-protocol/blob/main/docs/SECURITY_NOTES.md" target="_blank" rel="noopener noreferrer">SECURITY NOTES ↗</a></div>
+    <div class="footer-wordmark" aria-hidden="true">BEFORE<span>®</span></div>
+    <div class="footer-bottom"><span>© 2026 BEFORE.</span><span>PROOF OVER PROMISES.</span><a href="#hero-title">BACK TO TOP ↑</a></div>
+  </footer>
+</div>
+</body>
+</html>

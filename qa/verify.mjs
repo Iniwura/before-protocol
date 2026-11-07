@@ -9,10 +9,10 @@ import {encodeDemoCreate,encodeDemoWithdraw,encodePracticeCreate,encodePracticeP
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(here, '../web');
 const mime = { '.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.mjs':'text/javascript; charset=utf-8','.json':'application/json','.svg':'image/svg+xml','.css':'text/css; charset=utf-8' };
-const allowed = new Set(['index.html','styles.css','app.js','core.mjs','onchain.mjs','deployment.json','favicon.svg']);
+const allowed = new Set(['index.html','landing.css','landing.js','app/index.html','app/bounty/index.html','app/wif/index.html','wif.css','wif.js','wif-core.mjs','bounty.css','bounty.js','bounty-core.mjs','bounty-verifier.json','styles.css','app.js','core.mjs','onchain.mjs','deployment.json','bounty-proof.json','favicon.svg']);
 const server = createServer(async(req,res)=>{
   const pathname = new URL(req.url,'http://localhost').pathname;
-  const file = pathname==='/'?'index.html':pathname.slice(1);
+  const file = pathname==='/'?'index.html':pathname==='/app/'||pathname==='/app'?'app/index.html':pathname==='/app/bounty/'||pathname==='/app/bounty'?'app/bounty/index.html':pathname.slice(1);
   if (!allowed.has(file)) {res.writeHead(404);res.end('Not found');return;}
   try {
     const data=await readFile(path.join(root,file));
@@ -21,7 +21,8 @@ const server = createServer(async(req,res)=>{
   } catch {res.writeHead(404);res.end('Not found');}
 });
 await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
-const base='http://127.0.0.1:'+server.address().port;
+const origin='http://127.0.0.1:'+server.address().port;
+const base=origin+'/app/';
 const browser=await chromium.launch({headless:true});
 const fixture={owner:'0x'+'3'.repeat(40),factory:'0x'+'1'.repeat(40),mockToken:'0x'+'2'.repeat(40),challengeEscrow:'0x'+'6'.repeat(40),vault:'0x'+'4'.repeat(40),arena:'0x'+'5'.repeat(40),practiceVault:'0x'+'7'.repeat(40),tx:'0x'+'a'.repeat(64),demoTx:'0x'+'b'.repeat(64),practiceTx:'0x'+'c'.repeat(64),allowedTx:'0x'+'d'.repeat(64),deniedTx:'0x'+'e'.repeat(64),practiceProofTx:'0x'+'f'.repeat(64)};
 const failClosedManifest={chainId:46630,factory:null,mockToken:null,challengeEscrow:null,arena:null,demoTx:null,practiceTx:null,deployer:null,demoVault:null,practiceArena:null,practiceVault:null,allowedTx:null,deniedTx:null,practiceProofTx:null,practiceSolver:null,verified:false,factoryTx:null,mockTokenTx:null,challengeEscrowTx:null};
@@ -34,7 +35,7 @@ const walletTransactions={
   [fixture.practiceTx.toLowerCase()]:transactionRecord(fixture.practiceTx,fixture.factory,encodePracticeCreate(fixture.mockToken)),
   [fixture.practiceProofTx.toLowerCase()]:transactionRecord(fixture.practiceProofTx,fixture.arena,encodePracticeProof())
 };
-function routeRPC(page,{code='0x60016000',codeByAddress={},receiptStatus='0x1',nextChallengeId='0x'+'0'.repeat(63)+'1',transactions=walletTransactions}={}) {
+function routeRPC(page,{code='0x60016000',codeByAddress={},receiptStatus='0x1',nextChallengeId='0x'+'0'.repeat(63)+'1',transactions=walletTransactions,bountyProof=null}={}) {
   return page.route('https://rpc.testnet.chain.robinhood.com/**', route=>{
     const request=JSON.parse(route.request().postData()||'{}');
     let result=null;
@@ -51,7 +52,17 @@ function routeRPC(page,{code='0x60016000',codeByAddress={},receiptStatus='0x1',n
       case 'eth_getTransactionByHash':result=transactions[request.params?.[0]?.toLowerCase()]??null;break;
       case 'eth_call':{
         const selector=request.params?.[0]?.data?.slice(0,10);
-        result=selector==='0xee643f9e'?padding(fixture.vault):selector==='0x7f81587e'?padding(fixture.arena):selector==='0xfc67aa50'?nextChallengeId:'0x'+'0'.repeat(63)+'1';
+        const to=request.params?.[0]?.to?.toLowerCase();
+        if(bountyProof&&to===bountyProof.demo.toLowerCase()){
+          const demoResults={
+            '0xc040e6b8':'0x'+'0'.repeat(63)+'3',
+            '0x570ca735':padding(bountyProof.operator),
+            '0xe2fdcc17':padding(bountyProof.escrow),
+            '0xfc0c546a':padding(bountyProof.token),
+            '0xd4b83992':padding(bountyProof.target)
+          };
+          result=demoResults[selector]??'0x'+'0'.repeat(63)+'1';
+        }else result=selector==='0xee643f9e'?padding(fixture.vault):selector==='0x7f81587e'?padding(fixture.arena):selector==='0xfc67aa50'?nextChallengeId:'0x'+'0'.repeat(63)+'1';
         break;
       }
     }
@@ -61,9 +72,31 @@ function routeRPC(page,{code='0x60016000',codeByAddress={},receiptStatus='0x1',n
 async function axeViolations(page){
   return page.evaluate(async()=>{
     const {violations}=await axe.run(document,{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21aa']}});
-    return violations.map(v=>({id:v.id,impact:v.impact,nodes:v.nodes.length}));
+    return violations.map(v=>({id:v.id,impact:v.impact,nodes:v.nodes.map(n=>({target:n.target,summary:n.failureSummary}))}));
   });
 }
+// Public landing should not masquerade as an active wallet product; every link has a working app target.
+const landingContext=await browser.newContext({viewport:{width:375,height:820},reducedMotion:'reduce'});
+const landingPage=await landingContext.newPage();
+await landingPage.goto(origin+'/',{waitUntil:'domcontentloaded'});
+assert.match(await landingPage.title(),/BEFORE/,'Landing title must identify the product');
+assert.equal(await landingPage.locator('h1').innerText(),'BEFORE®','Landing has its own editorial hero');
+assert.equal(await landingPage.locator('a.header-launch').getAttribute('href'),'/app/bounty/','Primary CTA opens user-focused bounty application');
+assert.ok(await landingPage.locator('a[href="/app/wif/"]').count()>=1,'Real WIF permission inspector must be accessible from landing');
+assert.ok(await landingPage.locator('a[href="/app/bounty/"]').count()>=1,'Public landing must open Bounty Studio');
+for(const section of ['protect','challenge','proof']){
+  assert.equal(await landingPage.locator('a.experience-row[href="/app/#'+section+'"]').count(),1,'Landing deep link missing: '+section);
+}
+assert.match(await landingPage.locator('.bounty-caveat').innerText(),/No real WIF is deposited/i,'Landing must clearly exclude real WIF deposits');
+await landingPage.addScriptTag({path:path.join(here,'node_modules/axe-core/axe.min.js')});
+assert.deepEqual(await axeViolations(landingPage),[],'Public landing page must meet WCAG');
+const landingSize=await landingPage.evaluate(()=>({scroll:document.documentElement.scrollWidth,client:document.documentElement.clientWidth}));
+assert.ok(landingSize.scroll<=landingSize.client+1,'Landing must not overflow on mobile');
+await landingPage.goto(origin+'/#proof');
+await landingPage.waitForURL(origin+'/app/#proof');
+assert.equal(await landingPage.locator('#tab-proof').getAttribute('aria-selected'),'true','Legacy Proof link must still open Proof');
+await landingContext.close();
+
 const problems=[];
 let audited=0;
 try {
@@ -91,6 +124,7 @@ try {
     assert.equal(await page.locator('#onchain-challenge').isHidden(),true,'Unverified deployment must not unlock challenges');
     assert.equal(await page.locator('#onchain-escrow').isHidden(),true,'Unverified deployment must not expose escrow state');
     assert.equal(await page.locator('#receipt-shortcuts').isHidden(),true,'Unverified deployment must not expose receipt shortcuts');
+    assert.equal(await page.locator('#bounty-proof').isHidden(),true,'Unverified deployment must not reveal bounty evidence');
     if (width===1280) {
       await page.locator('#tab-protect').focus();
       await page.keyboard.press('ArrowRight');
@@ -146,9 +180,18 @@ try {
   assert.equal(await missingOutputPage.locator('#proof-demo-meta').getAttribute('hidden'),'','Missing verified output code must keep Proof evidence hidden');
   await missingOutputContext.close();
 
+  const bountyProof={verified:true,chainId:46630,demo:'0x'+'8'.repeat(40),
+    escrow:fixture.challengeEscrow,token:fixture.mockToken,target:fixture.practiceVault,
+    operator:fixture.owner,reviewType:'synthetic',valuableWifFunded:false,
+    transactions:{start:'0x'+'1'.repeat(64),settle:'0x'+'2'.repeat(64),cleanup:'0x'+'3'.repeat(64)}
+  };
+  const bountyTransactions={...walletTransactions,
+    ...Object.fromEntries(Object.values(bountyProof.transactions).map(hash=>[hash.toLowerCase(),transactionRecord(hash,bountyProof.demo,'0x')]))
+  };
   const fullManifestContext=await browser.newContext({viewport:{width:1280,height:850},reducedMotion:'reduce'});
   const fullManifestPage=await fullManifestContext.newPage();
-  await routeRPC(fullManifestPage,{nextChallengeId:'0x'+'0'.repeat(63)+'3'});
+  await routeRPC(fullManifestPage,{nextChallengeId:'0x'+'0'.repeat(63)+'3',transactions:bountyTransactions,bountyProof});
+  await fullManifestPage.route('**/bounty-proof.json',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(bountyProof)}));
   await fullManifestPage.route('**/deployment.json',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(completeManifest)}));
   await fullManifestPage.goto(base,{waitUntil:'domcontentloaded'});
   await fullManifestPage.addScriptTag({path:path.join(here,'node_modules/axe-core/axe.min.js')});
@@ -178,8 +221,12 @@ try {
   await fullManifestPage.locator('#tab-challenge').click();
   assert.deepEqual(await axeViolations(fullManifestPage),[],'Complete-manifest Challenge must remain accessible');
   assert.equal(await fullManifestPage.locator('#onchain-escrow').isHidden(),false,'Verified escrow should be connected read-only');
-  assert.equal(await fullManifestPage.locator('#onchain-escrow-status').innerText(),'2 challenge record(s) exist. No demo reward is funded.');
+  assert.equal(await fullManifestPage.locator('#onchain-escrow-status').innerText(),'2 testnet challenge record(s) exist. No WIF reward is funded.');
   assert.equal(await fullManifestPage.locator('#onchain-challenge').isHidden(),false,'Complete manifest should unlock testnet Challenge actions');
+  await fullManifestPage.locator('#bounty-proof').waitFor({state:'visible'});
+  assert.equal(await fullManifestPage.locator('#bounty-proof-steps a').count(),3,'Real receipt proof should show three lifecycle transactions');
+  await fullManifestPage.waitForTimeout(350);
+  assert.deepEqual(await axeViolations(fullManifestPage),[],'Verified bounty evidence must remain accessible');
   await fullManifestContext.close();
 
   const rejectedContext=await browser.newContext({viewport:{width:1280,height:850},reducedMotion:'reduce'});

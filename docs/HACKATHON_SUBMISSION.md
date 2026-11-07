@@ -14,11 +14,11 @@ Copy-ready material for the [World Is Flat hackathon](https://worldisflat.fun/bu
 
 The production mechanism is a separate ERC-20 escrow for meaningful security findings. A sponsor pins the target contract, runtime code, written scope, verifier and reward token. Solvers use a wallet-bound commit/reveal and bond; a fixed reviewer quorum approves the exact evidence before settlement. Invalid evidence loses only the bond, expiry returns funds, and code changes fail closed.
 
-**Product preview:** https://before-1xhzzheka-iniwura-akurus-projects.vercel.app/
+**Product preview:** https://before-web-git-feat-bounty-e2e-a-524092-iniwura-akurus-projects.vercel.app/
 
 **Source:** https://github.com/Iniwura/before-protocol
 
-**Verification PR:** https://github.com/Iniwura/before-protocol/pull/3
+**Verification PR:** https://github.com/Iniwura/before-protocol/pull/5
 
 ## Judge flow
 
@@ -28,7 +28,7 @@ The production mechanism is a separate ERC-20 escrow for meaningful security fin
 
 ## Evidence checkpoint
 
-- 66 Solidity tests, including adversarial accounting, cross-chain and copied-wallet replay, expiry, verifier quorum, code-pinning, transfer-callback mutation and empty-evidence cases.
+- 70 Solidity tests, including adversarial accounting, cross-chain and copied-wallet replay, expiry, verifier quorum, code-pinning, transfer-callback mutation and empty-evidence cases.
 - 57 JavaScript checks, including immutable-aware runtime proof, historical-balance proof, exact deployment receipt/event/runtime proof and public broadcast extraction checks.
 - Browser QA: 12 responsive/accessibility audits plus 3 complete-manifest accessibility states, zero violations, no horizontal overflow, mocked wallet success and failure paths.
 - [CI run 123](https://github.com/Iniwura/before-protocol/actions/runs/42114536969) passed the contract, real local-Anvil release gate and browser-quality jobs for release commit `a5a0b49`.
@@ -41,6 +41,7 @@ The production mechanism is a separate ERC-20 escrow for meaningful security fin
 - The verified demo outputs are [Protect DemoVault](https://explorer.testnet.chain.robinhood.com/address/0xFCd5Ee59136c3e2E0775908Fa703c1e7A44Fa1e9), [Challenge Arena](https://explorer.testnet.chain.robinhood.com/address/0x0957593d029893340a783Aa76dA07a28b2b2a2f6), and [PracticeVault](https://explorer.testnet.chain.robinhood.com/address/0x7e29bC6Df38e60E77513bc1084dB488FeE12947C).
 - Public flow receipts: [allowed 20 BTEST](https://explorer.testnet.chain.robinhood.com/tx/0x49ab86e469b83c7f02a01b0765973e213ba894cbbd6f37f6af17d0e84ae23b3c), [denied 75 BTEST, status `0x0`](https://explorer.testnet.chain.robinhood.com/tx/0xf40bd10c748f6bf60cdb4c12382b414478210c4875bcb3899792e16f425aaf04), and [60+50 practice proof](https://explorer.testnet.chain.robinhood.com/tx/0x4b002674e855aea3f2ba526b1028043603a2facca6e6c7d465742f7100fbe901).
 - The live eleven-argument verifier passed exact bytecode, immutable state, events, receipts and historical balances; no WIF token was funded.
+- The public BTEST-only bounty lifecycle passed independent receipt, event, quorum, bytecode and final-accounting checks. See [BOUNTY_TESTNET_EVIDENCE.md](BOUNTY_TESTNET_EVIDENCE.md) for the four explorer-linked lifecycle receipts and explicit synthetic-reviewer boundary.
 
 ## Claim boundary
 
@@ -50,4 +51,4 @@ The concrete paid-challenge design is documented in [WIF_CHALLENGE_DESIGN.md](WI
 
 ## Finalization gate
 
-The disposable testnet wallet has signed the test-only deployment. The eleven-argument command in [TESTNET_PROOF.md](TESTNET_PROOF.md) passed against the public chain, and the verifier-generated addresses and receipts are committed to `web/deployment.json`. The remaining release gate is green CI plus review of the preview; PR #3 remains draft and is not merged here.
+The disposable testnet wallet has signed the test-only deployment and BTEST demonstration. The eleven-argument command in [TESTNET_PROOF.md](TESTNET_PROOF.md) and the independent bounty evidence report passed against the public chain; verifier-generated addresses, receipts and the public bounty proof are committed. PR #5 remains draft and is not merged here. No production promotion, real WIF funding or mainnet deployment is claimed.

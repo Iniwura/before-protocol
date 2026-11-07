@@ -213,7 +213,7 @@ function showOnchainStatus(id, message, txHash = null) {
 
 async function initializeOnchain() {
   try {
-    const response = await fetch('./deployment.json', {cache:'no-store'});
+    const response = await fetch('/deployment.json', {cache:'no-store'});
     if (!response.ok) return;
     const config = await response.json();
     if (!deploymentReady(config)) return;
@@ -257,11 +257,71 @@ async function initializeOnchain() {
     $('onchain-escrow').hidden = false;
     $('onchain-escrow-status').textContent = nextChallengeId === 1n
       ? 'Escrow deployed and empty. No WIF reward is funded.'
-      : String(nextChallengeId - 1n) + ' challenge record(s) exist. No demo reward is funded.';
+      : String(nextChallengeId - 1n) + ' testnet challenge record(s) exist. No WIF reward is funded.';
     $('onchain-protect').hidden = false;
     $('onchain-challenge').hidden = false;
+    void initializeBountyProof(config);
   } catch {
     // Fail closed. Keep the research-only experience available, without blockchain claims.
+  }
+}
+
+// Never claim a bounty demonstration from a static JSON flag alone.
+// Cross-check public receipts, sender, addresses, contract code and final stage.
+async function initializeBountyProof(config) {
+  const target=$('bounty-proof');
+  if (!target) return;
+  try {
+    const response=await fetch('/bounty-proof.json',{cache:'no-store'});
+    if (!response.ok) return;
+    const data=await response.json();
+    const same=(a,b)=>isAddress(a)&&isAddress(b)&&a.toLowerCase()===b.toLowerCase();
+    if (data.verified!==true||data.chainId!==CHAIN_ID
+        ||data.reviewType!=='synthetic'||data.valuableWifFunded!==false
+        ||!same(data.escrow,config.challengeEscrow)||!same(data.token,config.mockToken)
+        ||!same(data.target,config.practiceVault)||!same(data.operator,config.deployer)
+        ||!isAddress(data.demo)) return;
+    if ((await rpc('eth_getCode',[data.demo,'latest']))==='0x') return;
+    const [stage,operator,escrowAddress,tokenAddress,targetAddress]=await Promise.all([
+      call(data.demo,'0xc040e6b8'),
+      call(data.demo,'0x570ca735'),
+      call(data.demo,'0xe2fdcc17'),
+      call(data.demo,'0xfc0c546a'),
+      call(data.demo,'0xd4b83992')
+    ]);
+    if (parseHexUint(stage)!==3n||!same(decodeAddress(operator),data.operator)
+        ||!same(decodeAddress(escrowAddress),config.challengeEscrow)
+        ||!same(decodeAddress(tokenAddress),config.mockToken)
+        ||!same(decodeAddress(targetAddress),config.practiceVault)) return;
+    const names=[['start','Fund & commit'],['settle','Review & settle'],['cleanup','Refund & close']];
+    const hashes=names.map(([key])=>data.transactions?.[key]);
+    if (hashes.some(hash=>!isTxHash(hash))||new Set(hashes.map(h=>h.toLowerCase())).size!==3) return;
+    const receipts=await Promise.all(hashes.map(hash=>rpc('eth_getTransactionReceipt',[hash])));
+    const transactions=await Promise.all(hashes.map(hash=>rpc('eth_getTransactionByHash',[hash])));
+    if (receipts.some((r,i)=>!r||r.status!=='0x1'||r.transactionHash?.toLowerCase()!==hashes[i].toLowerCase()
+        ||!same(r.from,data.operator)||!same(r.to,data.demo))
+        ||transactions.some((tx,i)=>!tx||tx.hash?.toLowerCase()!==hashes[i].toLowerCase()
+        ||!same(tx.from,data.operator)||!same(tx.to,data.demo))) return;
+    const container=$('bounty-proof-steps');
+    container.replaceChildren();
+    names.forEach(([key,label],index)=>{
+      const cell=document.createElement('div');
+      cell.className='bounty-proof-step';
+      const small=document.createElement('small');
+      small.textContent='0'+(index+1)+' / CONFIRMED';
+      const title=document.createElement('strong');
+      title.textContent=label;
+      const link=document.createElement('a');
+      link.href=EXPLORER+'/tx/'+data.transactions[key];
+      link.target='_blank';
+      link.rel='noopener noreferrer';
+      link.textContent='View public receipt ↗';
+      cell.append(small,title,link);
+      container.append(cell);
+    });
+    target.hidden=false;
+  } catch {
+    // Missing, invalid or unavailable proof stays hidden. Never synthesize a payout.
   }
 }
 
