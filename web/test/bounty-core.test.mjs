@@ -18,6 +18,13 @@ const target='0x'+'4'.repeat(40);
 const reviewer='0x'+'5'.repeat(40);
 const digest='0x'+'f'.repeat(64);
 const code=JSON.parse(readFileSync(new URL('../bounty-verifier.json',import.meta.url),'utf8'));
+function executableBytecode(value){
+ assert.match(value,/^0x[0-9a-fA-F]+$/);
+ const hex=value.slice(2);
+ const metadataBytes=Number.parseInt(hex.slice(-4),16);
+ assert.ok(Number.isSafeInteger(metadataBytes)&&metadataBytes>0&&metadataBytes*2+4<=hex.length);
+ return '0x'+hex.slice(0,-4-metadataBytes*2);
+}
 test('Keccak-256 matches Ethereum standard known vectors',()=>{
  assert.equal(textHash(''),'0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470');
  assert.equal(textHash('hello'),'0x1c8aff950685c2ed4bc3174f3472287b56d9517b9c948127319a09a7a36deac8');
@@ -72,10 +79,13 @@ test('Reviewer constructor ABI encodes array and threshold without guessed offse
  assert.throws(()=>encodeVerifierCreation(code.creationCode,[wallet,wallet],1),/distinct/);
  assert.throws(()=>encodeVerifierCreation(code.creationCode,[wallet],2),/threshold/);
 });
-test('Compiled reviewer bytecode matches committed artifacts and source',()=>{
+test('Compiled reviewer executable bytecode matches the pinned artifact and source',()=>{
  const artifact=JSON.parse(readFileSync(new URL('../../out/ReviewedFindingVerifier.sol/ReviewedFindingVerifier.json',import.meta.url),'utf8'));
- assert.equal(code.creationCode,artifact.bytecode.object);
- assert.equal(code.runtimeCode,artifact.deployedBytecode.object);
+ // Solc embeds compiler/EVM metadata in the final CBOR trailer. Foundry and the
+ // direct solc build can choose different defaults while producing the same
+ // executable reviewer gate; the hosted artifact remains the exact pinned gate.
+ assert.equal(executableBytecode(code.creationCode),executableBytecode(artifact.bytecode.object));
+ assert.equal(executableBytecode(code.runtimeCode),executableBytecode(artifact.deployedBytecode.object));
  const refs=Object.values(artifact.deployedBytecode.immutableReferences).flat().sort((a,b)=>a.start-b.start);
  assert.deepEqual([...code.immutableRefs].sort((a,b)=>a.start-b.start),refs);
  assert.equal(code.sourceSha256,createHash('sha256').update(readFileSync(new URL('../../src/ReviewedFindingVerifier.sol',import.meta.url))).digest('hex'));
