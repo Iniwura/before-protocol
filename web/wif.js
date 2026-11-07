@@ -92,6 +92,8 @@ $('check-form').addEventListener('submit',async event=>{
  }finally{if(index===state.request)button.disabled=false}
 });
 $('approval-tx').addEventListener('input',()=>{
+ state.request++;
+ $('scan-button').disabled=false;
  document.dispatchEvent(new Event('before:wif-scan-start'));
  $('result').hidden=true;
  if($('approval-tx').value.trim()){
@@ -100,6 +102,8 @@ $('approval-tx').addEventListener('input',()=>{
 });
 for(const id of ['owner','spender']){
  $(id).addEventListener('input',()=>{
+  state.request++;
+  $('scan-button').disabled=false;
   document.dispatchEvent(new Event('before:wif-scan-start'));
   $('result').hidden=true;
   if($(id).value.trim())$('approval-tx').value='';
