@@ -92,10 +92,16 @@ $('check-form').addEventListener('submit',async event=>{
  }finally{if(index===state.request)button.disabled=false}
 });
 $('approval-tx').addEventListener('input',()=>{
+ document.dispatchEvent(new Event('before:wif-scan-start'));
+ $('result').hidden=true;
  if($('approval-tx').value.trim()){
   $('owner').value='';$('spender').value='';
  }
 });
 for(const id of ['owner','spender']){
- $(id).addEventListener('input',()=>{if($(id).value.trim())$('approval-tx').value=''});
+ $(id).addEventListener('input',()=>{
+  document.dispatchEvent(new Event('before:wif-scan-start'));
+  $('result').hidden=true;
+  if($(id).value.trim())$('approval-tx').value='';
+ });
 }
