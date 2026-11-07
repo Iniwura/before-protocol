@@ -13,6 +13,7 @@ export const wordAddress=value=>{
  if(!isAddress(value))throw Error('Enter a valid, nonzero address (0x followed by 40 characters).');
  return value.slice(2).toLowerCase().padStart(64,'0');
 };
+export const revokeApprovalData=spender=>'0x095ea7b3'+wordAddress(spender)+'0'.repeat(64);
 export const balanceData=owner=>'0x70a08231'+wordAddress(owner);
 export const allowanceData=(owner,spender)=>'0xdd62ed3e'+wordAddress(owner)+wordAddress(spender);
 export function readUint(hex){

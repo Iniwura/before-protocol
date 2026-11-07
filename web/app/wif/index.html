@@ -9,6 +9,7 @@
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <link rel="stylesheet" href="/wif.css">
 <script type="module" src="/wif.js"></script>
+<script type="module" src="/wif-revoke.mjs"></script>
 </head>
 <body>
 <header class="site-header"><a href="/" class="brand" aria-label="BEFORE home">BEFORE<sup>®</sup></a><span class="header-middle">WIF / PERMISSION CHECK</span><a href="/app/bounty/" class="header-link">Bounty Studio <span aria-hidden="true">↗</span></a></header>
@@ -49,10 +50,20 @@
       <div><span>NETWORK</span><strong>ROBINHOOD CHAIN MAINNET · 4663</strong></div>
       <div><span>OFFICIAL WIF CONTRACT</span><a href="https://robinhoodchain.blockscout.com/token/0x5173b8eA6923c2d40267890D45C46a3480954773" target="_blank" rel="noopener noreferrer">0x5173…4773 ↗</a></div>
     </div>
-    <p class="result-note">This is a read-only permission check, not a protection vault, revocation, audit or security score. A zero result applies to this spender only. No approvals or tokens were changed.</p>
+    <p class="result-note">The check above is read-only. A zero allowance applies to this spender only.</p>
+    <section id="revoke-action" class="revoke-action" hidden aria-labelledby="revoke-title">
+      <div class="section-bar"><span>03 / OPTIONAL ONCHAIN ACTION</span><span>WALLET CONFIRMATION REQUIRED</span></div>
+      <h3 id="revoke-title">Revoke this permission.</h3>
+      <p>Set this spender's WIF allowance to zero on the official token contract. This does not transfer WIF, but requires Robinhood mainnet gas. Other approvals remain unchanged.</p>
+      <div class="revoke-target"><span>WIF OWNER</span><code id="revoke-owner"></code><span>SPENDER TO REVOKE</span><code id="revoke-spender"></code></div>
+      <label class="revoke-consent"><input id="revoke-confirm" type="checkbox"> I understand this is a real mainnet transaction that costs gas. I want to set this spender's WIF allowance to zero.</label>
+      <button id="revoke-button" class="scan-button" type="button" disabled>Confirm in my wallet <span aria-hidden="true">↗</span></button>
+    </section>
+    <div class="feedback" id="revoke-status" role="status" aria-live="polite" hidden></div>
+    <p id="revoke-proof" class="result-note" hidden><a id="revoke-proof-link" target="_blank" rel="noopener noreferrer">Inspect WIF transaction ↗</a></p>
   </section>
-  <section class="handoff"><div class="section-bar"><span>03 / EXPLORE BEFORE</span><span>TESTNET DEMONSTRATION</span></div><div class="handoff-content"><h2>Rules you<br>can <em>enforce.</em></h2><p>Try BEFORE’s separate BTEST vault and bounty workflow on Robinhood Testnet. Real $WIF never enters the demo escrow.</p></div><a href="/app/bounty/" class="handoff-link">Open Bounty Studio <span aria-hidden="true">↗</span></a></section>
+  <section class="handoff"><div class="section-bar"><span>04 / EXPLORE BEFORE</span><span>TESTNET DEMONSTRATION</span></div><div class="handoff-content"><h2>Rules you<br>can <em>enforce.</em></h2><p>Try BEFORE’s separate BTEST vault and bounty workflow on Robinhood Testnet. Real $WIF never enters the demo escrow.</p></div><a href="/app/bounty/" class="handoff-link">Open Bounty Studio <span aria-hidden="true">↗</span></a></section>
 </main>
-<footer class="footer"><span>BEFORE® / ONCHAIN EVIDENCE</span><span>NO TRANSACTION SIGNING OR TOKEN CUSTODY</span><a href="https://github.com/Iniwura/before-protocol" target="_blank" rel="noopener noreferrer">SOURCE ↗</a></footer>
+<footer class="footer"><span>BEFORE® / ONCHAIN EVIDENCE</span><span>OPTIONAL WALLET-SIGNED REVOKE · NO CUSTODY</span><a href="https://github.com/Iniwura/before-protocol" target="_blank" rel="noopener noreferrer">SOURCE ↗</a></footer>
 </body>
 </html>

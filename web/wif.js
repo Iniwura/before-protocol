@@ -39,6 +39,7 @@ function render(data){
   const link=$('approval-link');link.href=WIF_EXPLORER+'/tx/'+approval.hash;link.textContent='View original approval transaction ↗';
  }
  $('result').hidden=false;
+ document.dispatchEvent(new CustomEvent('before:wif-scan-complete',{detail:{owner,spender,allowance}}));
 }
 async function checkApproval(){
  const hash=$('approval-tx').value.trim();
@@ -59,6 +60,7 @@ async function checkApproval(){
 $('check-form').addEventListener('submit',async event=>{
  event.preventDefault();
  const index=++state.request;
+ document.dispatchEvent(new Event('before:wif-scan-start'));
  const button=$('scan-button');button.disabled=true;
  $('result').hidden=true;
  showFeedback('Checking WIF on Robinhood Chain mainnet…');
@@ -90,10 +92,20 @@ $('check-form').addEventListener('submit',async event=>{
  }finally{if(index===state.request)button.disabled=false}
 });
 $('approval-tx').addEventListener('input',()=>{
+ state.request++;
+ $('scan-button').disabled=false;
+ document.dispatchEvent(new Event('before:wif-scan-start'));
+ $('result').hidden=true;
  if($('approval-tx').value.trim()){
   $('owner').value='';$('spender').value='';
  }
 });
 for(const id of ['owner','spender']){
- $(id).addEventListener('input',()=>{if($(id).value.trim())$('approval-tx').value=''});
+ $(id).addEventListener('input',()=>{
+  state.request++;
+  $('scan-button').disabled=false;
+  document.dispatchEvent(new Event('before:wif-scan-start'));
+  $('result').hidden=true;
+  if($(id).value.trim())$('approval-tx').value='';
+ });
 }

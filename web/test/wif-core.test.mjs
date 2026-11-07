@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {WIF_MAINNET_CHAIN_ID,WIF_TOKEN,MAX_UINT256,isAddress,isHash,same,wordAddress,balanceData,
- allowanceData,readUint,decodeAddressWord,parseApprovalTransaction,isWifSymbol,formatWif,
+ allowanceData,revokeApprovalData,readUint,decodeAddressWord,parseApprovalTransaction,isWifSymbol,formatWif,
  permissionSummary,formatRPCBlock} from '../wif-core.mjs';
 
 const owner='0x'+'1'.repeat(40),spender='0x'+'2'.repeat(40),hash='0x'+'a'.repeat(64);
@@ -59,4 +59,12 @@ test('WIF symbol validation rejects arbitrary matching substrings and malformed 
  assert.equal(isWifSymbol('0x'+word(64)+word(3)+'574946'.padEnd(64,'0')),false);
  assert.equal(isWifSymbol('0x'+word(32)+word(4)+'57494600'.padEnd(64,'0')),false);
  assert.equal(isWifSymbol('0x1111574946'),false);
+});
+
+test('WIF revoke uses approve(spender, 0), never transfer or transferFrom',()=>{
+ const calldata=revokeApprovalData(spender);
+ assert.equal(calldata,'0x095ea7b3'+wordAddress(spender)+'0'.repeat(64));
+ assert.equal(calldata.length,138);
+ assert.ok(!calldata.startsWith('0xa9059cbb'));
+ assert.throws(()=>revokeApprovalData('0x'+'0'.repeat(40)),/nonzero/);
 });
