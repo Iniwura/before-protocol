@@ -2,7 +2,7 @@
 
 **Know what you approved. Prove what happened.**
 
-BEFORE is a [World Is Flat](https://worldisflat.fun/build) Robinhood Chain product combining **noncustodial $WIF payments with verifiable receipts**, **read-only WIF spending-permission checks**, and a separate **BTEST-only security bounty** on testnet.
+BEFORE is a [World Is Flat](https://worldisflat.fun/build) Robinhood Chain product combining **noncustodial $WIF payments and repeat voluntary support with verifiable receipts**, **read-only WIF spending-permission checks**, and a separate **BTEST-only security bounty** on testnet.
 
 For WIF holders, BEFORE inspects an identified wallet/spender allowance against the official $WIF token contract without wallet connection, signing or custody. For builders and researchers, the Bounty Studio demonstrates sponsor → researcher → appointed reviewer → verifiable settlement using valueless BTEST. The optional Protect → Challenge → Proof training experience shows enforceable policy vaults, intentional vulnerabilities and actual testnet receipts.
 
@@ -12,6 +12,7 @@ For WIF holders, BEFORE inspects an identified wallet/spender allowance against 
 
 - **Landing:** https://before-web-theta.vercel.app/
 - **BEFORE Pay (mainnet $WIF, human-confirmed):** https://before-web-theta.vercel.app/app/pay/
+- **BEFORE Support (mainnet $WIF, human-confirmed per cycle):** https://before-web-theta.vercel.app/app/support/
 - **Bounty Studio (main guided app, testnet-only):** https://before-web-theta.vercel.app/app/bounty/
 - **WIF Permission Check (mainnet, read-only):** https://before-web-theta.vercel.app/app/wif/
 - **Protect → Challenge → Proof demonstration:** https://before-web-theta.vercel.app/app/
@@ -25,6 +26,12 @@ See [WIF Permission Check](docs/WIF_PERMISSION_CHECK.md), [Bounty Studio guide](
 The recipient connects their wallet and signs an EIP-712 payment request for an exact WIF amount and expiry. They share a link; the payer verifies its signature, recipient, official token and network, checks wallet balance and gas, and **explicitly confirms** an ERC-20 transfer in their own wallet. Once mined, BEFORE verifies the exact transaction, receipt, confirmation depth and WIF Transfer log. No custody, spending approval or automatic payments.
 
 The browser prevents a second Pay action after a submitted or uncertain wallet attempt, even when receipt verification is delayed or the page reloads. This is a client-side safeguard, **not** globally enforced one-time invoice settlement: the same request can be paid more than once on a different device or with another wallet. A real payment incurs mainnet gas, is irreversible, and has not yet been exercised with real WIF through this application. Read the [Pay security and release limits](docs/WIF_PAY_SECURITY_AND_RELEASE.md).
+
+## BEFORE Support: a repeat-use WIF page
+
+The `/app/support/` route reuses Pay's exact mainnet preflight, transfer and receipt-proof boundary for a smaller repeat-use loop. A creator signs a distinct `SupportOffer` binding the official WIF contract, recipient, amount, voluntary return cadence, at most 120-day expiry and campaign ID. A supporter sees the full offer, starts a new cycle deliberately, confirms a fresh standard WIF transfer in their own wallet and can return to the same page to inspect device-local receipts. “Support again” is available only after verified proof and never schedules a payment.
+
+Pending, uncertain, rejected or reloaded cycles remain locked; receipt retries are read-only. Device-local history is revalidated against public RPC before display, but it is not a global ledger or cross-device duplicate-prevention mechanism. Cadence is a date suggestion shown on the device, not a notification or subscription. Signed support offers stay valid until their expiry (at most 120 days); they cannot be revoked early, so creators should choose an appropriate expiration. No real WIF acceptance transaction has been performed by Codex or CI. See [Support security and release gate](docs/BEFORE_SUPPORT_SECURITY_AND_RELEASE.md).
 
 ## Real WIF utility: read-only permission inspection
 
@@ -71,13 +78,14 @@ Requires [Foundry](https://getfoundry.sh/) and Node.js.
 ~~~sh
 forge build
 forge test --fuzz-runs 1024 -vvv
-node --test checks/reference.test.mjs checks/deployment-proof.test.mjs checks/deployment-cli.test.mjs checks/broadcast-args.test.mjs web/test/core.test.mjs web/test/onchain.test.mjs web/test/pay-core.test.mjs web/test/bounty-core.test.mjs web/test/wif-core.test.mjs
+node --test checks/reference.test.mjs checks/deployment-proof.test.mjs checks/deployment-cli.test.mjs checks/broadcast-args.test.mjs web/test/core.test.mjs web/test/onchain.test.mjs web/test/pay-core.test.mjs web/test/support-core.test.mjs web/test/bounty-core.test.mjs web/test/wif-core.test.mjs
 node script/anvil-e2e.mjs
 node script/run-bounty-lifecycle.mjs --local
 node script/check-chain.mjs
 # After installing browser QA dependencies and Chromium:
 node qa/verify.mjs
 node qa/pay-e2e.mjs
+node qa/support-e2e.mjs
 node qa/bounty-e2e.mjs
 node qa/wif-verify.mjs
 # Read-only public Robinhood testnet audits:

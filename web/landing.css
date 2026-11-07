@@ -12,8 +12,8 @@ button,input{font:inherit}
 .brand sup{vertical-align:top;font-size:9px;letter-spacing:0;margin-left:3px}
 .header-center{text-align:center;font-size:9px;font-weight:800;letter-spacing:.055em;white-space:nowrap}
 .header-actions{display:flex;gap:25px;align-items:center;justify-content:flex-end}
-.header-proof{font-size:10px;font-weight:800;letter-spacing:.025em;white-space:nowrap;transition:opacity .2s}
-.header-proof:hover{opacity:.55}
+.header-proof,.header-support{font-size:10px;font-weight:800;letter-spacing:.025em;white-space:nowrap;transition:opacity .2s}
+.header-proof:hover,.header-support:hover{opacity:.55}
 .header-proof span{padding-left:5px}
 .button{border:1px solid var(--ink);border-radius:100px;min-height:49px;display:inline-flex;align-items:center;justify-content:space-between;gap:40px;padding:14px 20px;font-size:11px;line-height:1;font-weight:800;letter-spacing:.025em;transition:background .22s var(--ease),color .22s var(--ease),transform .22s var(--ease)}
 .button:hover{transform:translateY(-2px)}
