@@ -91,6 +91,9 @@ try{
   if(scenario==='success'){
    await page.waitForFunction(()=>document.querySelector('#revoke-status')?.textContent.includes('Confirmed on Robinhood mainnet'),null,{timeout:12000});
    assert.equal(await page.locator('#revoke-proof').isVisible(),true);
+  }else if(scenario==='edited-during-check'){
+   await page.locator('#feedback[data-kind="error"]').waitFor({state:'visible',timeout:12000});
+   assert.match(await page.locator('#feedback').innerText(),/checked permission changed/);
   }else{
    await page.locator('#revoke-status[data-kind="error"]').waitFor({state:'visible',timeout:12000});
    assert.equal(await page.locator('#revoke-status').innerText()!=='',true);
