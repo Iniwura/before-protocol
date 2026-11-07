@@ -8,7 +8,7 @@ Bounty Studio uses the **existing verified Robinhood Chain Testnet (chain ID 466
 
 **A project posts a BTEST reward → a researcher submits a finding → appointed reviewers assess the evidence → the researcher reveals the approved evidence → the existing escrow settles a valueless test-token reward.**
 
-The landing page now launches the **main Bounty Studio at `/app/bounty/`**. The separate **Protect → Challenge → Proof** flow at `/app/` is an educational demonstration.
+The main landing page starts with **BEFORE Pay**, the WIF payment workflow. Bounty Studio is the separate **testnet-only research and proof experience** at `/app/bounty/`. The separate Protect → Challenge → Proof flow at `/app/` is an educational demonstration.
 
 When you first open Bounty Studio, you **do not need a wallet**. It asks what you want to accomplish: **Post a reward**, **Submit a finding**, **Review a finding**, or **Recover an unfinished bounty**. Choose one to see only the relevant task. Select **Change what I want to do** to start another task. The proof demo is read-only and wallet-free.
 
