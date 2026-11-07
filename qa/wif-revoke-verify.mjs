@@ -89,7 +89,7 @@ try{
    assert.equal(await page.locator('#revoke-status').innerText()!=='',true);
   }
   const n=await page.evaluate(()=>window.__requests?.length||0);
-  assert.equal(n,['success','failed-receipt','nonzero-after'].includes(scenario)?1:0,'Unexpected transaction attempt: '+scenario);
+  assert.equal(n,['success','reject','failed-receipt','nonzero-after'].includes(scenario)?1:0,'Unexpected wallet confirmation request: '+scenario);
   assert.deepEqual(errors,[],'Browser exception: '+scenario);
   await page.close();
   console.log('PASS '+scenario);
