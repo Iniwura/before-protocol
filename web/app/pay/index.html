@@ -25,6 +25,10 @@
   </section>
 
   <div id="pay-feedback" class="pay-feedback" role="status" aria-live="polite" hidden></div>
+  <section class="open-request" aria-labelledby="open-request-title">
+    <div><h2 id="open-request-title">Have a payment link?</h2><p>Paying someone? Paste the signed link they sent you. Receiving WIF? Create a request below.</p></div>
+    <form id="open-request-form" class="open-request-form"><label class="sr-only" for="payment-link">BEFORE Pay request link</label><input id="payment-link" type="url" inputmode="url" autocomplete="off" placeholder="Paste your BEFORE Pay link" required><button class="pay-button" type="submit">Open request <span aria-hidden="true">↗</span></button></form>
+  </section>
 
   <section id="create-card" class="pay-section" aria-labelledby="create-title">
     <div class="section-bar"><span>01 / CREATE A REQUEST</span><span>RECIPIENT SIGNATURE ONLY</span></div>
