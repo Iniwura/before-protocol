@@ -3,7 +3,7 @@ import {WIF_TOKEN,WIF_MAINNET_CHAIN_ID,WIF_RPC,WIF_EXPLORER,isAddress,same,allow
 // This module cannot transfer WIF. It can only request approve(spender, 0)
 // from the owner shown in a freshly completed read-only scan.
 const $ = id => document.getElementById(id);
-let checked = null, busy = false;
+let checked = null, busy = false, scanGeneration = 0;
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 async function publicRpc(method, params=[]){
  const response = await fetch(WIF_RPC,{method:'POST',headers:{'content-type':'application/json'},cache:'no-store',body:JSON.stringify({jsonrpc:'2.0',id:1,method,params})});
@@ -17,6 +17,7 @@ function message(text, error=false){
  $('revoke-status').hidden=false;
 }
 function reset(){
+ scanGeneration++;
  checked=null;
  $('revoke-action').hidden=true;
  $('revoke-confirm').checked=false;
@@ -39,6 +40,7 @@ $('revoke-confirm').addEventListener('change',()=>{$('revoke-button').disabled=b
 $('revoke-button').addEventListener('click',async()=>{
  if(busy||!checked||!$('revoke-confirm').checked)return;
  const target={...checked};
+ const thisScan=scanGeneration;
  const wallet=window.ethereum;
  if(!wallet?.request){message('Install or enable a compatible browser wallet to revoke this permission.',true);return;}
  busy=true;$('revoke-button').disabled=true;$('revoke-proof').hidden=true;
@@ -61,6 +63,8 @@ $('revoke-button').addEventListener('click',async()=>{
   if(!same((await wallet.request({method:'eth_accounts'}))[0],target.owner)
       ||BigInt(await wallet.request({method:'eth_chainId'}))!==BigInt(WIF_MAINNET_CHAIN_ID))
    throw Error('Wallet account or network changed. Run a new check.');
+  if(thisScan!==scanGeneration || !checked || !same(checked.owner,target.owner) || !same(checked.spender,target.spender))
+   throw Error('The checked permission changed. Run a fresh scan before confirming a transaction.');
   const data=revokeApprovalData(target.spender);
   message('Your wallet will ask you to confirm approve(spender, 0). This costs mainnet gas but transfers no WIF.');
   const hash=await wallet.request({method:'eth_sendTransaction',params:[{from:target.owner,to:WIF_TOKEN,data,value:'0x0'}]});
