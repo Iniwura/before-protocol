@@ -17,6 +17,7 @@ The engineering, funding and fresh public BTEST acceptance gates pass. The final
 | Historical public BTEST lifecycle | PASS (limited) | Four successful receipts, exact event matrix, stage 3 and final accounting are independently checked. Roles are synthetic and controlled by one operator. |
 | Solidity build and fuzz suite | PASS | `forge build --no-cache`; `forge test --fuzz-runs 1024`: 70 tests passed. |
 | Node, Anvil and browser QA | PASS | Full Node suite, local lifecycle, Anvil E2E, responsive/axe QA, bounty E2E and WIF fail-closed QA pass; exact rerun commands are listed below. |
+| GitHub Actions CI | PASS | [Run 42375659874](https://github.com/Iniwura/before-protocol/actions/runs/42375659874) completed with both `test` and `browser-quality` jobs successful on commit `90ba926`. |
 | Reviewer artifact test | PASS | The test compares executable bytecode while tolerating compiler metadata trailers, and still checks immutable references and source hash. |
 | Real `$WIF` utility/flywheel | FAIL / eligibility risk | The released checker performs read-only mainnet inspection. PR #7's optional zero-allowance action is unmerged and no mainnet transaction was broadcast. No real WIF was funded. |
 | Demo video | BLOCKED | Owner explicitly paused video production; no video was generated or uploaded. |
