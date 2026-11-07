@@ -33,11 +33,15 @@ test('Support offer validation is strict and bounded', () => {
   const normalized = validateSupportOffer(offer);
   assert.equal(normalized.recipient, recipient);
   assert.equal(normalized.interval, 'weekly');
+  const longer = {...offer, interval: 'monthly', expiresAt: BigInt(Math.floor(Date.now() / 1000)) + 90n * 24n * 60n * 60n};
+  assert.equal(validateSupportOffer(longer).interval, 'monthly', 'Monthly support links must survive multiple intentional return cycles');
+  assert.equal(validateSupportOffer({...offer, expiresAt: BigInt(Math.floor(Date.now() / 1000)) + 31n * 24n * 60n * 60n}).interval, 'weekly');
+
   for (const bad of [
     {...offer, chainId: 46630n}, {...offer, token: '0x3333333333333333333333333333333333333333'},
     {...offer, amount: 0n}, {...offer, campaignId: '0x' + '00'.repeat(32)},
     {...offer, interval: 'daily'}, {...offer, expiresAt: 1n},
-    {...offer, expiresAt: BigInt(Math.floor(Date.now() / 1000)) + 31n * 24n * 60n * 60n}
+    {...offer, expiresAt: BigInt(Math.floor(Date.now() / 1000)) + 121n * 24n * 60n * 60n}
   ]) assert.throws(() => validateSupportOffer(bad));
 });
 
