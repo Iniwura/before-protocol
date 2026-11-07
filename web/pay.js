@@ -357,7 +357,9 @@ async function payNow() {
     if (!Array.isArray(accounts) || !sameAddress(accounts[0], state.payer)) throw new Error('The connected payer account changed. Re-check before paying.');
     const fresh = await runPreflight({sender: state.payer, request: state.request, signature: state.signature});
     if (!sameAddress(fresh.request.recipient, state.preflight.request.recipient) || fresh.request.amount !== state.preflight.request.amount || fresh.request.nonce !== state.preflight.request.nonce) throw new Error('The payment intent changed. No transaction was requested.');
-    const tx = buildPaymentTransaction(state.payer, state.request, fresh.gas);
+    // Estimate gas for the preflight, but let the wallet choose its final gas limit.
+    // Passing exactly eth_estimateGas can become insufficient if ERC-20 state changes before mining.
+    const tx = buildPaymentTransaction(state.payer, state.request);
     state.lifecycle = PAYMENT_STAGE.WALLET_PENDING;
     updatePaymentControls();
     persistPaymentUrl(PAYMENT_STAGE.WALLET_PENDING);
