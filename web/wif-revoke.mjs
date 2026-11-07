@@ -1,10 +1,9 @@
-import {WIF_TOKEN,WIF_MAINNET_CHAIN_ID,WIF_RPC,WIF_EXPLORER,isAddress,same,allowanceData,readUint,isWifSymbol,wordAddress} from './wif-core.mjs';
+import {WIF_TOKEN,WIF_MAINNET_CHAIN_ID,WIF_RPC,WIF_EXPLORER,isAddress,same,allowanceData,readUint,isWifSymbol,revokeApprovalData} from './wif-core.mjs';
 
 // This module cannot transfer WIF. It can only request approve(spender, 0)
 // from the owner shown in a freshly completed read-only scan.
 const $ = id => document.getElementById(id);
 let checked = null, busy = false;
-const approveZero = spender => '0x095ea7b3' + wordAddress(spender) + '0'.repeat(64);
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 async function publicRpc(method, params=[]){
  const response = await fetch(WIF_RPC,{method:'POST',headers:{'content-type':'application/json'},cache:'no-store',body:JSON.stringify({jsonrpc:'2.0',id:1,method,params})});
@@ -62,7 +61,7 @@ $('revoke-button').addEventListener('click',async()=>{
   if(!same((await wallet.request({method:'eth_accounts'}))[0],target.owner)
       ||BigInt(await wallet.request({method:'eth_chainId'}))!==BigInt(WIF_MAINNET_CHAIN_ID))
    throw Error('Wallet account or network changed. Run a new check.');
-  const data=approveZero(target.spender);
+  const data=revokeApprovalData(target.spender);
   message('Your wallet will ask you to confirm approve(spender, 0). This costs mainnet gas but transfers no WIF.');
   const hash=await wallet.request({method:'eth_sendTransaction',params:[{from:target.owner,to:WIF_TOKEN,data,value:'0x0'}]});
   if(typeof hash!=='string'||!/^0x[0-9a-fA-F]{64}$/.test(hash))throw Error('Wallet did not return a valid transaction hash.');
