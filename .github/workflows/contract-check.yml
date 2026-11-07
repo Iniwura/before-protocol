@@ -48,3 +48,5 @@ jobs:
         run: node qa/bounty-e2e.mjs
       - name: Read-only WIF permission inspector accessibility and fail-closed checks
         run: node qa/wif-verify.mjs
+      - name: Optional WIF revoke wallet security regression
+        run: node qa/wif-revoke-verify.mjs
