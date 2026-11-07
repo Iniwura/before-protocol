@@ -102,3 +102,15 @@ main{width:min(1450px,calc(100% - clamp(34px,7.4vw,128px)));margin:auto}
 }
 @media(max-width:380px){main{width:calc(100% - 30px)}.hero h1{font-size:10.8vw}.hero-symbol{font-size:49px}.work h2,.result h2,.handoff h2{font-size:14vw}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{transition:none!important;scroll-behavior:auto!important}}
+
+/* Minimal approval control, below the existing verified read-only results. */
+.revoke-action{border-top:2px solid var(--ink);margin-top:45px;padding-bottom:35px}
+.revoke-action h3{font-size:clamp(32px,5vw,64px);letter-spacing:-.065em;margin:30px 0 16px}
+.revoke-action>p{line-height:1.5;max-width:740px;color:var(--muted)}
+.revoke-target{display:grid;grid-template-columns:150px minmax(0,1fr);gap:12px 20px;padding:24px 0;border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);margin:30px 0}
+.revoke-target span{font-size:11px;font-weight:700}
+.revoke-target code{overflow-wrap:anywhere;font-size:12px}
+.revoke-consent{display:flex;align-items:flex-start;gap:13px;font-size:13px;line-height:1.5;margin:0 0 24px;max-width:790px}
+.revoke-consent input{margin-top:3px;flex-shrink:0;width:18px;height:18px}
+#revoke-proof a{text-decoration:underline;text-underline-offset:4px}
+@media(max-width:520px){.revoke-target{grid-template-columns:minmax(0,1fr)}.revoke-action h3{font-size:38px}}
