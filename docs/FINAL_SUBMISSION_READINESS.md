@@ -10,11 +10,12 @@ The feature does not custody keys, request an allowance, deploy a mainnet contra
 
 | Gate | Status | Evidence / limit |
 | --- | --- | --- |
-| Issue #10 implementation | Pending final CI and preview checks | Draft PR will contain the exact SHA |
-| Pure request/signature/calldata/proof tests | Passing locally | `node --test web/test/pay-core.test.mjs` |
-| Mock wallet/browser/security QA | Passing locally | `node qa/pay-e2e.mjs`; no real WIF broadcast |
-| Existing Foundry/Node/Anvil/WIF suites | Required | Must be rerun on the final SHA |
-| Vercel preview | Required | Preview only; no production promotion |
+| Issue #10 implementation | **READY FOR DRAFT REVIEW** | PR [#11](https://github.com/Iniwura/before-protocol/pull/11), commit `c780c0b1fc90a512cb12f5b66931c96974ec4dd9` |
+| Pure request/signature/calldata/proof tests | **PASS** | 11 Pay tests; included in 67 local Node tests |
+| Mock wallet/browser/security QA | **PASS** | `node qa/pay-e2e.mjs`; 320/375/390/768/1280, axe clean, no real WIF broadcast |
+| Existing Foundry/Node/Anvil suites | **PASS** | Foundry 66, Node 67, Anvil release gate; WIF revoke tests remain on separate unmerged PR #7 |
+| GitHub CI | **PASS** | [run 42379107869](https://github.com/Iniwura/before-protocol/actions/runs/42379107869): `test` and `browser-quality`; Vercel preview check also passed |
+| Vercel preview | **READY** | [preview](https://before-a1jcqrbe9-iniwura-akurus-projects.vercel.app/app/pay/) · deployment [dashboard](https://vercel.com/iniwura-akurus-projects/before-web/DXSq4P9ALgijRnrmRa1huDjGdMY1) |
 | Real WIF/mainnet transaction | **NO-GO** | Explicitly not authorized |
 | Production promotion | **NO-GO** | Explicitly not authorized |
 | Merge | **NO-GO** | Draft PR only |
