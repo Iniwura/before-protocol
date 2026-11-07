@@ -39,6 +39,7 @@ try{
    }
    if(req.method==='eth_getTransactionReceipt'){
     receiptCount++;
+    if(scenario==='success')allowance=0n;
     value={transactionHash:hash,from:owner,to:token,status:scenario==='failed-receipt'?'0x0':'0x1',blockNumber:'0x123456'};
    }
    if(req.method==='eth_getTransactionByHash')value={hash,from:owner,to:token,input:calldata};
@@ -76,7 +77,6 @@ try{
    assert.equal(tx.to.toLowerCase(),token.toLowerCase());
    assert.equal(tx.data,calldata);
    assert.equal(tx.value,'0x0');
-   if(scenario==='success')allowance=0n;
   }
   await page.waitForFunction(()=>document.querySelector('#revoke-status')?.dataset.kind==='error'||document.querySelector('#revoke-status')?.textContent.includes('Confirmed on Robinhood mainnet'),{timeout:12000}).catch(()=>{});
   // Need the latest mainnet allowance to become zero only after the wallet tx is sent:
