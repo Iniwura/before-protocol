@@ -1,0 +1,9 @@
+{
+  "name": "before-demo-review-builder",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Private honest demo review renderer; not part of BEFORE application",
+  "dependencies": {
+    "ethers": "6.15.0"
+  }
+}
