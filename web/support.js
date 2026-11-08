@@ -165,7 +165,7 @@ function renderOffer() {
   setText('support-expiry-display', new Date(Number(offer.expiresAt) * 1000).toLocaleString());
   setText('support-campaign-display', offer.campaignId.slice(0, 10) + '…');
   $('support-campaign-display').title = offer.campaignId;
-  setHidden('create-support-card', true); setHidden('open-support-card', true);
+  setHidden('create-support-card', true); setHidden('open-support-card', true); setHidden('support-quick-start', true);
   setHidden('offer-card', false); setHidden('history-card', false);
   if (state.lifecycle === SUPPORT_STAGE.NOT_SUBMITTED) {
     setHidden('check-card', false); setHidden('proof-card', true);
