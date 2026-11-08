@@ -240,3 +240,42 @@ export function supportExplorerAddressUrl(address) {
   if (!isAddress(address)) throw new Error('Invalid address.');
   return WIF_EXPLORER + '/address/' + address;
 }
+
+
+// An optional, manually imported calendar event. No scheduled wallet activity,
+// provider permission, network action or server-side notification is created.
+export function buildSupportCalendarReminder({offer, signature, completedAt, origin, now = nowSeconds()}) {
+  const normalized = normalizeSupportOffer(offer);
+  const days = SUPPORT_INTERVALS[normalized.interval].days;
+  if (!days) return null;
+  let paidAt; let current;
+  try {
+    paidAt = typeof completedAt === 'bigint' ? completedAt : BigInt(completedAt);
+    current = typeof now === 'bigint' ? now : BigInt(now);
+  } catch { throw new Error('Support reminder timestamps must be exact whole seconds.'); }
+  if (paidAt <= 0n || current <= 0n || paidAt > current + 120n) throw new Error('Support reminder timestamp is invalid.');
+  const due = paidAt + BigInt(days) * 86400n;
+  if (due <= current || due >= normalized.expiresAt || current >= normalized.expiresAt) return null;
+  const base = new URL(origin);
+  const local = base.protocol === 'http:' && ['localhost', '127.0.0.1'].includes(base.hostname);
+  if (base.protocol !== 'https:' && !local) throw new Error('Support reminders require a secure website origin.');
+  const offerUrl = new URL('/app/support/', base.origin);
+  offerUrl.searchParams.set('offer', encodeSupportPayload(normalized, signature));
+  // Calendar dates match the user's displayed local return date. A single
+  // reminder is created, never an RRULE that could survive offer expiry.
+  const date = new Date(Number(due) * 1000);
+  const toDate = d => String(d.getFullYear()) + String(d.getMonth() + 1).padStart(2, '0') + String(d.getDate()).padStart(2, '0');
+  const nextDate = new Date(date.getFullYear(), date.getMonth(), date.getDate() + 1);
+  const timestamp = new Date(Number(current) * 1000).toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+  const fold = line => line.match(/.{1,72}/g)?.map((part, i) => i ? ' ' + part : part).join('\r\n') || '';
+  const lines = [
+    'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//BEFORE//Voluntary WIF Support//EN', 'CALSCALE:GREGORIAN',
+    'BEGIN:VEVENT', 'UID:before-' + normalized.campaignId.slice(2) + '-' + due.toString() + '@support',
+    'DTSTAMP:' + timestamp, 'DTSTART;VALUE=DATE:' + toDate(date),
+    'DTEND;VALUE=DATE:' + toDate(nextDate),
+    'SUMMARY:Choose whether to support again with WIF',
+    'DESCRIPTION:Optional reminder only. Open the signed support page and verify its terms. Every WIF transfer requires a new wallet confirmation. BEFORE never schedules payments.',
+    'URL:' + offerUrl.href, 'END:VEVENT', 'END:VCALENDAR'
+  ];
+  return {filename: 'before-wif-support-reminder.ics', content: lines.map(fold).join('\r\n') + '\r\n', date: toDate(date)};
+}
