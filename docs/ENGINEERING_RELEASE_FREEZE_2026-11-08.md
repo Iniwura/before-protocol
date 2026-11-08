@@ -1,4 +1,6 @@
-# BEFORE — final engineering release freeze
+# BEFORE — initial engineering release freeze
+
+> **Historical baseline note, November 8, 2026:** This is the original signed-off engineering baseline `f7dd6bf` prior to the focused Support-first UX and optional manual calendar-export improvement proposed in [PR #22](https://github.com/Iniwura/before-protocol/pull/22). Its real mainnet proof and safety caveats remain accurate; use [current release readiness](FINAL_SUBMISSION_READINESS.md) for the latest CI/deployment status. The upgrade changes no ERC-20 transfer construction, signing rules, blockchain verification or deployed contracts.
 
 **Signed off:** November 8, 2026.
 
@@ -38,7 +40,7 @@
 ## Explicit limitations / no more build scope
 
 - No real one-off Pay mainnet acceptance, independently observed human wallet-extension UX, or organic multi-day Support retention. The same-offer Support-again button is verified in automated mock-browser QA, not the two actual transfers.
-- Long-lived Support offers cannot be revoked early. Cadence means local date suggestion only; **no subscription, push notification, automatic payment or global campaign ledger**.
+- Long-lived Support offers cannot be revoked early. Cadence begins as a local date suggestion; the later UX upgrade offers an optional **manually imported, single calendar event** after a verified payment, not an automatic notification from BEFORE, subscription, payment, or global campaign ledger.
 - All payment protections are client-side transaction-intent preflight and proof, not an onchain single-use invoice or mainnet user-custody spending-policy vault. Security training and bounty contracts are **BTEST-only on testnet**.
 - Optional revocation PR #7 and older fork-audit PR #6 are outside the frozen product. Do not cherry-pick, merge or ship them merely for optics.
 - No additional real-WIF signing, transfers, approvals, staking, extra contracts or UI redesign is needed. If a genuine production defect is discovered, re-open the release gate, make a minimal reviewed patch and repeat exact-head CI.

@@ -4,7 +4,7 @@ import {
   WIF_MAINNET_CHAIN_ID, WIF_TOKEN, SUPPORT_INTERVALS, SUPPORT_DOMAIN_NAME,
   normalizeSupportOffer, validateSupportOffer, supportTypedDataFor, supportDigest,
   verifySupportSignature, encodeSupportPayload, decodeSupportPayload,
-  supportPaymentRequest, isSupportIntervalDue, transferData
+  supportPaymentRequest, isSupportIntervalDue, transferData, buildSupportCalendarReminder
 } from '../support-core.mjs';
 import {validateTransferData} from '../pay-core.mjs';
 
@@ -85,4 +85,23 @@ test('Cadence remains a reminder and never becomes an automatic-send claim', () 
   const completed = Math.floor(Date.now() / 1000) - 8 * 24 * 60 * 60;
   assert.equal(isSupportIntervalDue(offer, completed), true);
   assert.equal(isSupportIntervalDue({...offer, interval: 'anytime'}, completed), false);
+});
+
+test('Support calendar export is opt-in, includes only a signed public offer and never schedules payment', () => {
+  const now = 2_000_000_000n;
+  const active = {...offer, expiresAt: now + 60n * 86400n};
+  const reminder = buildSupportCalendarReminder({offer: active, signature, completedAt: now, now, origin: 'https://before-web-theta.vercel.app'});
+  assert.ok(reminder);
+  assert.match(reminder.content, /BEGIN:VCALENDAR\r\n/);
+  assert.match(reminder.content, /BEGIN:VEVENT\r\n/);
+  assert.match(reminder.content, /SUMMARY:Choose whether to support again with WIF/);
+  assert.match(reminder.content.replace(/\r\n /g, ''), /URL:https:\/\/before-web-theta\.vercel\.app\/app\/support\/\?offer=/);
+  assert.ok(!/RRULE:|BEGIN:VALARM|eth_sendTransaction|PRIVATE KEY|tx=/.test(reminder.content));
+  assert.match(reminder.filename, /\.ics$/);
+  assert.equal(buildSupportCalendarReminder({offer: {...active, interval: 'anytime'}, signature, completedAt: now, now, origin: 'https://before-web-theta.vercel.app'}), null);
+  assert.equal(buildSupportCalendarReminder({offer: {...active, expiresAt: now + 6n * 86400n}, signature, completedAt: now, now, origin: 'https://before-web-theta.vercel.app'}), null);
+  assert.equal(buildSupportCalendarReminder({offer: active, signature, completedAt: now - 8n * 86400n, now, origin: 'https://before-web-theta.vercel.app'}), null);
+  assert.throws(() => buildSupportCalendarReminder({offer: active, signature, completedAt: now, now, origin: 'http://untrusted.example'}), /secure website/);
+  const unfolded = reminder.content.replace(/\r\n /g, '');
+  assert.match(unfolded, /END:VEVENT\r\nEND:VCALENDAR\r\n$/);
 });

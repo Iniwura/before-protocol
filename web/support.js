@@ -5,7 +5,7 @@ import {
   verifySupportSignature, encodeSupportPayload, decodeSupportPayload,
   supportPaymentRequest, buildPaymentTransaction, decodeUintResult,
   decodeSymbolResult, validateRecipientCode, validateMinedTransfer,
-  explorerTransactionUrl
+  explorerTransactionUrl, buildSupportCalendarReminder
 } from './support-core.mjs';
 
 const SUPPORT_STAGE = Object.freeze({
@@ -16,7 +16,7 @@ const SUPPORT_STAGE = Object.freeze({
 const state = {
   offer: null, signature: null, signer: null, payer: null, preflight: null,
   cycleId: null, txHash: null, lifecycle: SUPPORT_STAGE.NOT_SUBMITTED,
-  run: 0, sending: false, verificationRun: 0, verificationPromise: null
+  run: 0, sending: false, verificationRun: 0, verificationPromise: null, calendarReminder: null
 };
 const TOKEN_BALANCE_SELECTOR = '0x70a08231';
 const TOKEN_DECIMALS_SELECTOR = '0x313ce567';
@@ -165,7 +165,7 @@ function renderOffer() {
   setText('support-expiry-display', new Date(Number(offer.expiresAt) * 1000).toLocaleString());
   setText('support-campaign-display', offer.campaignId.slice(0, 10) + '…');
   $('support-campaign-display').title = offer.campaignId;
-  setHidden('create-support-card', true); setHidden('open-support-card', true);
+  setHidden('create-support-card', true); setHidden('open-support-card', true); setHidden('support-quick-start', true);
   setHidden('offer-card', false); setHidden('history-card', false);
   if (state.lifecycle === SUPPORT_STAGE.NOT_SUBMITTED) {
     setHidden('check-card', false); setHidden('proof-card', true);
@@ -189,7 +189,8 @@ function renderPending(stage, message) {
   if (state.txHash) { $('support-proof-explorer').href = explorerTransactionUrl(state.txHash); setHidden('support-proof-explorer', false); }
   else setHidden('support-proof-explorer', true);
   setHidden('support-proof-retry', !state.txHash || stage === SUPPORT_STAGE.KNOWN_REVERTED);
-  setHidden('support-again', true); setHidden('support-next-suggestion', true);
+  state.calendarReminder = null;
+  setHidden('support-again', true); setHidden('support-next-suggestion', true); setHidden('support-calendar', true); setHidden('support-calendar-note', true);
   setHidden('proof-card', false); setHidden('check-card', true); setHidden('offer-card', true); setHidden('share-card', true);
 }
 function renderProof(proof) {
@@ -215,10 +216,15 @@ function renderProof(proof) {
       const expiry = Number(state.offer.expiresAt);
       next.textContent = returnAt >= expiry
         ? 'This offer will expire before the suggested return date. Ask the recipient for a renewed signed link. No payment is scheduled.'
-        : 'Suggested return date: ' + new Date(returnAt * 1000).toLocaleDateString() + '. No notification or automatic payment will occur.';
+        : 'Suggested return date: ' + new Date(returnAt * 1000).toLocaleDateString() + '. BEFORE sends no notifications or automatic payments.';
       next.hidden = false;
-    } else next.hidden = true;
+      state.calendarReminder = buildSupportCalendarReminder({
+        offer: state.offer, signature: state.signature, completedAt: verifiedAt,
+        origin: location.origin, now: timestamp()
+      });
+    } else { next.hidden = true; state.calendarReminder = null; }
   }
+  setHidden('support-calendar', !state.calendarReminder); setHidden('support-calendar-note', !state.calendarReminder);
   setHidden('proof-card', false); setHidden('check-card', true); setHidden('offer-card', true); setHidden('share-card', true);
 }
 
@@ -400,7 +406,8 @@ async function supportNow() {
 
 function beginNewCycle() {
   if (state.lifecycle !== SUPPORT_STAGE.VERIFIED) return;
-  state.cycleId = null; state.txHash = null; state.payer = null; state.preflight = null; state.lifecycle = SUPPORT_STAGE.NOT_SUBMITTED; state.sending = false;
+  state.cycleId = null; state.txHash = null; state.payer = null; state.preflight = null; state.lifecycle = SUPPORT_STAGE.NOT_SUBMITTED; state.sending = false; state.calendarReminder = null;
+  setHidden('support-calendar', true); setHidden('support-calendar-note', true);
   persistSupportUrl(SUPPORT_STAGE.NOT_SUBMITTED); renderOffer(); setHidden('share-card', true); showFeedback('New support cycle created. Check the exact offer, then confirm a fresh wallet transfer when you choose.', 'info');
   void refreshHistory(); $('check-card')?.scrollIntoView({block: 'start'});
 }
@@ -428,6 +435,18 @@ $('create-support-form')?.addEventListener('submit', createSupportOffer);
 $('check-support-form')?.addEventListener('submit', checkSupport);
 $('support-now')?.addEventListener('click', supportNow);
 $('support-again')?.addEventListener('click', beginNewCycle);
+$('support-calendar')?.addEventListener('click', () => {
+  if (state.lifecycle !== SUPPORT_STAGE.VERIFIED || !state.calendarReminder) return;
+  try {
+    const file = new Blob([state.calendarReminder.content], {type: 'text/calendar;charset=utf-8'});
+    const url = URL.createObjectURL(file);
+    const link = document.createElement('a');
+    link.href = url; link.download = state.calendarReminder.filename;
+    document.body.append(link); link.click(); link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    showFeedback('Calendar file downloaded. Choose whether to import it; BEFORE sends no reminders or payments.', 'success');
+  } catch (error) { showFeedback(error?.message || 'Calendar file could not be created.', 'error'); }
+});
 $('support-proof-retry')?.addEventListener('click', async () => { const button = $('support-proof-retry'); button.disabled = true; showFeedback('Retrying read-only public receipt verification. No wallet transaction will be requested.', 'info'); await startVerification(state.txHash); button.disabled = false; });
 $('copy-support-link')?.addEventListener('click', async () => { try { await navigator.clipboard.writeText($('support-share-link').value); showFeedback('Support link copied. It contains a public offer, never a private key.', 'success'); } catch { $('support-share-link').focus(); $('support-share-link').select(); showFeedback('Clipboard access was unavailable; the support link is selected for manual copy.'); } });
 $('new-support-offer')?.addEventListener('click', () => { location.href = '/app/support/'; });
