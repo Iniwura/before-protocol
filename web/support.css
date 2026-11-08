@@ -5,3 +5,11 @@
 /* Optional manual calendar export after a verified contribution. */
 .support-calendar{margin-top:13px;text-decoration:underline;text-underline-offset:4px}
 .support-calendar-note{color:#5b5b54;font-size:12px;line-height:1.45;margin:8px 0 0}
+
+/* First-screen task choices: creator first, signed-link visitor second. */
+.support-quick-start{display:flex;gap:10px;flex-wrap:wrap;margin-top:28px}
+.support-quick-start a{min-height:52px;display:flex;gap:20px;align-items:center;justify-content:space-between;border:1px solid var(--ink);padding:13px 19px;border-radius:100px;font-weight:800;font-size:11px;letter-spacing:.02em}
+.support-quick-start a:first-child{background:var(--ink);color:white}
+.support-quick-start a:hover{opacity:.75}
+.support-quick-start span{font-size:20px;font-weight:400}
+@media(max-width:780px){.pay-hero{padding-bottom:40px}.pay-hero-grid{padding:30px 0 24px}.support-quick-start{margin-top:22px}.support-quick-start a{flex:1 1 145px;min-height:48px;padding:10px 14px;font-size:10px;gap:9px}.support-open{margin-bottom:72px}}
