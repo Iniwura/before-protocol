@@ -115,6 +115,9 @@ try {
     const page = await context.newPage(); page.on('pageerror', error => problems.push(`${width}px page error: ${error.message}`));
     await page.goto(base + '/app/support/', {waitUntil: 'domcontentloaded'}); await page.addScriptTag({path: path.join(here, 'node_modules/axe-core/axe.min.js')});
     assert.deepEqual(await noAxeViolations(page), []); await assertNoOverflow(page, width); assert.equal(await page.locator('#create-support-card').isHidden(), false);
+    assert.equal(await page.locator('.support-quick-start a').count(),2,'The first screen must offer clear creator and signed-link paths');
+    await page.locator('.support-quick-start a[href="#create-support-card"]').click();
+    assert.equal(new URL(page.url()).hash,'#create-support-card','Creator shortcut jumps directly to the form');
     await context.close();
   }
 
