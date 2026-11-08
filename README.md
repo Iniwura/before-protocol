@@ -1,6 +1,8 @@
 # BEFORE
 
-**Know what you approved. Prove what happened.**
+**Know who you're paying. Verify what you're sending. Prove what happened.**
+
+**Current release:** Engineering build frozen on November 8, 2026. [Release freeze and verified evidence](docs/ENGINEERING_RELEASE_FREEZE_2026-11-08.md) · [Current submission packet](docs/WORLD_IS_FLAT_SUBMISSION_PACKET.md). Demo and organizer submission are separate pending steps.
 
 BEFORE is a [World Is Flat](https://worldisflat.fun/build) Robinhood Chain product combining **noncustodial $WIF payments and repeat voluntary support with verifiable receipts**, **read-only WIF spending-permission checks**, and a separate **BTEST-only security bounty** on testnet.
 
@@ -124,9 +126,9 @@ The web code is in `web/`; the Node test commands cover policy, ABI, deployment-
 
 The security demonstration and Bounty Studio read the verified public testnet deployment through the checked-in manifest. The WIF checker independently reads the official mainnet WIF contract without changing any token permissions or transmitting wallet secrets.
 
-## BEFORE Pay (draft, mainnet-aware and noncustodial)
+## BEFORE Pay — deployed, mainnet-aware and noncustodial
 
-The `/app/pay/` preview adds a focused request → check → pay → proof flow for the official WIF token on Robinhood Chain mainnet. A recipient signs an EIP-712 exact-amount request; a payer independently verifies the recipient, token, chain, balance and gas before an explicit standard ERC-20 transfer. Public proof rechecks the mined transaction and WIF `Transfer` event. After send intent, the request/hash is persisted in the URL, Pay stays locked through delayed receipts and reloads, and retry is read-only; generic ERC-20 transfers still cannot enforce unique invoice settlement outside this flow. The automated flow uses mock wallets and RPC only; it never broadcasts real WIF. See [WIF_PAY_SECURITY_AND_RELEASE.md](docs/WIF_PAY_SECURITY_AND_RELEASE.md) for the threat model and owner-controlled real-WIF gate.
+The deployed `/app/pay/` route provides a focused request → check → pay → proof flow for the official WIF token on Robinhood Chain mainnet. A recipient signs an EIP-712 exact-amount request; a payer independently verifies the recipient, token, chain, balance and gas before an explicit standard ERC-20 transfer. Public proof rechecks the mined transaction and WIF `Transfer` event. After send intent, the request/hash is persisted in the URL, Pay stays locked through delayed receipts and reloads, and retry is read-only; generic ERC-20 transfers still cannot enforce unique invoice settlement outside this flow. The automated flow uses mock wallets and RPC only; it never broadcasts real WIF. See [WIF_PAY_SECURITY_AND_RELEASE.md](docs/WIF_PAY_SECURITY_AND_RELEASE.md) for the threat model and owner-controlled real-WIF gate.
 
 ## Architecture
 
@@ -157,7 +159,7 @@ The solver commitment domain includes the escrow address, Robinhood Chain ID, ch
 
 `WifSecurityChallenge` is intentionally separate from the public BTEST exercise. A sponsor escrows a chosen ERC-20 reward, records a concrete target contract, its code hash and an immutable hash of the written challenge scope, sets an independently reviewed verifier and a maximum 30-day commit/reveal window, and requires each solver to post a bond. The verifier receives the challenge ID, solver, target and scope hash explicitly, alongside the revealed evidence. A solver commits a hash bound to their wallet, salt and evidence, then reveals after the commit window. Only a verifier-approved reveal receives the reward and bond; invalid evidence slashes the bond to the sponsor; expiry returns the reward and releases unanswered bonds. Settlement fails closed if the target, verifier or reward token code changes. `ReviewedFindingVerifier` provides a fixed reviewer set and threshold that must approve the exact escrow instance, challenge context and evidence hash before settlement.
 
-The contract can hold WIF when configured with the intended Robinhood Chain WIF token, but this repository does not contain a WIF address, private key, funded challenge, or payout claim. The verifier is part of the trust boundary and must bind the supplied challenge ID, solver, target and scope, inspect the target, and receive independent review before any valuable funding.
+The escrow contract is ERC-20-configurable, but the released public Bounty Studio uses only valueless BTEST on testnet. The repository does pin the official Robinhood mainnet WIF contract for the separate noncustodial Pay, Support and read-only permission-check flows; that is **not** a WIF-funded escrow or mainnet policy-vault deployment. No real-WIF security bounty, audited challenge, or WIF reward payout is claimed. The verifier remains a trust boundary and would require independent review before any valuable escrow funding.
 
 ## Proving a testnet deployment
 
@@ -169,7 +171,7 @@ The same eleven-argument verifier is exercised against real local Anvil state by
 
 [Read the testnet proof process](docs/TESTNET_PROOF.md).
 
-## Final hackathon gates — November 8, 2026
+## Engineering freeze and hackathon handoff — November 8, 2026
 
 1. **Already proven:** deployed Pay and Support, two public mainnet WIF Support receipts, independent receipt checks, public source, and green CI. These payments were executed with an automated local signer; the separate one-off Pay page and same-offer “Support again” live experience do not have an independently recorded mainnet wallet-extension run.
 2. **Next:** record an authentic Support-first 1080p demo, prioritizing verified payments and the user workflow, honestly separating automated acceptance and simulated-browser checks.
