@@ -1,5 +1,9 @@
 # BEFORE — 90-second judge demo
 
+> **ARCHIVED / historical demo document (November 8, 2026).** This predates BEFORE Pay, BEFORE Support and the verified mainnet WIF transfers. It is **not** the current release, recording or submission instructions. Use [the frozen build handoff](ENGINEERING_RELEASE_FREEZE_2026-11-08.md), [current submission packet](WORLD_IS_FLAT_SUBMISSION_PACKET.md) and [current readiness gate](FINAL_SUBMISSION_READINESS.md). Retained solely for project history.
+
+---
+
 **Editorial goal:** Show one clear concept, one genuinely useful $WIF mainnet read, one testnet onchain settlement, and independently clickable evidence. Avoid a montage of static pages or an unsupported "secure funds" claim.
 
 ## Narrative and shots
