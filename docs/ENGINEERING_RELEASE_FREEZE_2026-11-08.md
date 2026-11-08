@@ -1,8 +1,11 @@
 # BEFORE — final engineering release freeze
 
-**Signed off:** November 8, 2026.  
-**Application source baseline:** `f7dd6bf1bf273846fd35705c851312f534625dbe`. Later documentation-only commits do not modify the application.  
-**Engineering decision:** **GO / FEATURE FROZEN**. No known confirmed P0 product, contract, source, CI or production-route defect remains in the tested release. This is a hackathon prototype release, **not** a formal independent security audit or a claim of zero possible defects.  
+**Signed off:** November 8, 2026.
+
+**Application source baseline:** `f7dd6bf1bf273846fd35705c851312f534625dbe`. Later documentation-only commits do not modify the application.
+
+**Engineering decision:** **GO / FEATURE FROZEN**. No known confirmed P0 product, contract, source, CI or production-route defect remains in the tested release. This is a hackathon prototype release, **not** a formal independent security audit or a claim of zero possible defects.
+
 **Demo:** NOT STARTED. **Organizer project entry / final submission:** NOT VERIFIED / NOT SUBMITTED. Those are separate steps in [Issue #14](https://github.com/Iniwura/before-protocol/issues/14).
 
 ## Released product boundaries
