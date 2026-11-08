@@ -102,7 +102,7 @@ button,input{font:inherit}
 @media(min-width:1600px){.evidence{padding-left:calc((100vw - 1440px)/2);padding-right:calc((100vw - 1440px)/2)}}
 @media(max-width:1100px){.header-center{display:none}.site-header{grid-template-columns:1fr 1fr}.masthead{padding-bottom:100px}.masthead-bottom{grid-template-columns:.8fr 2fr}.hero-jump{display:none}.statement-layout{gap:35px}.bounty-layout{gap:36px}}
 @media(max-width:760px){
- .site-header{height:67px;padding:0 20px}.header-actions{gap:12px}.header-proof{display:none}
+ .site-header{height:67px;padding:0 20px}.header-actions{gap:12px}.header-proof,.header-support{display:none}
  .masthead,.statement,.experiences,.bounty,.last-cta{width:calc(100% - 40px)}
  .masthead{padding:22px 0 95px}
  .masthead h1{font-size:22.8vw;margin:48px 0 38px}
