@@ -31,7 +31,7 @@ BEFORE Pay and Support's EIP-712, exact calldata, delayed-receipt, duplicate-sen
 
 **Technology:** Solidity/Foundry, vanilla JavaScript ES modules, static HTML/CSS, Node.js, EIP-1193 browser wallets, EIP-712 signed typed data, ERC-20 ABI calls/events, Robinhood Chain mainnet (4663), Robinhood Chain Testnet (46630), Anvil, Playwright, axe-core, GitHub Actions and Vercel. No backend service or proprietary server signer in the payment flow.
 
-**Why BEFORE is useful today:** A recipient can sign a one-off WIF request or a stable voluntary Support offer without custody or allowance. The payer can verify the signed intent before approving an exact ERC-20 transfer, and anyone can independently verify the receipt. Support adds a concrete return loop: the same creator/community page, a device-local next-support date suggestion (not a notification), revalidated device-local receipts and an explicit new cycle that requires a fresh wallet confirmation. The two public receipts demonstrate repeat-capable movement; they do not prove organic retention, global accounting or a subscription.
+**Why BEFORE is useful today:** A creator can ask for voluntary WIF support with a signed offer, let each supporter verify the exact transfer before signing, and show a public receipt that anyone can check. A recipient can also sign a one-off WIF request without custody or allowance. The payer can verify the signed intent before approving an exact ERC-20 transfer, and anyone can independently verify the receipt. Support adds a concrete return loop: the same creator/community page, a device-local next-support date suggestion (not a notification), revalidated device-local receipts and an explicit new cycle that requires a fresh wallet confirmation. The two public receipts demonstrate repeat-capable movement; they do not prove organic retention, global accounting or a subscription.
 
 **Security limits:** ERC-20 transfer requests are not onchain single-use invoices. Anyone can pay the same signed request again from another device or wallet. BEFORE's client locks an attempted payment during wallet uncertainty, receipts or reloads, but cannot enforce global uniqueness. Real mainnet WIF payments cost real gas and cannot be reversed. Contract tests and automated browser QA are not an independent external security audit.
 
@@ -46,8 +46,9 @@ BEFORE Pay and Support's EIP-712, exact calldata, delayed-receipt, duplicate-sen
 - Public source: https://github.com/Iniwura/before-protocol
 - Pay security scope: https://github.com/Iniwura/before-protocol/blob/main/docs/WIF_PAY_SECURITY_AND_RELEASE.md
 - Independent public-testnet audit: https://github.com/Iniwura/before-protocol/blob/main/docs/ISSUE_8_PUBLIC_TESTNET_EVIDENCE.md
-- Combined release CI: https://github.com/Iniwura/before-protocol/actions/runs/42384762055
-- Vercel production commit: https://github.com/Iniwura/before-protocol/commit/e78fb17d9440633794d78e799846e10ce9cfdc11
+- Exact evidence-head CI: https://github.com/Iniwura/before-protocol/actions/runs/42437341845 (`test` and `browser-quality` passed)
+- Vercel production merge commit: https://github.com/Iniwura/before-protocol/commit/58a6622c0a420a27872c3a77071915ad19d38fa4
+- Real mainnet Support evidence: https://github.com/Iniwura/before-protocol/blob/main/docs/ISSUE_18_MAINNET_SUPPORT_EVIDENCE.md
 
 ### Public BTEST Challenge #7 receipts
 
@@ -63,18 +64,23 @@ BEFORE Pay and Support's EIP-712, exact calldata, delayed-receipt, duplicate-sen
 
 Both receipts independently match the payer, creator, official WIF contract, exact zero-value `transfer(creator, 200 WIF)` calldata, successful status, three-plus confirmations and one matching `Transfer` event. The first browser proof wait timed out after broadcast and was recovered read-only without retry; the second used a fresh signed offer/cycle. This is evidence of two intentional cycles, not retention proof.
 
-## Suggested demo: 110–130 seconds, 1080p
+## Suggested winning-focused demo — 110–130 seconds, 1080p
 
-This is a storyboard for an **actual screen recording**, not a claim that a finished video exists. If the organizer specifies a different maximum length, cut accordingly. Keep the product visible, text readable, and true network/transaction labels on screen.
+**Primary story:** A creator asks for WIF. A supporter can verify exactly who gets it and what amount will move. BEFORE makes the receipt independently checkable. Real transfers show the utility exists, while a voluntary return loop makes the page useful again. Lead with **BEFORE Support**; do not make a testnet research bounty the center of a WIF hackathon demo.
 
-| Time | Screen | Narration / action |
+This is a storyboard, **not a finished video**. Use real current production screens and readable public Blockscout pages. Verify any organizer maximum runtime before recording.
+
+| Time | Real screen / evidence | What judges should understand |
 | --- | --- | --- |
-| 0–12s | Production landing → BEFORE Pay | “Before sending WIF, you should know who requested it, what your wallet will do, and how to prove the outcome.” |
-| 12–35s | Recipient creates EIP-712 signed request | Show recipient, amount, expiry and wallet's typed-data signature. Explain signing a request moves no tokens. If wallet is mocked, overlay **SIMULATED WALLET · NO REAL WIF SENT**. |
-| 35–58s | Payer opens request / independent preflight | Show exact WIF contract, chain 4663, verified recipient, balances and confirmation action. Never click a live spend unless explicitly funded and intended. If mocking send, overlay the simulation disclosure throughout. |
-| 58–72s | Receipt verification and failure handling | Show public-proof verification UI. An example mocked receipt is not public mainnet evidence. Explain pending/reload locks and user-controlled signing. |
-| 72–103s | Genuine BTEST public challenge #7 | Open public explorer receipts and show create → commit → review → settlement. Clearly label **PUBLIC ROBINHOOD TESTNET · BTEST**, with distinct onchain roles controlled by one operator. |
-| 103–122s | Source, tests and close | Show GitHub Actions green, before-protocol repo and production URL. “The same principle across payments and research: verify the intent, enforce the rules, prove the outcome.” |
+| 0–10s | Before landing → Support page; clear title | “A payment screenshot is not proof. BEFORE makes $WIF requests, transfers and receipts verifiable.” |
+| 10–32s | Creator prepares/signs the Support offer; show exact recipient, amount, token, chain and offer expiration | The creator's EIP-712 signature establishes a checkable payment request; signing an offer moves no tokens |
+| 32–52s | Supporter opens the shared offer, checks recipient/amount and gas preflight | BEFORE verifies the request against real mainnet WIF rather than trusting a pasted address |
+| 52–76s | Actual public Blockscout receipts of the two separate 200-WIF transfers, showing official token, sender, recipient and Transfer events | **Genuine mainnet proof:** transaction hashes `0x4f6b…2476` and `0x7e5c…033a`. The first browser proof wait timed out and was recovered read-only; the second used a **fresh signed offer**. Do **not** claim original-button “Support again” was live-exercised with the same signed offer |
+| 76–97s | Explain deliberate “Support again” button and device-local receipt history in a clearly labeled simulated test session, or demonstrate its idle UI without initiating another real transfer | Users can return voluntarily and send again with a fresh confirmation; no allowance or autopay, and cadence is not a push notification. **SIMULATED WALLET / NO NEW REAL WIF SENT** whenever wallet-send or receipt activity is mocked |
+| 97–109s | One-off Pay request + permission checker, quick cuts | A recipient can issue a one-off signed request; a WIF holder can inspect allowance read-only, with no claim that one-off Pay received a separate live mainnet acceptance |
+| 109–123s | GitHub PR/green CI + production site + full explorer hashes | Code and evidence can be independently inspected. Close: “Know who you're paying. Verify what you're sending. Prove what happened.” |
+
+**Demo failure modes to avoid:** No fake customer retention, no false human-wallet extension claims, no presenting the BTEST testnet as real WIF usage, no secret wallet keys, no adding a third live transaction, no screenshots that hide the network and official token. Build from screen recordings rather than fabricated product interactions. A short BTEST clip can be an optional appendix, not part of the primary product story.
 
 **Video production guardrails:** No fake mainnet WIF receipt, staged 'independent researcher' endorsement, secret wallet material, private key, speculative return, copyrighted music or invented transaction. Use ordinary screen recording and natural narration. Any mocked wallet testing must remain conspicuously labeled.
 
