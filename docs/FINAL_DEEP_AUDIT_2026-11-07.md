@@ -6,6 +6,8 @@
 **Audit candidate:** PR #15 `audit/final-pre-demo-ux-2026-11-07`, exact final head and CI to be verified before promotion  
 **Auditor:** AI-assisted, independent *source review* relative to the earlier implementation, **not** a commissioned third-party smart-contract audit or certification.
 
+**Historical note:** This audit records the November 7 pre-acceptance state. The superseding [Issue #18 real-mainnet acceptance update](#issue-18-real-mainnet-acceptance-update--2026-11-08) records the two later public Support receipts and current rule status.
+
 ## 1. Executive decision
 
 **Code/architecture:** structurally sound for a hackathon prototype and strong adversarial test coverage. No independently confirmed critical exploit was identified in the manually inspected source. That is **not** proof no exploit exists. BEFORE is not approved for valuable third-party token custody.
@@ -180,3 +182,14 @@ The engineering build still rates **7.7/10** after approved Pay-first UX fixes a
 The narrow Support loop is implemented at `/app/support/` without a new contract or custody layer. `SupportOffer` is a distinct EIP-712 type bound to the official WIF contract, recipient, amount, cadence, bounded expiry and campaign ID. Each deliberate cycle is converted into Pay's exact transfer and independent receipt proof. Reloads, pending/uncertain responses, edited URLs, RPC failures and repeated clicks remain locked; “Support again” is available only after verified proof and creates a new cycle.
 
 Local pure and browser QA covers the threat model and five responsive viewports, but all mocked receipts remain non-evidence for rule 3. The real-mainnet acceptance workflow is documented in [BEFORE_SUPPORT_SECURITY_AND_RELEASE.md](BEFORE_SUPPORT_SECURITY_AND_RELEASE.md). Until the wallet owner chooses and confirms the intended recipient/amount and supplies public receipt hashes, rule 3 and rule 7 remain **NO-GO**. Do not mark rule 5 complete without the real transaction evidence and separately authorized video/submission work.
+
+## Issue #18 real-mainnet acceptance update — 2026-11-08
+
+The prior sections above are historical checkpoints from November 7. Issue #18 then authorized two fresh isolated local wallets and a bounded two-cycle acceptance budget. The deployed BEFORE Support route was exercised with a transparent automated local EIP-1193 signer harness; this is automated wallet acceptance, not a claim of a human wallet-extension click.
+
+- First Support contribution: [0x4f6b1b2d48f73643408418896a7de886be4a522bf583a1c3d1d9c104c3b42476](https://robinhoodchain.blockscout.com/tx/0x4f6b1b2d48f73643408418896a7de886be4a522bf583a1c3d1d9c104c3b42476), nonce `0`, block `108866674`.
+- Second Support contribution: [0x7e5ca115c13fed7e36109478c9f454adc81c58c2c114f569624d95792f64033a](https://robinhoodchain.blockscout.com/tx/0x7e5ca115c13fed7e36109478c9f454adc81c58c2c114f569624d95792f64033a), nonce `1`, block `108870117`.
+- Each transfer is exactly `200 WIF` from payer `0x11cbedbf9fcd723ce48fbd5a2b55e6e3699c3368` to creator `0x02fb3352e593f4bcbff5a845e7a0f90ca4a87f0d`, with zero native value, successful status, one matching official-WIF `Transfer` event and at least three confirmations.
+- Final accounting independently read from mainnet: payer `305.238282568971733181 WIF`, creator `400 WIF`, creator `0 ETH`, payer nonce `2`; no third transaction.
+
+This closes the previous “no real WIF transaction” finding for the bounded acceptance exercise and provides repeat-capable movement evidence for Support. It does not prove organic retention, independent human use or a global campaign ledger. The first browser proof wait timed out after broadcast and was recovered read-only without retry; the second cycle used a fresh signed offer after the interrupted context was discarded. Rule 3 is now **PASS for this evidence**; rule 7 is **PARTIAL / repeat capability demonstrated, retention unproven**. Rule 5 remains **PARTIAL** until the separately authorized demo video and organizer submission are completed.

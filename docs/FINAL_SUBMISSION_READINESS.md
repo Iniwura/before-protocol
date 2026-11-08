@@ -1,8 +1,8 @@
 # BEFORE — combined release and submission readiness
 
-Assessment date: 2026-11-07. Issue #16 candidate branch: `feat/issue-16-before-support`.
-**Release status: PENDING exact-head CI and production verification.**
-**Hackathon submission status: NOT YET SUBMITTED.** The user's latest authorization covers code integration and production release, but no real-asset transaction has been executed.
+Assessment date: 2026-11-08. Issue #16/18 candidate branch: `feat/issue-16-before-support`.
+**Release status: PENDING final evidence-commit CI and release review.**
+**Hackathon submission status: NOT YET SUBMITTED.** Real WIF acceptance evidence is now public; the demo and final organizer submission remain intentionally unperformed.
 
 ## Product scope
 
@@ -18,10 +18,10 @@ BEFORE Pay uses official $WIF `0x5173b8eA6923c2d40267890D45C46a3480954773`, Robi
 | Bounty #5 preservation | **PASS, public read-only audit** | Existing expired bounty left under original sponsor account, no unauthorized refund or cancellation; see [Issue #8 evidence](ISSUE_8_PUBLIC_TESTNET_EVIDENCE.md). |
 | Pay recipient EIP-712 signature and exact WIF calldata | **PASS in automated tests** | Request-bound address/amount/chain/token/nonce/expiry, fail-closed EOA signature recovery, `transfer` only. |
 | Pay duplicate-send and pending receipts | **PASS in mocked wallet/browser regression** | Wallet-pending reload, lost hash, RPC outage, 1–2 confirmations, reverted receipt, edited URL status, wallet/account change, read-only verification retry. One simulated send per attempt. |
-| Support offer, cycle and repeat-use safety | **PASS locally; exact-head CI pending** | Distinct `SupportOffer` typed data, fresh cycle IDs, explicit “Support again” only after verified proof, device-local receipt revalidation, no automatic cadence. See [Support security gate](BEFORE_SUPPORT_SECURITY_AND_RELEASE.md). |
-| Support responsive / wallet adversarial QA | **PASS locally; exact-head CI pending** | 320/375/390/768/1280 responsive + axe, wrong chain, missing wallet, rejected signature, untrusted link, repeated clicks, delayed reload, ambiguous response, RPC failure and deliberate second cycle. |
+| Support offer, cycle and repeat-use safety | **PASS in code and hosted CI** | Distinct `SupportOffer` typed data, fresh cycle IDs, explicit “Support again” only after verified proof, device-local receipt revalidation, no automatic cadence. See [Support security gate](BEFORE_SUPPORT_SECURITY_AND_RELEASE.md). |
+| Support responsive / wallet adversarial QA | **PASS in hosted CI and live-route acceptance** | 320/375/390/768/1280 responsive + axe, wrong chain, missing wallet, rejected signature, untrusted link, repeated clicks, delayed reload, ambiguous response, RPC failure, deliberate second cycle, and production Support preflight. |
 | Foundry / Node / Anvil / responsive and axe | **PASS on individual PR heads; combined CI pending** | Pay PR #11 at `73735b8`: [CI](https://github.com/Iniwura/before-protocol/actions/runs/42383839833) passed. BTEST audit PR #9 at `67125b7`: [CI](https://github.com/Iniwura/before-protocol/actions/runs/42376037978) passed. Counts must be reported afresh for combined release. |
-| Real public WIF payment | **NOT PERFORMED** | Mainnet contract code, symbol and 18 decimals verified read-only; no real WIF transfer, approval, or live receipt has been broadcast by Codex/CI. Mock browser receipts are **not** mainnet evidence. |
+| Real public WIF payment | **PASS for Issue #18 acceptance** | Two distinct production Support transfers of exactly 200 WIF each were independently verified on Robinhood Chain mainnet. See [Issue #18 mainnet evidence](ISSUE_18_MAINNET_SUPPORT_EVIDENCE.md). The signer was an automated local wallet acceptance harness, not a human-extension click claim. |
 | Production deployment | **PENDING** | Do not mark deployed until verified Vercel production alias has the combined release commit and route HTTP checks pass. |
 | Demo video and organizer submission | **PENDING** | No video has been created or uploaded. Registration is **not** a final submission. Confirm actual portal fields and deadline against organizers. |
 
@@ -51,8 +51,8 @@ node qa/issue-8-public-testnet-audit.mjs
 node qa/issue-8-fresh-bounty-audit.mjs
 ```
 
-The two last scripts require a working public Robinhood testnet RPC. They are **read-only**, never sign transactions. The public acceptance signing runner requires explicitly provisioned local test-only keystores, is not run in CI and must never be run with real assets.
+The two last scripts require a working public Robinhood testnet RPC. They are **read-only**, never sign transactions. The public acceptance signing runner requires explicitly provisioned local keystores, is not run in CI, and must never be run outside an owner-authorized bounded budget.
 
 ## Hackathon final gate
 
-The previous official event API listed **2026-11-12 17:30 UTC** as the build cutoff, subject to a live portal check. Verify actual eligibility, required fields and media size. Prepare the required demo video with clear actual-source evidence and without showing synthetic data as mainnet WIF. The lack of a real WIF transfer remains a potentially material judging/eligibility gap even with Pay and Support implemented; do not claim otherwise. Support provides a credible repeat-use mechanism, but rule 7 remains unproven until the owner confirms the first and a second deliberate mainnet WIF cycle with public receipts. The final organizer Submit action must be confirmed by an actual platform receipt.
+The previous official event API listed **2026-11-12 17:30 UTC** as the build cutoff, subject to a live portal check. Verify actual eligibility, required fields and media size. Prepare the required demo video with clear actual-source evidence and without showing synthetic data as mainnet WIF. Rule 3 now has two public mainnet Support receipts; rule 7 has repeat-capable movement evidence but not proof of organic retention. The two cycles were executed through the production Support route with automated local wallet acceptance; the second used a fresh signed offer after the first browser proof wait timed out and was recovered read-only. The final organizer Submit action must be confirmed by an actual platform receipt.
