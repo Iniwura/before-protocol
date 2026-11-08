@@ -190,7 +190,7 @@ function renderPending(stage, message) {
   else setHidden('support-proof-explorer', true);
   setHidden('support-proof-retry', !state.txHash || stage === SUPPORT_STAGE.KNOWN_REVERTED);
   state.calendarReminder = null;
-  setHidden('support-again', true); setHidden('support-next-suggestion', true); setHidden('support-calendar', true);
+  setHidden('support-again', true); setHidden('support-next-suggestion', true); setHidden('support-calendar', true); setHidden('support-calendar-note', true);
   setHidden('proof-card', false); setHidden('check-card', true); setHidden('offer-card', true); setHidden('share-card', true);
 }
 function renderProof(proof) {
@@ -224,7 +224,7 @@ function renderProof(proof) {
       });
     } else { next.hidden = true; state.calendarReminder = null; }
   }
-  setHidden('support-calendar', !state.calendarReminder);
+  setHidden('support-calendar', !state.calendarReminder); setHidden('support-calendar-note', !state.calendarReminder);
   setHidden('proof-card', false); setHidden('check-card', true); setHidden('offer-card', true); setHidden('share-card', true);
 }
 
@@ -407,7 +407,7 @@ async function supportNow() {
 function beginNewCycle() {
   if (state.lifecycle !== SUPPORT_STAGE.VERIFIED) return;
   state.cycleId = null; state.txHash = null; state.payer = null; state.preflight = null; state.lifecycle = SUPPORT_STAGE.NOT_SUBMITTED; state.sending = false; state.calendarReminder = null;
-  setHidden('support-calendar', true);
+  setHidden('support-calendar', true); setHidden('support-calendar-note', true);
   persistSupportUrl(SUPPORT_STAGE.NOT_SUBMITTED); renderOffer(); setHidden('share-card', true); showFeedback('New support cycle created. Check the exact offer, then confirm a fresh wallet transfer when you choose.', 'info');
   void refreshHistory(); $('check-card')?.scrollIntoView({block: 'start'});
 }
