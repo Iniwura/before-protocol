@@ -1,6 +1,6 @@
 # BEFORE Support — security and release gate
 
-Assessment date: 2026-11-08. This document describes the Issue #16/18 implementation on branch `feat/issue-16-before-support`. It records two real WIF Support receipts, but does not claim a global history index, organic retention or an automatic recurrence system.
+Assessment date: 2026-11-08. This document describes the Issue #16/18 Support implementation now merged and shipped on `main`, source baseline `f7dd6bf1bf273846fd35705c851312f534625dbe`. Two real WIF Support receipts were independently checked; no global history index, organic retention or automatic recurrence system is claimed.
 
 ## Product boundary
 
@@ -55,6 +55,6 @@ This is a credible product mechanism, and the two public receipts now demonstrat
 
 ## Release decision
 
-- Implementation/security: **GO for code review** after exact-head CI and protected-preview checks pass.
+- Implementation/security: **ENGINEERING GO / SHIPPED**. Exact-head hosted `test` and `browser-quality` passed in [CI 42475822845](https://github.com/Iniwura/before-protocol/actions/runs/42475822845), merged application source is unchanged, and a fresh public Chromium route smoke test passed. This is not an independent external security audit.
 - Real WIF acceptance: **PASS for the bounded Issue #18 exercise**; two exact public mainnet receipts independently verified. No third transaction was broadcast.
-- Demo and final submission: **NO-GO** until the separate ship check, real receipts and owner-approved video/submission actions are complete.
+- Demo and final submission: **SEPARATE PENDING STEPS**. The production source and receipts are ready; a genuine demo and signed-in organizer entry/confirmation have not been completed. No additional WIF transfers are needed to certify the present release.

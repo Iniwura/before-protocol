@@ -1,5 +1,9 @@
 # Hackathon submission runbook
 
+> **ARCHIVED / historical submission document (November 8, 2026).** This predates BEFORE Pay, BEFORE Support and the verified mainnet WIF transfers. It is **not** the current release, recording or submission instructions. Use [the frozen build handoff](ENGINEERING_RELEASE_FREEZE_2026-11-08.md), [current submission packet](WORLD_IS_FLAT_SUBMISSION_PACKET.md) and [current readiness gate](FINAL_SUBMISSION_READINESS.md). Retained solely for project history.
+
+---
+
 BEFORE is a three-screen Robinhood Chain experience:
 
 1. **Protect** shows the policy a deployed `BeforeVault` enforces: fixed recipient, 60-token transfer cap and 100-token UTC-day cap.

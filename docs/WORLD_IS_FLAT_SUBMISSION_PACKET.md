@@ -1,6 +1,6 @@
 # BEFORE — World Is Flat submission package
 
-Prepared: November 8, 2026. **Not yet submitted.** Real WIF Support evidence is now public on Robinhood Chain mainnet. The demo video, final portal fields and organizer submission remain intentionally incomplete.
+Prepared: November 8, 2026. **Not yet submitted.** The engineering build is [frozen and documented](ENGINEERING_RELEASE_FREEZE_2026-11-08.md); mainnet WIF Support evidence is public and independently checked. The demo video, signed-in organizer entry/approval, final portal fields and final submission are still pending.
 
 ## Ready-to-paste submission answers
 
@@ -87,7 +87,7 @@ This is a storyboard, **not a finished video**. Use real current production scre
 ## Final submission QA checklist
 
 - [x] Real live production site deployed on the approved public URL
-- [x] Public GitHub repo, release commit and exact-head combined CI
+- [x] Public GitHub repo, frozen application source, exact-head combined CI and documentation-only release-cleanup plan
 - [x] Public BTEST testnet receipt and accounting evidence
 - [x] Mainnet WIF token code/metadata and read-only checks
 - [x] WIF Pay code and adversarial simulated-wallet QA
@@ -98,7 +98,7 @@ This is a storyboard, **not a finished video**. Use real current production scre
 - [x] Public mainnet evidence of the first Support contribution and a second deliberate new cycle. The two receipts prove repeat capability, not organic retention; the signer was an automated local acceptance harness. See [Support security gate](BEFORE_SUPPORT_SECURITY_AND_RELEASE.md).
 - [x] Official closing date from organizer rules: November 12, 2026, 17:30 UTC; round one ends November 14, final ends November 16 at 17:30 UTC
 - [ ] Keep live production accessible through November 16 final; basic availability monitoring set up
-- [ ] Confirm signed-in submission fields, allowed categories and video duration
+- [ ] Confirm BEFORE's signed-in project entry, publication/approval status, required submission fields, allowed categories and video duration (not yet visible among 31 public entries on November 8)
 - [ ] Choose suitable categories: Consumer & Payments, Tools & Infra; consider Onboarding only if the resulting workflow is demonstrably novice-friendly
 - [ ] Add accessible video URL, final description, team information and category to organizer form
 - [ ] Submit and preserve actual organizer confirmation/receipt
