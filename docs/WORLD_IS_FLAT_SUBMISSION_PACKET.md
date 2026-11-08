@@ -87,11 +87,11 @@ This is a storyboard, **not a finished video**. Use real current production scre
 ## Final submission QA checklist
 
 - [x] Real live production site deployed on the approved public URL
-- [x] Public GitHub repo, frozen application source, exact-head combined CI and documentation-only release-cleanup plan
+- [x] Public GitHub repo, merged Support-first source `951626c`, latest exact-head combined CI and confirmed READY production alias
 - [x] Public BTEST testnet receipt and accounting evidence
 - [x] Mainnet WIF token code/metadata and read-only checks
 - [x] WIF Pay code and adversarial simulated-wallet QA
-- [x] BEFORE Support code, distinct typed offer, repeat-cycle lock and adversarial simulated-wallet QA
+- [x] BEFORE Support code, distinct typed offer, repeat-cycle lock, optional user-imported calendar export and adversarial simulated-wallet QA
 - [x] Independent live-route browser smoke test against production Support, including creator signing, payer preflight and exact transfer request
 - [x] Independently inspectable real $WIF onchain transfer through BEFORE Support on Robinhood Chain mainnet 4663, with matching WIF Transfer logs and two public receipts. See `ISSUE_18_MAINNET_SUPPORT_EVIDENCE.md`.
 - [ ] 1080p video showing product functioning and honest mainnet/testnet distinction; upload to an organizer-accepted publicly accessible destination

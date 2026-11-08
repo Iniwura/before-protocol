@@ -1,6 +1,6 @@
 # BEFORE Support — security and release gate
 
-Assessment date: 2026-11-08. This document describes the Issue #16/18 Support implementation now merged and shipped on `main`, source baseline `f7dd6bf1bf273846fd35705c851312f534625dbe`. Two real WIF Support receipts were independently checked; no global history index, organic retention or automatic recurrence system is claimed.
+Assessment date: 2026-11-08. Support's real-WIF source originally shipped at `f7dd6bf1bf273846fd35705c851312f534625dbe`; the current merged source `951626c4059004ea7a39ac48230e9c06c0c82fc0` adds opt-in calendar export and clearer creator/visitor onboarding without altering the transaction/receipt logic. Two genuine WIF Support receipts were independently checked; no global history index, organic retention or automatic recurrence is claimed.
 
 ## Product boundary
 
@@ -55,6 +55,6 @@ This is a credible product mechanism, and the two public receipts now demonstrat
 
 ## Release decision
 
-- Implementation/security: **ENGINEERING GO / SHIPPED**. Exact-head hosted `test` and `browser-quality` passed in [CI 42475822845](https://github.com/Iniwura/before-protocol/actions/runs/42475822845), merged application source is unchanged, and a fresh public Chromium route smoke test passed. This is not an independent external security audit.
+- Implementation/security: **ENGINEERING GO / SHIPPED**. Full exact-head hosted `test` and `browser-quality` passed in [CI 42493477032](https://github.com/Iniwura/before-protocol/actions/runs/42493477032). Merged release `951626c` and exact Vercel production alias READY were verified independently, including 6/6 HTTP routes. This is not a formal independent security audit.
 - Real WIF acceptance: **PASS for the bounded Issue #18 exercise**; two exact public mainnet receipts independently verified. No third transaction was broadcast.
 - Demo and final submission: **SEPARATE PENDING STEPS**. The production source and receipts are ready; a genuine demo and signed-in organizer entry/confirmation have not been completed. No additional WIF transfers are needed to certify the present release.
