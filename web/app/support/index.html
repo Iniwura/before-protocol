@@ -23,14 +23,13 @@
     <div class="pay-topline"><span>ROBINHOOD CHAIN / MAINNET · 4663</span><span>NONCUSTODIAL · NO AUTOMATION</span></div>
     <div class="pay-hero-grid"><div><div class="pay-kicker">01 / OFFER → CHECK → SUPPORT → PROOF</div><h1 id="support-title">Support<br><em>with proof.</em></h1></div><div class="pay-symbol" aria-hidden="true">↗</div></div>
     <div class="pay-hero-bottom"><span>OFFICIAL TOKEN / WIF</span><p>A creator publishes an exact offer. A supporter checks it, chooses when to return, and confirms every contribution in their own wallet.</p></div>
+    <nav class="support-quick-start" aria-label="Start BEFORE Support">
+      <a href="#create-support-card">Create a support link <span aria-hidden="true">↘</span></a>
+      <a href="#open-support-card">I have a signed link <span aria-hidden="true">↘</span></a>
+    </nav>
   </section>
 
   <div id="support-feedback" class="pay-feedback" role="status" aria-live="polite" hidden></div>
-
-  <section id="open-support-card" class="support-open" aria-labelledby="open-support-title">
-    <div><h2 id="open-support-title">Have a support link?</h2><p>Supporting someone? Paste their signed link. Publishing a page? Create an offer below.</p></div>
-    <form id="open-support-form" class="open-request-form"><label class="sr-only" for="support-link">BEFORE Support link</label><input id="support-link" type="url" inputmode="url" autocomplete="off" placeholder="Paste your BEFORE Support link" required><button class="pay-button" type="submit">Open support page <span aria-hidden="true">↗</span></button></form>
-  </section>
 
   <section id="create-support-card" class="pay-section" aria-labelledby="create-support-title">
     <div class="section-bar"><span>01 / CREATE A SUPPORT PAGE</span><span>RECIPIENT SIGNATURE ONLY</span></div>
@@ -41,6 +40,12 @@
       <div class="form-field"><label for="support-expiry">Offer expires in <span>days · max 120</span></label><input id="support-expiry" type="number" inputmode="numeric" min="1" max="120" value="90" required><small>Signed links remain usable until expiry and cannot be revoked early. Every payment still requires wallet confirmation.</small></div>
       <button id="create-support" class="pay-button" type="submit">Connect recipient and publish offer <span aria-hidden="true">↗</span></button>
     </form>
+  </section>
+
+
+  <section id="open-support-card" class="support-open" aria-labelledby="open-support-title">
+    <div><h2 id="open-support-title">Have a support link?</h2><p>Supporting someone? Paste their signed link. Publishing a page? Create an offer below.</p></div>
+    <form id="open-support-form" class="open-request-form"><label class="sr-only" for="support-link">BEFORE Support link</label><input id="support-link" type="url" inputmode="url" autocomplete="off" placeholder="Paste your BEFORE Support link" required><button class="pay-button" type="submit">Open support page <span aria-hidden="true">↗</span></button></form>
   </section>
 
   <section id="offer-card" class="pay-section request-card support-offer" hidden aria-labelledby="offer-title">
