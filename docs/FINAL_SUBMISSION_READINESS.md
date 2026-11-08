@@ -1,7 +1,7 @@
 # BEFORE — combined release and submission readiness
 
-Assessment date: 2026-11-08. Issue #16/18 candidate branch: `feat/issue-16-before-support`.
-**Release status: PENDING final evidence-commit CI and release review.**
+Assessment date: 2026-11-08. Release merged as `58a6622c0a420a27872c3a77071915ad19d38fa4` after evidence-only PR #19.
+**Release status: PRODUCTION READY according to verified Vercel deployment `dpl_EZ1j7EDBLa8sNyzjnQ6Y6djNzxD6`; Vercel alias matches the merge commit.**
 **Hackathon submission status: NOT YET SUBMITTED.** Real WIF acceptance evidence is now public; the demo and final organizer submission remain intentionally unperformed.
 
 ## Product scope
@@ -20,9 +20,9 @@ BEFORE Pay uses official $WIF `0x5173b8eA6923c2d40267890D45C46a3480954773`, Robi
 | Pay duplicate-send and pending receipts | **PASS in mocked wallet/browser regression** | Wallet-pending reload, lost hash, RPC outage, 1–2 confirmations, reverted receipt, edited URL status, wallet/account change, read-only verification retry. One simulated send per attempt. |
 | Support offer, cycle and repeat-use safety | **PASS in code and hosted CI** | Distinct `SupportOffer` typed data, fresh cycle IDs, explicit “Support again” only after verified proof, device-local receipt revalidation, no automatic cadence. See [Support security gate](BEFORE_SUPPORT_SECURITY_AND_RELEASE.md). |
 | Support responsive / wallet adversarial QA | **PASS in hosted CI and live-route acceptance** | 320/375/390/768/1280 responsive + axe, wrong chain, missing wallet, rejected signature, untrusted link, repeated clicks, delayed reload, ambiguous response, RPC failure, deliberate second cycle, and production Support preflight. |
-| Foundry / Node / Anvil / responsive and axe | **PASS on individual PR heads; combined CI pending** | Pay PR #11 at `73735b8`: [CI](https://github.com/Iniwura/before-protocol/actions/runs/42383839833) passed. BTEST audit PR #9 at `67125b7`: [CI](https://github.com/Iniwura/before-protocol/actions/runs/42376037978) passed. Counts must be reported afresh for combined release. |
+| Foundry / Node / Anvil / responsive and axe | **PASS on exact evidence PR head** | [PR #19 CI run 42437341845](https://github.com/Iniwura/before-protocol/actions/runs/42437341845): `test` and `browser-quality` successful at `c45d1de84a25efb386bd0c7ab6ab45e34348405d`. The merged production source changed only documentation/evidence after the tested head; this is not a claim of a separate post-merge full rerun. |
 | Real public WIF payment | **PASS for Issue #18 acceptance** | Two distinct production Support transfers of exactly 200 WIF each were independently verified on Robinhood Chain mainnet. See [Issue #18 mainnet evidence](ISSUE_18_MAINNET_SUPPORT_EVIDENCE.md). The signer was an automated local wallet acceptance harness, not a human-extension click claim. |
-| Production deployment | **PENDING** | Do not mark deployed until verified Vercel production alias has the combined release commit and route HTTP checks pass. |
+| Production deployment | **PASS (deployment metadata)** | Vercel reports production READY deployment `dpl_EZ1j7EDBLa8sNyzjnQ6Y6djNzxD6` and `before-web-theta.vercel.app` alias pointing to merged commit `58a6622`. Production HTTP header / route browser smoke checks were reported by the acceptance environment; Vercel metadata alone is not a new browser QA run. |
 | Demo video and organizer submission | **PENDING** | No video has been created or uploaded. Registration is **not** a final submission. Confirm actual portal fields and deadline against organizers. |
 
 ## Public BTEST evidence (challenge 7)
