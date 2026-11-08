@@ -1,0 +1,43 @@
+name: BEFORE demo review
+on:
+  push:
+    branches:
+      - demo/review-1080p-2026-11-08
+    paths:
+      - "demo/**"
+      - ".github/workflows/before-demo-review.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  render-review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 22
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install browser and sample-offer dependencies
+        run: |
+          npm ci --prefix qa
+          npm install --prefix demo --no-audit --no-fund
+          npx --prefix qa playwright install --with-deps chromium
+          sudo apt-get update -qq
+          sudo apt-get install -y ffmpeg fonts-dejavu-core
+      - name: Render authentic 1080p review video without wallet transactions
+        run: node demo/build-review.cjs
+      - name: Check final MP4 integrity
+        run: |
+          test -s demo/output/BEFORE_DEMO_REVIEW_1080P.mp4
+          ffprobe -v error -show_entries format=duration,size:stream=codec_type,width,height -of json demo/output/BEFORE_DEMO_REVIEW_1080P.mp4
+          ffmpeg -v error -i demo/output/BEFORE_DEMO_REVIEW_1080P.mp4 -f null -
+      - name: Keep review video private to GitHub Actions until owner approval
+        uses: actions/upload-artifact@v4
+        with:
+          name: BEFORE-DEMO-REVIEW-1080P
+          path: demo/output/BEFORE_DEMO_REVIEW_1080P.mp4
+          if-no-files-found: error
+          retention-days: 7
