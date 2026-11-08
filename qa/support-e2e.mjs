@@ -144,6 +144,7 @@ try {
     throw new Error('Support first-cycle verification diagnostic: ' + JSON.stringify(debug) + '; ' + error.message);
   }); const payerSendCount = await payerPage.evaluate(() => window.__walletTransactions.length); assert.equal(payerSendCount, 1, `Repeated support clicks must produce one wallet call; state=${await payerPage.evaluate(() => JSON.stringify({lifecycle: window.__beforeSupport.state.lifecycle, tx: window.__beforeSupport.state.txHash}))}`); assert.equal(await payerPage.locator('#history-list li').count(), 1); assert.match(await payerPage.locator('#support-next-suggestion').innerText(), /Suggested return date:.*BEFORE sends no notifications or automatic payments/i, 'Weekly support must give a truthful return suggestion');
   assert.equal(await payerPage.locator('#support-calendar').isVisible(), true, 'Weekly support offers an optional calendar export only after public proof');
+  assert.equal(await payerPage.locator('#support-calendar-note').isVisible(), true, 'Calendar instruction is visible only with a valid reminder');
   const downloadPromise = payerPage.waitForEvent('download'); await payerPage.locator('#support-calendar').click(); const reminderDownload = await downloadPromise;
   assert.match(reminderDownload.suggestedFilename(), /before-wif-support-reminder\.ics/);
   const calendarSource = await readFile(await reminderDownload.path(), 'utf8');
