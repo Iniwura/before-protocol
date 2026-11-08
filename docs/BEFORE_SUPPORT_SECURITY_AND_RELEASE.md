@@ -13,7 +13,7 @@ BEFORE Support is a stable recipient-authenticated page for voluntary repeat WIF
 5. BEFORE claims success only after public RPC revalidates transaction/receipt identity, sender, WIF destination, zero native value, exact calldata, success status, three confirmations and exactly one matching WIF `Transfer` event.
 6. A verified receipt is saved as public proof in device-local history. Records are revalidated before display and are not a global campaign ledger.
 
-`SupportOffer` uses its own domain (`BEFORE Support`) and primary type. A Pay request cannot be silently downgraded to a Support offer. Cadence is a device-local suggested return date only. It never sends a notification or authorizes an automatic payment. An offer can remain valid for at most 120 days so weekly/monthly returns are possible. Its signed terms cannot be revoked before expiry; creators should not use a longer expiry than needed. Each WIF transfer always requires fresh human approval.
+`SupportOffer` uses its own domain (`BEFORE Support`) and primary type. A Pay request cannot be silently downgraded to a Support offer. Cadence begins as a device-local suggested date. A completed, verified weekly/monthly contribution optionally allows downloading a single `.ics` calendar reminder that carries only the public signed offer link. Import is entirely the supporter's choice. BEFORE sends no notification and never authorizes an automatic payment. An offer can remain valid for at most 120 days so weekly/monthly returns are possible. Its signed terms cannot be revoked before expiry; creators should not use a longer expiry than needed. Each WIF transfer always requires fresh human approval.
 
 ## Duplicate-send policy
 
@@ -29,7 +29,7 @@ This is a client-side duplicate-send safeguard, not an onchain invoice or cross-
 
 ## Threat model and QA coverage
 
-The pure Support tests cover typed-data binding, wrong chain/token/amount/cadence/expiry/campaign mutations, malformed and zero cycle IDs, signature recovery, public payload round-trips, exact transfer calldata and cadence-as-reminder behavior.
+The pure Support tests cover typed-data binding, wrong chain/token/amount/cadence/expiry/campaign mutations, malformed and zero cycle IDs, signature recovery, public payload round-trips, exact transfer calldata, cadence-as-reminder behavior and bounded one-time calendar export that never calls a wallet.
 
 The browser regression covers 320/375/390/768/1280 px layouts, axe checks, full recipient visibility, keyboard-compatible native controls, missing wallet, wrong chain, rejected recipient signature, untrusted links, delayed wallet response followed by reload, edited pending status, ambiguous wallet response, RPC failure before send, repeated clicks, account/network pending events through the shared Pay policy, and a deliberate second cycle with two independently checked local mock receipts. No browser test broadcasts real WIF.
 
@@ -48,7 +48,7 @@ Public evidence is recorded in [Issue #18 mainnet evidence](ISSUE_18_MAINNET_SUP
 
 The implementation answers the two reviewer questions with a concrete loop:
 
-- Reason to return: the same stable creator/community page remains useful for ongoing voluntary support, and the supporter can inspect their own verified receipts plus a device-local suggested next-support date (no notifications).
+- Reason to return: the same stable creator/community page remains useful for voluntary support. The supporter can inspect revalidated receipts, see a suggested next date, and optionally download a one-time calendar event for manual import (not an app notification, backend reminder or recurring payment).
 - What moves more WIF: only an explicit new support cycle can call the standard WIF transfer; it cannot be triggered by a timer, page reload, retry or stored history.
 
 This is a credible product mechanism, and the two public receipts now demonstrate repeat-capable WIF movement. They are not proof of organic retention: the first browser context required read-only recovery and the second cycle used a fresh signed offer rather than resuming the discarded context. There is no official fixed transaction count; do not claim long-term retention or a global campaign ledger.
