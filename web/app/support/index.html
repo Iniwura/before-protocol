@@ -37,7 +37,7 @@
     <div class="section-heading"><h2 id="create-support-title">Make support<br><em>repeatable.</em></h2><p>Publish one stable, signed offer for voluntary WIF contributions. Signing authenticates the page; it never approves, schedules or moves tokens.</p></div>
     <form id="create-support-form" class="pay-form support-form">
       <div class="form-field"><label for="support-amount">Contribution <span>WIF · 18 decimals</span></label><input id="support-amount" type="text" inputmode="decimal" autocomplete="off" placeholder="0.0" required><small>The exact amount is shown to every supporter. Zero and overflow are rejected.</small></div>
-      <div class="form-field"><label for="support-interval">Return cadence</label><select id="support-interval"><option value="anytime">Repeat when you choose</option><option value="weekly">Weekly suggestion</option><option value="monthly">Monthly suggestion</option></select><small>A suggested return date appears after verified support. There are no notifications or automatic payments.</small></div>
+      <div class="form-field"><label for="support-interval">When might you return?</label><select id="support-interval"><option value="anytime">Repeat when you choose</option><option value="weekly">Weekly suggestion</option><option value="monthly">Monthly suggestion</option></select><small>A suggested return date appears after verified support. There are no notifications or automatic payments.</small></div>
       <div class="form-field"><label for="support-expiry">Offer expires in <span>days · max 120</span></label><input id="support-expiry" type="number" inputmode="numeric" min="1" max="120" value="90" required><small>Signed links remain usable until expiry and cannot be revoked early. Every payment still requires wallet confirmation.</small></div>
       <button id="create-support" class="pay-button" type="submit">Connect recipient and publish offer <span aria-hidden="true">↗</span></button>
     </form>
@@ -82,7 +82,7 @@
     <a id="support-proof-explorer" class="proof-link" target="_blank" rel="noopener noreferrer">Inspect verified receipt on Blockscout ↗</a>
     <button id="support-proof-retry" class="plain-button" type="button" hidden>Retry verification ↗</button>
     <button id="support-again" class="pay-button support-again" type="button" hidden>Support again with a new wallet confirmation <span aria-hidden="true">↗</span></button><p id="support-next-suggestion" class="support-next-suggestion" aria-live="polite" hidden></p>
-    <button id="support-calendar" class="plain-button support-calendar" type="button" hidden>Save optional calendar reminder ↗</button><p class="support-calendar-note">Only if you choose to import it. No automatic WIF transfers or BEFORE notifications.</p>
+    <button id="support-calendar" class="plain-button support-calendar" type="button" hidden>Save optional calendar reminder ↗</button><p id="support-calendar-note" class="support-calendar-note" hidden>Only if you choose to import it. No automatic WIF transfers or BEFORE notifications.</p>
     <button id="new-support-offer" class="plain-button" type="button">Create a new support page ↗</button>
   </section>
 
