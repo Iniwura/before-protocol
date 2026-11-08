@@ -1,6 +1,6 @@
 # BEFORE Support — security and release gate
 
-Assessment date: 2026-11-07. This document describes the Issue #16 implementation on branch `feat/issue-16-before-support`. It does not claim a real WIF transaction, a global history index, or an automatic recurrence system.
+Assessment date: 2026-11-08. This document describes the Issue #16/18 implementation on branch `feat/issue-16-before-support`. It records two real WIF Support receipts, but does not claim a global history index, organic retention or an automatic recurrence system.
 
 ## Product boundary
 
@@ -35,14 +35,14 @@ The browser regression covers 320/375/390/768/1280 px layouts, axe checks, full 
 
 ## Mainnet acceptance workflow
 
-The code is ready for one human-controlled acceptance flow, but this repository currently has no owner authorization for a specific funded wallet, amount and recipient. The minimum external action is therefore intentionally pending:
+Issue #18 authorized two fresh isolated local wallets, a bounded payer budget and at most two intentional contributions. The completed acceptance used the deployed `/app/support/` page in a controlled browser with a transparent local EIP-1193 signer harness. The harness was automated wallet acceptance, not a human-extension click claim; private material stayed in encrypted local keystores and was never sent to the page or repository.
 
-1. The wallet owner chooses the recipient address and a small WIF amount and confirms that choice independently.
-2. The owner opens the deployed `/app/support/` page, creates or opens the exact signed offer, checks the displayed official WIF contract and chain `4663`, and confirms the first standard transfer in the owner wallet.
-3. The owner waits for mining, then supplies the public transaction hash. BEFORE and an independent read-only verifier must check the receipt and exact `Transfer` event at [Blockscout](https://robinhoodchain.blockscout.com/).
-4. The owner deliberately clicks “Support again”, reviews the new cycle, confirms a second transfer, and supplies its public hash. The two hashes must be distinct and independently match the same recipient and offer amount.
+1. The creator wallet signed a `SupportOffer` for the fresh creator address, official WIF, chain `4663`, exact `200 WIF` amount and bounded expiry.
+2. The payer preflight checked the official token bytecode/metadata, signed recipient, payer WIF/ETH balances, exact `transfer` calldata and gas before each wallet call.
+3. The first cycle broadcast nonce `0`. Its browser proof wait timed out after the wallet returned, so it was not retried; read-only nonce/balance/log recovery found and independently verified the mined receipt.
+4. After the first receipt passed independent checks, the remaining authorized cycle used a fresh signed Support offer and broadcast nonce `1`. It also passed the production Support proof path and independent verification.
 
-No hash is recorded here until those owner-confirmed transactions exist. BTEST receipts and mocked browser hashes are not acceptable substitutes for rule 3.
+Public evidence is recorded in [Issue #18 mainnet evidence](ISSUE_18_MAINNET_SUPPORT_EVIDENCE.md). The two hashes are distinct and each matches the same payer, creator, official WIF contract, exact amount, successful receipt and `Transfer` event. BTEST receipts and mocked browser hashes are not substitutes for rule 3.
 
 ## Flywheel assessment
 
@@ -51,10 +51,10 @@ The implementation answers the two reviewer questions with a concrete loop:
 - Reason to return: the same stable creator/community page remains useful for ongoing voluntary support, and the supporter can inspect their own verified receipts plus a device-local suggested next-support date (no notifications).
 - What moves more WIF: only an explicit new support cycle can call the standard WIF transfer; it cannot be triggered by a timer, page reload, retry or stored history.
 
-This is a credible product mechanism, not proof of retention. Rule 7 remains **NO-GO until owner-confirmed public mainnet evidence demonstrates the first contribution and a second deliberate new cycle**. There is no official fixed transaction count; two receipts demonstrate repeat capability but do not prove long-term retention.
+This is a credible product mechanism, and the two public receipts now demonstrate repeat-capable WIF movement. They are not proof of organic retention: the first browser context required read-only recovery and the second cycle used a fresh signed offer rather than resuming the discarded context. There is no official fixed transaction count; do not claim long-term retention or a global campaign ledger.
 
 ## Release decision
 
 - Implementation/security: **GO for code review** after exact-head CI and protected-preview checks pass.
-- Real WIF acceptance: **NO-GO / owner action required**; no transaction was broadcast by Codex or CI.
+- Real WIF acceptance: **PASS for the bounded Issue #18 exercise**; two exact public mainnet receipts independently verified. No third transaction was broadcast.
 - Demo and final submission: **NO-GO** until the separate ship check, real receipts and owner-approved video/submission actions are complete.
