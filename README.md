@@ -4,6 +4,8 @@
 
 BEFORE is a [World Is Flat](https://worldisflat.fun/build) Robinhood Chain product combining **noncustodial $WIF payments and repeat voluntary support with verifiable receipts**, **read-only WIF spending-permission checks**, and a separate **BTEST-only security bounty** on testnet.
 
+On November 8, BEFORE Support exercised the deployed product with **two real WIF mainnet payments**, each of exactly 200 WIF, documented with public receipts in [Issue #18 evidence](docs/ISSUE_18_MAINNET_SUPPORT_EVIDENCE.md). The controlled signer was automated local-wallet acceptance rather than a human wallet-extension click; the two transfers do not prove sustained user retention.
+
 For WIF holders, BEFORE inspects an identified wallet/spender allowance against the official $WIF token contract without wallet connection, signing or custody. For builders and researchers, the Bounty Studio demonstrates sponsor → researcher → appointed reviewer → verifiable settlement using valueless BTEST. The optional Protect → Challenge → Proof training experience shows enforceable policy vaults, intentional vulnerabilities and actual testnet receipts.
 
 > **Scope:** BEFORE Pay prepares standard WIF transfers for explicit confirmation by the payer's own wallet; it never holds keys or tokens or initiates transfers automatically. No real-WIF transaction has been broadcast or independently proven through BEFORE Pay at this release checkpoint. The permission checker only reads mainnet state; PR #7's optional revocation is not part of this release. Bounty contracts are unaudited and testnet-only. Public BTEST Challenge #7 was completed with three authorized testnet accounts controlled by one operator, not independent human security reviewers.
@@ -31,7 +33,7 @@ The browser prevents a second Pay action after a submitted or uncertain wallet a
 
 The `/app/support/` route reuses Pay's exact mainnet preflight, transfer and receipt-proof boundary for a smaller repeat-use loop. A creator signs a distinct `SupportOffer` binding the official WIF contract, recipient, amount, voluntary return cadence, at most 120-day expiry and campaign ID. A supporter sees the full offer, starts a new cycle deliberately, confirms a fresh standard WIF transfer in their own wallet and can return to the same page to inspect device-local receipts. “Support again” is available only after verified proof and never schedules a payment.
 
-Pending, uncertain, rejected or reloaded cycles remain locked; receipt retries are read-only. Device-local history is revalidated against public RPC before display, but it is not a global ledger or cross-device duplicate-prevention mechanism. Cadence is a date suggestion shown on the device, not a notification or subscription. Signed support offers stay valid until their expiry (at most 120 days); they cannot be revoked early, so creators should choose an appropriate expiration. No real WIF acceptance transaction has been performed by Codex or CI. See [Support security and release gate](docs/BEFORE_SUPPORT_SECURITY_AND_RELEASE.md).
+Pending, uncertain, rejected or reloaded cycles remain locked; receipt retries are read-only. Device-local history is revalidated against public RPC before display, but it is not a global ledger or cross-device duplicate-prevention mechanism. Cadence is a date suggestion shown on the device, not a notification or subscription. Signed support offers stay valid until their expiry (at most 120 days); they cannot be revoked early, so creators should choose an appropriate expiration. On November 8, 2026, BEFORE Support completed two real 200-WIF contributions using a controlled local automated EIP-1193 signer through the live production route. Both public mainnet receipts and official WIF `Transfer` logs were independently checked by the acceptance runner; the second used a fresh signed offer after a timeout in the first browser proof wait. This demonstrates genuine WIF movement, **not** organic retention or a human extension-click journey. See [Issue #18 mainnet evidence](docs/ISSUE_18_MAINNET_SUPPORT_EVIDENCE.md). See [Support security and release gate](docs/BEFORE_SUPPORT_SECURITY_AND_RELEASE.md).
 
 ## Real WIF utility: read-only permission inspection
 
@@ -167,12 +169,11 @@ The same eleven-argument verifier is exercised against real local Anvil state by
 
 [Read the testnet proof process](docs/TESTNET_PROOF.md).
 
-## Next gates
+## Final hackathon gates — November 8, 2026
 
-1. Confirm current competition rules and complete project registration.
-2. Review explorer source and receipts for the public mock-only deployment.
-3. Increase property/invariant coverage and obtain independent security review before any real custody.
-4. Configure a separate WIF reward only for a meaningful, independently reviewed verifier; the existing trivially solvable training exercise must never be presented as a paid research bounty.
-5. Keep production unchanged until the verified preview and draft PR receive explicit approval.
+1. **Already proven:** deployed Pay and Support, two public mainnet WIF Support receipts, independent receipt checks, public source, and green CI. These payments were executed with an automated local signer; the separate one-off Pay page and same-offer “Support again” live experience do not have an independently recorded mainnet wallet-extension run.
+2. **Next:** record an authentic Support-first 1080p demo, prioritizing verified payments and the user workflow, honestly separating automated acceptance and simulated-browser checks.
+3. **Then:** verify the logged-in organizer form, category, actual cutoff and video-hosting requirements; submit and preserve the submission confirmation. The organizer has announced **November 12, 2026, 17:30 UTC** as the cutoff.
+4. **Keep production online through finals:** November 16, 2026. Do not make unreviewed security or UI changes or spend additional WIF for show.
 
 [Deployment](docs/DEPLOYMENT.md) · [Security boundaries](docs/SECURITY_NOTES.md) · [WIF challenge design](docs/WIF_CHALLENGE_DESIGN.md) · [Verification](docs/VERIFICATION.md) · [Submission runbook](docs/SUBMISSION.md) · [Phase 1](docs/PHASE_1.md) · [Phase 2](docs/PHASE_2.md)
