@@ -153,3 +153,7 @@ button,input{font:inherit}
 
 .bounty-ctas{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-top:10px}
 @media(max-width:540px){.bounty-ctas{flex-direction:column;align-items:stretch}.bounty-ctas .button{width:100%}}
+
+/* Mainnet proof disclosure stays readable at every viewport. */
+.evidence-disclosure{color:#a9a9a2;font-size:12px;line-height:1.5;max-width:840px;margin:26px 0 0}
+@media(max-width:760px){.evidence-disclosure{font-size:12px;margin-top:22px}}
