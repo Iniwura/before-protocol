@@ -13,3 +13,21 @@
 .support-quick-start a:hover{opacity:.75}
 .support-quick-start span{font-size:20px;font-weight:400}
 @media(max-width:780px){.pay-hero{padding-bottom:40px}.pay-hero-grid{padding:30px 0 24px}.support-quick-start{margin-top:22px}.support-quick-start a{flex:1 1 145px;min-height:48px;padding:10px 14px;font-size:10px;gap:9px}.support-open{margin-bottom:72px}}
+
+/* Public, cross-device WIF transfer viewer. No dashboard, wallet connection or backend. */
+.public-history-form{padding:25px clamp(20px,4vw,63px);background:var(--soft);display:flex;flex-direction:column;gap:12px}
+.public-history-form label{font-size:12px;font-weight:800;letter-spacing:.03em}
+.public-history-controls{display:flex;gap:14px;align-items:end}
+.public-history-controls input{background:transparent;min-width:0;flex:1;border:0;border-bottom:1px solid #99998f;padding:16px 0;font-size:clamp(14px,1.6vw,22px);outline:none;border-radius:0;letter-spacing:-.02em}
+.public-history-controls input:focus{border-bottom:2px solid var(--ink)}
+.public-history-controls button{flex:0 0 auto;min-width:220px}
+.public-history-status{margin:20px 0 8px;font-size:12px;line-height:1.5;color:#5b5b54;max-width:850px}
+.public-history-status[data-kind="error"]{color:#8c3323}
+.public-history-list{list-style:none;margin:0;padding:0;border-top:1px solid var(--ink)}
+.public-history-list li{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:16px 0;border-bottom:1px solid var(--rule)}
+.public-history-list li div{display:flex;flex-direction:column;gap:5px;min-width:0}
+.public-history-list li strong{font-size:20px;letter-spacing:-.05em}
+.public-history-list li span{font-size:12px;color:#5b5b54}
+.public-history-list a{text-decoration:underline;text-underline-offset:3px;font-size:12px;font-weight:700;white-space:nowrap}
+.public-history-more{margin-top:15px}
+@media(max-width:780px){.public-history-controls{flex-direction:column;align-items:stretch}.public-history-controls input{width:100%;font-size:16px}.public-history-controls button{min-width:100%}.public-history-list li{flex-direction:column;align-items:flex-start}.public-history-list a{white-space:normal}}
