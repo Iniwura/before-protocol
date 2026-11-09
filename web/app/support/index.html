@@ -15,7 +15,7 @@
 <header class="pay-header">
   <a class="pay-brand" href="/" aria-label="BEFORE home">BEFORE<sup>®</sup></a>
   <span class="pay-header-center">BEFORE SUPPORT / WIF</span>
-  <nav class="pay-header-nav" aria-label="Support navigation"><a href="/">Protocol <span aria-hidden="true">↗</span></a><a href="/app/pay/">Pay</a><a href="#support-limits">Limits</a></nav>
+  <nav class="pay-header-nav" aria-label="Support navigation"><a href="/">Protocol <span aria-hidden="true">↗</span></a><a href="/app/pay/">Pay</a><a href="#public-history-card">History</a></nav>
 </header>
 
 <main>
@@ -77,7 +77,28 @@
     <div class="section-heading"><h2 id="history-title">Come back<br><em>with proof.</em></h2><p>Verified receipts saved on this device make returning simple. Each record is checked again against public RPC, exact payer, recipient, amount and official WIF before it appears.</p></div>
     <ul id="history-list" class="support-history-list"></ul>
     <p id="history-empty" class="support-history-empty">No verified contributions saved on this device yet.</p>
-    <p class="support-limit-note">This is device-local history, not a global campaign ledger. It cannot prove every supporter, total creator revenue or cross-device duplicate prevention.</p>
+    <p class="support-limit-note">Your saved BEFORE receipt links stay on this device. The separate public WIF history below can show verified incoming direct transfers across devices, but cannot attribute them to a specific BEFORE offer.</p>
+  </section>
+
+
+  <section id="public-history-card" class="pay-section public-history" aria-labelledby="public-history-title">
+    <div class="section-bar"><span>PUBLIC WIF TRANSFERS</span><span>ROBINHOOD MAINNET · READ ONLY</span></div>
+    <div class="section-heading">
+      <h2 id="public-history-title">Previous WIF<br><em>transfers.</em></h2>
+      <p>See verified WIF received by a wallet, including payments made on other devices. No wallet connection or account needed.</p>
+    </div>
+    <form id="public-history-form" class="public-history-form">
+      <label for="public-history-recipient">Recipient wallet</label>
+      <div class="public-history-controls">
+        <input id="public-history-recipient" type="text" inputmode="text" autocomplete="off" spellcheck="false" maxlength="42" placeholder="0x… recipient address" aria-describedby="public-history-disclosure" required>
+        <button type="submit" class="pay-button">View public transfers <span aria-hidden="true">↗</span></button>
+      </div>
+    </form>
+    <p id="public-history-status" class="public-history-status" role="status" aria-live="polite">Enter a recipient address to read verified WIF transfers from the chain.</p>
+    <ul id="public-history-list" class="public-history-list"></ul>
+    <p id="public-history-empty" class="support-history-empty" hidden>No verified direct WIF transfers found in these scanned blocks.</p>
+    <button id="public-history-more" class="plain-button public-history-more" type="button" hidden>Search older blocks ↗</button>
+    <p id="public-history-disclosure" class="support-limit-note">This is public onchain incoming WIF activity, not a private customer database or a complete BEFORE campaign ledger. Other wallet transfers may appear here. Each record is checked against its transaction, official WIF token and receipt before display. Older blocks are searched on demand.</p>
   </section>
 
   <section id="proof-card" class="pay-section proof-card" hidden aria-labelledby="support-proof-title">
@@ -91,7 +112,7 @@
     <button id="new-support-offer" class="plain-button" type="button">Create a new support page ↗</button>
   </section>
 
-  <section id="support-limits" class="pay-limits" aria-labelledby="support-limits-title"><div class="section-bar"><span>BOUNDARIES</span><span>READ THIS BEFORE USING WIF</span></div><div class="limits-grid"><h2 id="support-limits-title">Simple by<br><em>design.</em></h2><div><p>BEFORE never custody-holds WIF, asks for an approval, receives a private key or chooses a transaction automatically.</p><p>Cadence shows a suggested return date. After a verified contribution you may download a calendar reminder; only your calendar can notify you if you import it. Support is voluntary, not a subscription, escrow, crowdfunding ledger or enforced one-time invoice. Signed offers cannot be revoked before expiration; choose a shorter expiry if appropriate.</p><p>Every contribution is an irreversible mainnet transfer and needs gas. History is public-receipt proof saved on this device, not a complete global record.</p></div></div></section>
+  <section id="support-limits" class="pay-limits" aria-labelledby="support-limits-title"><div class="section-bar"><span>BOUNDARIES</span><span>READ THIS BEFORE USING WIF</span></div><div class="limits-grid"><h2 id="support-limits-title">Simple by<br><em>design.</em></h2><div><p>BEFORE never custody-holds WIF, asks for an approval, receives a private key or chooses a transaction automatically.</p><p>Cadence shows a suggested return date. After a verified contribution you may download a calendar reminder; only your calendar can notify you if you import it. Support is voluntary, not a subscription, escrow, crowdfunding ledger or enforced one-time invoice. Signed offers cannot be revoked before expiration; choose a shorter expiry if appropriate.</p><p>Every contribution is an irreversible mainnet transfer and needs gas. Saved offer history stays on your device; public WIF transfers can be read across devices but cannot identify which campaign or interface initiated them.</p></div></div></section>
 </main>
 <footer class="pay-footer"><span>BEFORE® / NONCUSTODIAL WIF SUPPORT</span><span>NO REAL PAYMENT IS RUN BY CI OR DEMO MODE</span><a href="https://github.com/Iniwura/before-protocol" target="_blank" rel="noopener noreferrer">SOURCE ↗</a></footer>
 </body>
