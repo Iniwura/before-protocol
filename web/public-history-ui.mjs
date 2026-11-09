@@ -31,7 +31,7 @@ export function mountPublicWifHistory({rpcCall}) {
   const updateControls = () => {
     form.querySelector('button').disabled = loading;
     more.disabled = loading;
-    more.hidden = nextBlock === null || entries.size === 0;
+    more.hidden = nextBlock === null;
   };
   const render = () => {
     list.replaceChildren();
