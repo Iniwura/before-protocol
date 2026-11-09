@@ -13,6 +13,7 @@ const files = {
   '/': 'index.html', '/app/support/': 'app/support/index.html', '/support.js': 'support.js',
   '/support-core.mjs': 'support-core.mjs', '/pay-core.mjs': 'pay-core.mjs',
   '/public-history.mjs': 'public-history.mjs', '/public-history-ui.mjs': 'public-history-ui.mjs',
+  '/support-tour.mjs': 'support-tour.mjs',
   '/pay.css': 'pay.css', '/support.css': 'support.css', '/landing.css': 'landing.css',
   '/favicon.svg': 'favicon.svg'
 };
@@ -125,6 +126,18 @@ try {
     await page.goto(base + '/app/support/', {waitUntil: 'domcontentloaded'}); await page.addScriptTag({path: path.join(here, 'node_modules/axe-core/axe.min.js')});
     assert.deepEqual(await noAxeViolations(page), []); await assertNoOverflow(page, width); assert.equal(await page.locator('#create-support-card').isHidden(), false);
     assert.equal(await page.locator('.support-quick-start a').count(),2,'The first screen must offer clear creator and signed-link paths');
+    assert.equal(await page.locator('#support-tour-panel').isHidden(),true,'Tour must be optional, not an intrusive first-load modal');
+    await page.locator('#support-tour-start').click();
+    assert.equal(await page.locator('#support-tour-panel').isVisible(),true,'Opt-in tour opens');
+    assert.match(await page.locator('#support-tour-title').innerText(),/Create a signed support link/);
+    await page.locator('#support-tour-next').click();
+    assert.match(await page.locator('#support-tour-title').innerText(),/supporter checks/);
+    await page.locator('#support-tour-next').click();
+    assert.match(await page.locator('#support-tour-title').innerText(),/Verify what happened/);
+    await page.keyboard.press('Escape');
+    assert.equal(await page.locator('#support-tour-panel').isHidden(),true,'Escape closes tour');
+    assert.equal(await page.locator('#support-tour-start').getAttribute('aria-expanded'),'false','Close returns accessibility state');
+    assert.equal(await page.locator('.support-tour-focus').count(),0,'Close clears the spotlight');
     await page.locator('.support-quick-start a[href="#create-support-card"]').click();
     assert.equal(new URL(page.url()).hash,'#create-support-card','Creator shortcut jumps directly to the form');
     await context.close();
@@ -176,7 +189,7 @@ try {
 
   const linkContext = await browser.newContext({viewport: {width: 390, height: 900}, reducedMotion: 'reduce'}); const linkPage = await linkContext.newPage(); routeRPC(linkPage); await wallet(linkPage);
   await linkPage.goto(base + '/app/support/', {waitUntil: 'domcontentloaded'}); await linkPage.locator('#support-link').fill('https://unrelated.example/app/support/?offer=fake'); await linkPage.locator('#open-support-form button').click(); await linkPage.waitForFunction(() => document.querySelector('#support-feedback').textContent.includes('this website')); assert.equal(await linkPage.evaluate(() => window.__walletTransactions.length), 0);
-  await linkPage.locator('#support-link').fill(link); await linkPage.locator('#open-support-form button').click(); await linkPage.waitForURL(url => url.searchParams.has('offer')); await linkPage.locator('#offer-card').waitFor({state: 'visible'}); assert.equal((await linkPage.locator('#support-recipient').innerText()).toLowerCase(), recipient.toLowerCase()); assert.equal(await linkPage.locator('#support-quick-start').isHidden(), true, 'Role choices must not appear on an already signed Support offer'); await assertNoOverflow(linkPage, 390); assert.equal(await linkPage.evaluate(() => window.__walletTransactions.length), 0); await linkContext.close();
+  await linkPage.locator('#support-link').fill(link); await linkPage.locator('#open-support-form button').click(); await linkPage.waitForURL(url => url.searchParams.has('offer')); await linkPage.locator('#offer-card').waitFor({state: 'visible'}); assert.equal((await linkPage.locator('#support-recipient').innerText()).toLowerCase(), recipient.toLowerCase()); assert.equal(await linkPage.locator('#support-quick-start').isHidden(), true, 'Role choices must not appear on an already signed Support offer'); assert.equal(await linkPage.locator('#support-tour-panel').isHidden(), true, 'The tour does not interrupt a signed offer'); await assertNoOverflow(linkPage, 390); assert.equal(await linkPage.evaluate(() => window.__walletTransactions.length), 0); await linkContext.close();
 
   const payerContext = await browser.newContext({viewport: {width: 390, height: 900}, reducedMotion: 'reduce', acceptDownloads: true}); const payerPage = await payerContext.newPage(); const payerRpc = routeRPC(payerPage); await wallet(payerPage);
   await payerPage.goto(link, {waitUntil: 'domcontentloaded'}); await payerPage.locator('#check-support').click(); await payerPage.locator('#check-results').waitFor({state: 'visible'}); assert.equal(await payerPage.locator('#support-now').isDisabled(), false); await payerPage.evaluate(() => { document.querySelector('#support-now').click(); document.querySelector('#support-now').click(); }); await payerPage.waitForFunction(() => window.__beforeSupport?.state.lifecycle === 'verified', null, {timeout: 16000}).catch(async error => {

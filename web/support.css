@@ -31,3 +31,18 @@
 .public-history-list a{text-decoration:underline;text-underline-offset:3px;font-size:12px;font-weight:700;white-space:nowrap}
 .public-history-more{margin-top:15px}
 @media(max-width:780px){.public-history-controls{flex-direction:column;align-items:stretch}.public-history-controls input{width:100%;font-size:16px}.public-history-controls button{min-width:100%}.public-history-list li{flex-direction:column;align-items:flex-start}.public-history-list a{white-space:normal}}
+
+/* Optional tour: short, local, dismissible, never part of wallet payment flow. */
+.support-tour-open{min-height:44px;border:0;background:transparent;color:var(--ink);font-size:12px;font-weight:700;cursor:pointer;padding:9px 4px;margin-left:auto;white-space:nowrap}
+.support-tour-open:hover{text-decoration:underline;text-underline-offset:4px}
+.support-tour-open span{padding-left:6px}
+.support-tour-panel{position:fixed;z-index:60;bottom:24px;right:24px;width:min(370px,calc(100vw - 32px));background:var(--ink);color:#f8f8f5;padding:22px;box-shadow:0 14px 40px #0003;border:1px solid #555}
+.support-tour-panel[hidden]{display:none!important}
+.support-tour-panel:focus{outline:2px solid #888;outline-offset:3px}
+.support-tour-top{display:flex;justify-content:space-between;align-items:center;gap:18px;color:#d2d0c8;font-size:11px}
+.support-tour-top button{color:inherit;background:none;border:0;font:inherit;padding:7px;cursor:pointer}
+.support-tour-panel h2{font-size:23px;line-height:1.12;letter-spacing:-.045em;margin:20px 0 10px}
+.support-tour-panel p{font-size:14px;line-height:1.45;color:#e3e1d9;margin:0 0 18px}
+.support-tour-next{display:flex;align-items:center;justify-content:space-between;gap:18px;border:0;cursor:pointer;background:#f8f8f5;color:#101010;width:100%;padding:13px 14px;font-size:12px;font-weight:800}
+.support-tour-focus{outline:3px solid var(--ink)!important;outline-offset:5px;scroll-margin:30px}
+@media(max-width:780px){.support-tour-open{flex:1 1 100%;text-align:left;padding:10px 0}.support-tour-panel{bottom:12px;right:12px;width:calc(100vw - 24px);padding:17px}.support-tour-panel h2{font-size:20px;margin:12px 0 7px}.support-tour-panel p{font-size:13px}}
