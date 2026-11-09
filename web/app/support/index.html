@@ -10,6 +10,7 @@
 <link rel="stylesheet" href="/pay.css">
 <link rel="stylesheet" href="/support.css">
 <script type="module" src="/support.js"></script>
+<script type="module" src="/support-tour.mjs"></script>
 </head>
 <body>
 <header class="pay-header">
@@ -26,9 +27,16 @@
     <nav id="support-quick-start" class="support-quick-start" aria-label="Start BEFORE Support">
       <a href="#create-support-card">Create a support link <span aria-hidden="true">↘</span></a>
       <a href="#open-support-card">I have a signed link <span aria-hidden="true">↘</span></a>
+      <button id="support-tour-start" type="button" class="support-tour-open" aria-controls="support-tour-panel" aria-expanded="false">Take a 30-second tour <span aria-hidden="true">↗</span></button>
     </nav>
   </section>
 
+  <aside id="support-tour-panel" class="support-tour-panel" tabindex="-1" role="region" aria-labelledby="support-tour-title" hidden>
+    <div class="support-tour-top"><span id="support-tour-counter">1 / 3</span><button id="support-tour-close" type="button" aria-label="Close product tour">Close <span aria-hidden="true">×</span></button></div>
+    <h2 id="support-tour-title">Create a signed support link</h2>
+    <p id="support-tour-copy" aria-live="polite">Choose the WIF amount and sign. Signing moves no tokens.</p>
+    <button id="support-tour-next" class="support-tour-next" type="button">Next step <span aria-hidden="true">↗</span></button>
+  </aside>
   <div id="support-feedback" class="pay-feedback" role="status" aria-live="polite" hidden></div>
 
   <section id="create-support-card" class="pay-section" aria-labelledby="create-support-title">
