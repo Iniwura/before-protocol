@@ -12,6 +12,7 @@ const root = path.resolve(here, '../web');
 const files = {
   '/': 'index.html', '/app/support/': 'app/support/index.html', '/support.js': 'support.js',
   '/support-core.mjs': 'support-core.mjs', '/pay-core.mjs': 'pay-core.mjs',
+  '/public-history.mjs': 'public-history.mjs', '/public-history-ui.mjs': 'public-history-ui.mjs',
   '/pay.css': 'pay.css', '/support.css': 'support.css', '/landing.css': 'landing.css',
   '/favicon.svg': 'favicon.svg'
 };
@@ -63,6 +64,14 @@ function routeRPC(page, options = {}) {
     else if (body.method === 'eth_blockNumber') result = '0x66';
     else if (body.method === 'eth_getTransactionByHash') result = records.get(body.params[0]?.toLowerCase())?.transaction || null;
     else if (body.method === 'eth_getTransactionReceipt') result = records.get(body.params[0]?.toLowerCase())?.receipt || null;
+    else if (body.method === 'eth_getLogs') {
+      const filter = body.params[0] || {};
+      const destination = wordAddress(recipient).toLowerCase();
+      result = filter.address?.toLowerCase() === WIF_TOKEN.toLowerCase() && filter.topics?.[2]?.toLowerCase() === destination
+        ? Array.from(records.values()).map(({transaction, receipt}, i) => ({
+          ...receipt.logs[0], transactionHash: transaction.hash, blockNumber: '0x64', logIndex: '0x' + i.toString(16), removed: false
+        })) : [];
+    }
     await route.fulfill({status: 200, contentType: 'application/json', headers: {'access-control-allow-origin': '*'}, body: JSON.stringify({jsonrpc: '2.0', id: body.id || 1, result})});
   });
   return {metrics, records};
@@ -136,6 +145,34 @@ try {
   const creatorContext = await browser.newContext({viewport: {width: 1280, height: 900}, reducedMotion: 'reduce'}); const creator = await creatorContext.newPage(); routeRPC(creator); await wallet(creator, {mode: 'recipient'});
   await creator.goto(base + '/app/support/', {waitUntil: 'domcontentloaded'}); await creator.locator('#support-amount').fill('1.25'); await creator.locator('#support-interval').selectOption('weekly'); await creator.locator('#create-support').click(); await creator.locator('#share-card').waitFor({state: 'visible'});
   const link = await creator.locator('#support-share-link').inputValue(); assert.match(link, /\/app\/support\/\?offer=/); assert.equal(await creator.evaluate(() => window.__walletTransactions.length), 0); assert.equal(await creator.evaluate(() => window.__typedData.primaryType), 'SupportOffer'); assert.equal(await creator.locator('#support-interval-display').innerText(), 'Weekly suggestion'); await creator.addScriptTag({path: path.join(here, 'node_modules/axe-core/axe.min.js')}); assert.deepEqual(await noAxeViolations(creator), []); await creatorContext.close();
+
+  // Public history is a read-only cross-device chain lookup, not an app-owned
+  // campaign ledger or a wallet permission. It works without a signed offer.
+  const publicContext = await browser.newContext({viewport: {width: 390, height: 900}, reducedMotion: 'reduce'});
+  const publicPage = await publicContext.newPage();
+  const publicRPC = routeRPC(publicPage);
+  publicPage.on('pageerror', error => problems.push('Public history: ' + error.message));
+  await publicPage.goto(base + '/app/support/', {waitUntil: 'domcontentloaded'});
+  await publicPage.locator('#public-history-recipient').fill(recipient);
+  await publicPage.locator('#public-history-form button').click();
+  await publicPage.waitForFunction(() => document.querySelectorAll('#public-history-list li').length === 3);
+  assert.match(await publicPage.locator('#public-history-status').innerText(), /3 independently verified direct WIF transfers/);
+  assert.equal(await publicPage.locator('#public-history-list a').count(), 3);
+  assert.ok(publicRPC.metrics.calls.includes('eth_getLogs'), 'History must discover public onchain events');
+  assert.ok(publicRPC.metrics.calls.includes('eth_getTransactionReceipt'), 'History must recheck receipts');
+  assert.equal(await publicPage.evaluate(() => Boolean(window.ethereum)), false, 'Public history never needs a wallet');
+  await assertNoOverflow(publicPage, 390);
+  await publicContext.close();
+
+  const publicFailContext = await browser.newContext({viewport: {width: 390, height: 900}});
+  const publicFailPage = await publicFailContext.newPage();
+  routeRPC(publicFailPage, {failureMethod: 'eth_getTransactionReceipt'});
+  await publicFailPage.goto(base + '/app/support/', {waitUntil: 'domcontentloaded'});
+  await publicFailPage.locator('#public-history-recipient').fill(recipient);
+  await publicFailPage.locator('#public-history-form button').click();
+  await publicFailPage.waitForFunction(() => /0 independently verified direct WIF transfers/.test(document.querySelector('#public-history-status').textContent));
+  assert.equal(await publicFailPage.locator('#public-history-list li').count(), 0, 'Failed receipt checks cannot become payment history');
+  await publicFailContext.close();
 
   const linkContext = await browser.newContext({viewport: {width: 390, height: 900}, reducedMotion: 'reduce'}); const linkPage = await linkContext.newPage(); routeRPC(linkPage); await wallet(linkPage);
   await linkPage.goto(base + '/app/support/', {waitUntil: 'domcontentloaded'}); await linkPage.locator('#support-link').fill('https://unrelated.example/app/support/?offer=fake'); await linkPage.locator('#open-support-form button').click(); await linkPage.waitForFunction(() => document.querySelector('#support-feedback').textContent.includes('this website')); assert.equal(await linkPage.evaluate(() => window.__walletTransactions.length), 0);
