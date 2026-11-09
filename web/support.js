@@ -7,6 +7,7 @@ import {
   decodeSymbolResult, validateRecipientCode, validateMinedTransfer,
   explorerTransactionUrl, buildSupportCalendarReminder
 } from './support-core.mjs';
+import {mountPublicWifHistory} from './public-history-ui.mjs';
 
 const SUPPORT_STAGE = Object.freeze({
   NOT_SUBMITTED: 'not-submitted', WALLET_PENDING: 'wallet-pending',
@@ -26,6 +27,7 @@ const POLL_DELAYS = [250, 500, 750, 1_000, 1_500, 2_000, 3_000, 4_000, 5_000, 6_
 const HISTORY_LIMIT = 12;
 
 const $ = id => document.getElementById(id);
+const publicHistoryViewer = mountPublicWifHistory({rpcCall: rpc});
 function setText(id, value) { const node = $(id); if (node) node.textContent = String(value); }
 function setHidden(id, hidden) { const node = $(id); if (node) node.hidden = hidden; }
 function showFeedback(message, kind = 'info') {
@@ -167,6 +169,7 @@ function renderOffer() {
   $('support-campaign-display').title = offer.campaignId;
   setHidden('create-support-card', true); setHidden('open-support-card', true); setHidden('support-quick-start', true);
   setHidden('offer-card', false); setHidden('history-card', false);
+  publicHistoryViewer.setRecipient(offer.recipient);
   if (state.lifecycle === SUPPORT_STAGE.NOT_SUBMITTED) {
     setHidden('check-card', false); setHidden('proof-card', true);
   }
