@@ -1,0 +1,37 @@
+name: BEFORE live walkthrough review
+
+on:
+  push:
+    branches:
+      - demo/live-walkthrough-review-2026-11-09
+    paths:
+      - ".github/workflows/before-live-review.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  review-video:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download and independently verify the genuine recorded review cut
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p demo/output
+          curl -fsSL --retry 3 --max-time 120 \
+            "https://sb-2m8341frohsf.vercel.run/BEFORE_LIVE_WALKTHROUGH_REVIEW_1080P.mp4" \
+            -o demo/output/BEFORE_LIVE_WALKTHROUGH_REVIEW_1080P.mp4
+          echo "f0afbd85166c86df860c29e10ac66da44e158f63f77072841f5fe691a51abf46  demo/output/BEFORE_LIVE_WALKTHROUGH_REVIEW_1080P.mp4" | sha256sum --check -
+          ffprobe -v error -show_entries stream=codec_name,codec_type,width,height:format=duration,size -of json demo/output/BEFORE_LIVE_WALKTHROUGH_REVIEW_1080P.mp4
+          ffmpeg -v error -i demo/output/BEFORE_LIVE_WALKTHROUGH_REVIEW_1080P.mp4 -f null -
+      - name: Retain owner-review video, not a public organizer upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: BEFORE-LIVE-WALKTHROUGH-REVIEW
+          path: demo/output/BEFORE_LIVE_WALKTHROUGH_REVIEW_1080P.mp4
+          if-no-files-found: error
+          retention-days: 7
