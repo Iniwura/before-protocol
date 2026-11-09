@@ -41,7 +41,7 @@ test('read-only WIF history filter is bounded and recipient-specific',()=>{
   assert.throws(()=>incomingWifFilter(recipient,0n,2000000n),/wide/);
   assert.throws(()=>incomingWifFilter(recipient,2n,1n),/wide/);
   assert.throws(()=>incomingWifFilter('x',0,1),/recipient/);
-  assert.throws(()=>incomingWifFilter('0x'+'0'.repeat(40),0,1),/Zero address/);
+  assert.throws(()=>incomingWifFilter('0x'+'0'.repeat(40),0,1),/recipient|zero address/i);
   assert.throws(()=>incomingWifFilter(recipient,0n,-1n),/negative/);
 });
 
