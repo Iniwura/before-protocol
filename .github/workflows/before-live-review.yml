@@ -26,6 +26,7 @@ jobs:
             "https://sb-2m8341frohsf.vercel.run/BEFORE_LIVE_WALKTHROUGH_REVIEW_1080P.mp4" \
             -o demo/output/BEFORE_LIVE_WALKTHROUGH_REVIEW_1080P.mp4
           echo "f0afbd85166c86df860c29e10ac66da44e158f63f77072841f5fe691a51abf46  demo/output/BEFORE_LIVE_WALKTHROUGH_REVIEW_1080P.mp4" | sha256sum --check -
+          sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg >/dev/null
           ffprobe -v error -show_entries stream=codec_name,codec_type,width,height:format=duration,size -of json demo/output/BEFORE_LIVE_WALKTHROUGH_REVIEW_1080P.mp4
           ffmpeg -v error -i demo/output/BEFORE_LIVE_WALKTHROUGH_REVIEW_1080P.mp4 -f null -
       - name: Retain owner-review video, not a public organizer upload
