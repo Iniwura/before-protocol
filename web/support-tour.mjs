@@ -40,6 +40,7 @@ export function mountSupportTour(root = document) {
   const exit = (restoreFocus = false) => {
     const wasOpen = !panel.hidden;
     panel.hidden = true;
+    start.setAttribute('aria-expanded', 'false');
     clearTarget();
     step = -1;
     if (restoreFocus && wasOpen && start.isConnected) start.focus({preventScroll: true});
@@ -57,6 +58,7 @@ export function mountSupportTour(root = document) {
     copy.textContent = data.description;
     next.textContent = index === TOUR_STEPS.length - 1 ? 'Create a support link' : 'Next step';
     panel.hidden = false;
+    start.setAttribute('aria-expanded', 'true');
     target.scrollIntoView({
       behavior: root.defaultView.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth',
       block: 'center'
