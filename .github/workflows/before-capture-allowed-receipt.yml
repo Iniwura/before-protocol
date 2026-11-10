@@ -1,0 +1,28 @@
+name: BEFORE independently verified allowed testnet receipt footage
+on:
+  push:
+    branches: [demo/seldra-full-product-film-2026-11-10]
+    paths: [".github/workflows/before-capture-allowed-receipt.yml","demo/full-capture/capture-allowed.mjs"]
+permissions:
+  contents: read
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - name: Prepare real Chromium
+        run: |
+          cd demo
+          npm install --no-save --silent playwright@1.64.1
+          npx playwright install --with-deps chromium
+      - name: Capture genuine successful testnet transaction through app
+        run: node demo/full-capture/capture-allowed.mjs
+      - name: Keep proof frame
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: BEFORE-ACTUAL-ALLOWED-TESTNET-RECEIPT
+          path: demo/full-capture/allowed-output/
+          if-no-files-found: warn
+          retention-days: 7
