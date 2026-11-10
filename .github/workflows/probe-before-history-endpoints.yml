@@ -1,0 +1,34 @@
+name: Probe public WIF history endpoints
+on:
+  push:
+    branches: [demo/final-support-storyboard-2026-11-10]
+    paths: [".github/workflows/probe-before-history-endpoints.yml"]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Check public explorer discovery endpoint
+        shell: bash
+        run: |
+          set -u
+          url='https://robinhoodchain.blockscout.com/api/v2/addresses/0x02fb3352e593f4bcbff5a845e7a0f90ca4a87f0d/token-transfers?type=ERC-20&filter=to&token=0x5173b8eA6923c2d40267890D45C46a3480954773'
+          curl -sS -L --max-time 25 -o /tmp/transfers.json -w "explorer HTTP: %{http_code}; downloaded %{size_download} bytes\n" "$url"
+          python3 - <<'PY'
+          import json
+          try:
+              j=json.load(open('/tmp/transfers.json'))
+              print('keys:',list(j)[:12])
+              for e in j.get('items',[])[:3]:
+                  print('item',str(e)[:850])
+          except Exception as e: print('could not parse explorer JSON',str(e),open('/tmp/transfers.json').read()[:300])
+          PY
+      - name: Check the current official public RPC
+        shell: bash
+        run: |
+          curl -sS --max-time 25 -X POST -H 'content-type: application/json' \
+          --data '{"jsonrpc":"2.0","id":1,"method":"eth_blockNumber","params":[]}' \
+          'https://rpc.mainnet.chain.robinhood.com' | head -c 200; echo
