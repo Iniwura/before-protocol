@@ -1,0 +1,21 @@
+name: Verify narrated video source audio
+on:
+  push:
+    branches: [demo/final-support-storyboard-2026-11-10]
+    paths: [".github/workflows/probe-demo-audio.yml"]
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Download already-generated spoken narration
+        run: |
+          set -euo pipefail
+          curl -sSL --retry 2 --max-time 45 \
+            -o /tmp/narration.audio \
+            'https://www.aidocmaker.com/g0/audio?name=9b84ebb5a0094c6bbbabaf69f680e685'
+          file /tmp/narration.audio
+          du -h /tmp/narration.audio
+          ffprobe -v error -show_entries stream=codec_name,codec_type:format=duration,size -of json /tmp/narration.audio
