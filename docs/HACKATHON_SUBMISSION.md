@@ -1,3 +1,5 @@
+> **Historical mock-only submission draft.** This predates the verified real-WIF Support acceptance and the final demo. Do **not** copy its old scope, preview URL or description into the organizer form. See the [root README](../README.md) and [current evidence](README.md).
+
 # World Is Flat submission packet
 
 Copy-ready material for the [World Is Flat hackathon](https://worldisflat.fun/build). This packet describes the verified mock-only Robinhood Chain testnet demonstration; it makes no WIF-funding, audit or mainnet claim.
