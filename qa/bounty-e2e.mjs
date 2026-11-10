@@ -75,6 +75,8 @@ try {
   assert.equal(await page.locator('.workbench').isHidden(),true,'No blockchain forms before selecting a goal');
   assert.equal(await page.locator('#wallet-connect').isHidden(),true,'No wallet prompt before choosing a task');
   assert.equal(await page.locator('.entry-card').count(),3,'Exactly three clear entry choices');
+  assert.equal(await page.locator('#bounty-discovery').isVisible(),true,'Read-only bounty discovery should be available before wallet connection');
+  assert.equal(await page.locator('[data-bounty-filter]').count(),3,'All, Open and Finished filters must be present');
   await page.locator('[data-start="sponsor"]').click();
   assert.ok(await page.locator('#role-sponsor').isVisible(),'Choosing sponsor should show only the creation task');
   assert.equal(await page.locator('#wallet-connect').isVisible(),true,'Wallet connection appears only inside a task');
@@ -158,6 +160,16 @@ async function chooseTask(role){
  assert.equal(await page.locator('#role-sponsor').isVisible(),true,'Sponsor should remain in their own workflow');
  let id=await page.locator('#challenge-id').inputValue();assert.match(id,/^[1-9]\d*$/);
  result.transactions.push({stage:'create',id});
+ await page.locator('#change-goal').click();
+ await page.locator('#bounty-discovery-refresh').click();
+ await page.waitForFunction((id)=>(document.querySelector('#bounty-discovery-list')?.textContent||'').includes('Bounty #'+id),id,{timeout:35000});
+ assert.equal(await page.locator('#bounty-discovery-list .bounty-discovery-link').first().getAttribute('href'),'/app/bounty/?id='+id+'#solver','Discovered bounty must link to an actual chain-scoped ID');
+ await page.locator('[data-bounty-filter="finished"]').click();
+ assert.equal(await page.locator('#bounty-discovery-list .bounty-discovery-link').count(),0,'Active bounty must not be shown as finished');
+ await page.locator('[data-bounty-filter="open"]').click();
+ assert.equal(await page.locator('#bounty-discovery-list .bounty-discovery-link').count(),1,'Open filter should show actual active bounty');
+ await page.locator('[data-bounty-filter="all"]').click();
+ await page.locator('[data-start="sponsor"]').click();
  await page.evaluate(()=>window.__switchTestAccount(2));
  await chooseTask('solver');
  await page.locator('#evidence').fill('BTEST training vault checks individual transfers but misses the daily aggregate limit.');
