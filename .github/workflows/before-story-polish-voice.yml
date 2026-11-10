@@ -1,0 +1,46 @@
+name: BEFORE final story-polish narration masters
+on:
+  push:
+    branches: [demo/submission-voiceover-final-2026-11-10]
+    paths:
+      - ".github/workflows/before-story-polish-voice.yml"
+      - "demo/audio/story-v3-voice-urls.json"
+permissions:
+  contents: read
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install media inspector
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg >/dev/null
+      - name: Verify voiceover masters
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import urllib.request,subprocess,json
+          manifest=json.loads(Path('demo/audio/story-v3-voice-urls.json').read_text())
+          target=Path('demo/audio/story-v3-masters')
+          target.mkdir(parents=True,exist_ok=True)
+          durations={}
+          for name,url in manifest.items():
+              req=urllib.request.Request(url,headers={'User-Agent':'Mozilla/5.0'})
+              data=urllib.request.urlopen(req,timeout=40).read()
+              p=target/(name+'.mp3')
+              p.write_bytes(data)
+              probe=json.loads(subprocess.check_output(['ffprobe','-v','error','-show_entries','stream=codec_name,sample_rate:format=duration,size','-of','json',str(p)]))
+              assert probe['streams'][0]['codec_name']=='mp3',name+' not MPEG audio'
+              assert float(probe['format']['duration'])>3
+              durations[name]=round(float(probe['format']['duration']),3)
+              print(name,len(data),'bytes',durations[name],'seconds')
+          (target/'durations.json').write_text(json.dumps(durations,indent=2))
+          PY
+      - name: Upload lossless input provenance
+        uses: actions/upload-artifact@v4
+        with:
+          name: BEFORE-STORY-V3-CLEAR-NARRATION
+          path: demo/audio/story-v3-masters/
+          retention-days: 7
