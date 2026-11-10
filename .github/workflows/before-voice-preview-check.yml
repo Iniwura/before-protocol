@@ -1,0 +1,27 @@
+name: BEFORE submission voice source check
+on:
+  push:
+    branches: [demo/submission-voiceover-final-2026-11-10]
+    paths: [".github/workflows/before-voice-preview-check.yml"]
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch and inspect generated natural voice sample
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/before-voice
+          curl -fLsS --max-time 25 -o /tmp/before-voice/sample.mp3 \
+            'https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/a8535c8d-ffaa-4482-9d47-47f2808bec40.mp3'
+          file /tmp/before-voice/sample.mp3
+          wc -c /tmp/before-voice/sample.mp3
+          ffprobe -v error -show_entries format=duration,size -of json /tmp/before-voice/sample.mp3
+      - name: Keep playable preview evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: before-clear-voice-sample
+          path: /tmp/before-voice/
+          if-no-files-found: warn
