@@ -1,0 +1,40 @@
+name: BEFORE full-product real app walkthrough capture
+on:
+  push:
+    branches: [demo/seldra-full-product-film-2026-11-10]
+    paths: [".github/workflows/before-full-product-capture.yml","demo/full-capture/capture.mjs"]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install browser
+        run: |
+          set -euo pipefail
+          cd demo
+          npm install --no-save --silent playwright@1.64.1
+          npx playwright install --with-deps chromium
+      - name: Capture hosted BEFORE product, testnet proof and public mainnet history
+        run: node demo/full-capture/capture.mjs
+      - name: Encode high quality browser master
+        if: success()
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg >/dev/null
+          ffmpeg -y -hide_banner -loglevel error -i demo/full-capture/output/BEFORE_FULL_PRODUCT_RAW.webm \
+            -c:v libx264 -preset medium -crf 15 -pix_fmt yuv420p -movflags +faststart \
+            demo/full-capture/output/BEFORE_FULL_PRODUCT_RAW_HQ.mp4
+          ffprobe -v error -show_entries stream=codec_name,width,height:format=duration,size -of json \
+            demo/full-capture/output/BEFORE_FULL_PRODUCT_RAW_HQ.mp4
+      - name: Upload original screenshots, timeline, logs and video
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: BEFORE-FULL-PRODUCT-REAL-BROWSER
+          path: demo/full-capture/output/
+          if-no-files-found: warn
+          retention-days: 7
