@@ -135,8 +135,24 @@ try{
  assert.equal(await balance(token,vault),btest(130),'Rejected action modified vault balance');
  result.steps.push({step:'Over-limit 75 BTEST withdrawal reverted without loss',passed:true,remainingBTEST:130});
  assert.deepEqual(pageErrors,[],'Browser JavaScript errors');
- result.status='PASS';
  await context.close();
+ // Actual hosted site, without injecting a wallet or redirecting production RPC.
+ const prod=await browser.newContext({viewport:{width:1280,height:900},reducedMotion:'reduce'});
+ const live=await prod.newPage();
+ const liveErrors=[];
+ live.on('pageerror',e=>liveErrors.push(e.message));
+ await live.goto('https://before-web-theta.vercel.app/app/',{waitUntil:'domcontentloaded',timeout:55000});
+ await live.locator('#onchain-protect').waitFor({state:'visible',timeout:45000});
+ assert.equal(await live.locator('#create-demo-vault').isVisible(),true,'Production must expose Create test vault after public contract checks');
+ assert.equal(await live.locator('#network-status-text').innerText(),'Testnet · Connected');
+ await live.screenshot({path:path.join(outputDir,'04-production-vault-button.png')});
+ await live.locator('#create-demo-vault').click();
+ await live.waitForFunction(()=>document.querySelector('#onchain-protect-status')?.textContent?.includes('Connect an EVM browser wallet'),null,{timeout:15000});
+ assert.doesNotMatch(await live.locator('#onchain-protect-status').innerText(),/Vault registered:/,'Walletless visit must not fake creation');
+ assert.deepEqual(liveErrors,[],'Production browser JS errors');
+ result.steps.push({step:'Public production site exposes Create test vault and requires a real EVM wallet',passed:true,url:'https://before-web-theta.vercel.app/app/#protect'});
+ await prod.close();
+ result.status='PASS';
 }catch(error){result.status='FAIL';result.error=String(error.stack||error);}
 finally{
  await writeFile(path.join(outputDir,'REPORT.json'),JSON.stringify(result,null,2)+'\n');
