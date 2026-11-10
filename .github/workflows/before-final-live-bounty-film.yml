@@ -1,0 +1,30 @@
+name: BEFORE final live bounty demo footage
+on:
+  push:
+    branches: [demo/final-clarity-live-bounty-2026-11-10]
+    paths:
+      - "demo/live-bounty-video/capture.mjs"
+      - ".github/workflows/before-final-live-bounty-film.yml"
+permissions:
+  contents: read
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Chromium and Playwright
+        run: |
+          cd demo
+          npm install --no-save --silent playwright@1.64.1
+          npx playwright install --with-deps chromium
+      - name: Record genuine production read-only bounty discovery
+        run: node demo/live-bounty-video/capture.mjs
+      - name: Upload finished master and evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: BEFORE-FINAL-LIVE-BOUNTY-FOOTAGE
+          path: demo/live-bounty-video/output/
+          if-no-files-found: warn
+          retention-days: 7
