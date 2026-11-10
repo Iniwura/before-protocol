@@ -1,0 +1,29 @@
+name: BEFORE final hackathon organizer preflight
+on:
+  push:
+    branches: [audit/final-submission-preflight-2026-11-10]
+    paths:
+      - qa/final-organizer-preflight.mjs
+      - .github/workflows/before-final-organizer-preflight.yml
+permissions:
+  contents: read
+jobs:
+  public-preflight:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install browser
+        run: |
+          npm ci --prefix qa
+          cd qa && npx playwright install --with-deps chromium
+      - name: Inspect public official hackathon and deployed app
+        run: node qa/final-organizer-preflight.mjs
+      - name: Preserve rules, form gate, screenshots, production results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: BEFORE-2026-11-10-FINAL-PREFLIGHT
+          path: qa/results/final-preflight/
+          retention-days: 14
+          if-no-files-found: warn
