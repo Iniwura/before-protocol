@@ -1,0 +1,46 @@
+name: BEFORE directed film voice master
+on:
+  push:
+    branches: [demo/final-support-storyboard-2026-11-10]
+    paths: [".github/workflows/before-directed-voice.yml", "demo/FINAL_DIRECTED_VOICEOVER.txt"]
+permissions:
+  contents: read
+jobs:
+  create-voice-master:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install offline narration dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg >/dev/null
+          python3 -m pip install --break-system-packages -q piper-tts
+      - name: Generate original narrator voice without external speech API
+        run: |
+          set -euo pipefail
+          mkdir -p demo/voice-master
+          curl -fsSL --retry 3 --max-time 120 \
+            'https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/en/en_US/lessac/medium/en_US-lessac-medium.onnx' \
+            -o demo/voice-master/voice.onnx
+          curl -fsSL --retry 3 --max-time 45 \
+            'https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/en/en_US/lessac/medium/en_US-lessac-medium.onnx.json' \
+            -o demo/voice-master/voice.onnx.json
+          cat demo/FINAL_DIRECTED_VOICEOVER.txt | piper \
+            --model demo/voice-master/voice.onnx \
+            --config demo/voice-master/voice.onnx.json \
+            --length_scale 0.92 \
+            --output_file demo/voice-master/BEFORE_DIRECTED_VOICE.wav
+          ffmpeg -y -v error -i demo/voice-master/BEFORE_DIRECTED_VOICE.wav -c:a libmp3lame -q:a 1 demo/voice-master/BEFORE_DIRECTED_VOICE.mp3
+          ffprobe -v error -show_entries format=duration,size -of json demo/voice-master/BEFORE_DIRECTED_VOICE.mp3
+      - name: Upload original narration
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: BEFORE-DIRECTED-VOICE-MASTER
+          path: |
+            demo/voice-master/BEFORE_DIRECTED_VOICE.wav
+            demo/voice-master/BEFORE_DIRECTED_VOICE.mp3
+            demo/FINAL_DIRECTED_VOICEOVER.txt
+          if-no-files-found: warn
+          retention-days: 7
