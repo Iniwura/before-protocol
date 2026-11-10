@@ -1,3 +1,5 @@
+> **Historical video planning record, not the final demonstration.** The latest uploaded walkthrough is [here](https://youtu.be/YC7t2mql-cI). For current scope and onchain evidence use the [root README](../README.md).
+
 # BEFORE — winning-focused demo reboot
 
 **Date:** November 10, 2026.  
