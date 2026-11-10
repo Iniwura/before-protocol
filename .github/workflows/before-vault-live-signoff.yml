@@ -1,0 +1,45 @@
+name: BEFORE vault live sign-off (read only)
+on:
+  push:
+    branches: [qa/verify-vault-live-before-signoff-2026-11-10]
+    paths:
+      - "qa/vault-live-signoff.mjs"
+      - ".github/workflows/before-vault-live-signoff.yml"
+permissions:
+  contents: read
+jobs:
+  live-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 13
+    steps:
+      - uses: actions/checkout@v4
+      - uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: stable
+      - name: Build source to verify deployed code identity
+        run: forge build
+      - name: Confirm live production button, historical onchain vault, owner, limits and simulated creation
+        run: node qa/vault-live-signoff.mjs
+      - name: Re-run complete 11-argument public testnet verifier
+        run: |
+          node - <<'NODE'
+          const {spawnSync}=require('node:child_process');
+          const c=require('./web/deployment.json');
+          const args=[
+            'script/verify-testnet.mjs',
+            c.factory,c.factoryTx,c.mockToken,c.mockTokenTx,
+            c.challengeEscrow,c.challengeEscrowTx,c.demoTx,c.practiceTx,
+            c.allowedTx,c.deniedTx,c.practiceProofTx
+          ];
+          console.log('Read-only verification of',c.factory,'on chain',c.chainId);
+          const result=spawnSync('node',args,{stdio:'inherit',timeout:420000});
+          process.exit(result.status===null?1:result.status);
+          NODE
+      - name: Upload detailed evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: BEFORE-LIVE-VAULT-SIGNOFF-EVIDENCE
+          path: qa/results/VAULT_SIGNOFF_LIVE.json
+          retention-days: 14
+          if-no-files-found: warn
