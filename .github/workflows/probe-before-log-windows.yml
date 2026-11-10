@@ -1,0 +1,35 @@
+name: Probe mainnet WIF history RPC windows
+on:
+  push:
+    branches: [demo/final-support-storyboard-2026-11-10]
+    paths: [".github/workflows/probe-before-log-windows.yml"]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Compare recent, older, and narrow log queries
+        run: |
+          python3 - <<'PY'
+          import json,urllib.request,time
+          endpoint="https://rpc.mainnet.chain.robinhood.com"
+          for name,first,last in [
+            ("recent_large",108928842,110928841),
+            ("older_large",106928842,108928841),
+            ("historical_narrow",108860000,108880000),
+          ]:
+            body=json.dumps({"jsonrpc":"2.0","id":1,"method":"eth_getLogs","params":[{
+              "address":"0x5173b8eA6923c2d40267890D45C46a3480954773",
+              "fromBlock":hex(first),"toBlock":hex(last),
+              "topics":["0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",None,
+              "0x00000000000000000000000002fb3352e593f4bcbff5a845e7a0f90ca4a87f0d"]}]})
+            request=urllib.request.Request(endpoint,body.encode(),headers={"content-type":"application/json"})
+            start=time.time()
+            try:
+              with urllib.request.urlopen(request,timeout=20) as resp: data=json.loads(resp.read())
+              print(name,"time",round(time.time()-start,2),"error",data.get("error"),"count",len(data.get("result",[])))
+            except Exception as e: print(name,"FAILED",type(e).__name__,str(e)[:200])
+          PY
