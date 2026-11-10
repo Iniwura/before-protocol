@@ -1,0 +1,18 @@
+{
+  "protect": {
+    "url": "https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/d214109d-4027-4e19-97eb-17b9b064c778.mp3",
+    "text": "Start with Protect. A user creates a smart-contract vault to hold tokens and set spending rules. Here, the example vault limits each withdrawal to sixty tokens, and daily withdrawals to one hundred. I try seventy-five: blocked. I try forty: allowed. This screen previews the rules. Actual vault contracts enforce them on Robinhood testnet using valueless B test tokens."
+  },
+  "bounty": {
+    "url": "https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/46fa0c73-2ef6-4582-95f0-e7a080595268.mp3",
+    "text": "Bounty Studio is for developers who want security weaknesses found and reviewed. A sponsor posts a test-token reward. A researcher submits evidence. Appointed reviewers check it, and escrow settles or refunds the reward. You can now browse existing testnet bounties, including completed ones, without a wallet. These use valueless B test, not real WIF. Our recorded reviewers were operator-controlled."
+  },
+  "support_a": {
+    "url": "https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/ff261654-8e1c-4c43-bd88-8395dc676001.mp3",
+    "text": "With WIF Support, a creator chooses an amount, signs a request, and shares the link. A supporter opens it, checks where the WIF will go, and confirms payment. Nothing happens automatically."
+  },
+  "support_b": {
+    "url": "https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/91840125-7934-4f7a-b48a-1a2730436eb2.mp3",
+    "text": "These are earlier controlled-test receipts, not transfers made during this walkthrough. BEFORE Support processed two separate payments of two hundred WIF each on mainnet. Both reached the intended recipient. That's four hundred WIF, verified onchain."
+  }
+}
