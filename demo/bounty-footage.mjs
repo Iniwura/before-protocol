@@ -24,7 +24,7 @@ try{
  await page.waitForTimeout(700);
  await page.locator('.bounty-discovery-link').first().click();
  await page.locator('#challenge-summary').waitFor({state:'visible',timeout:35000});
- await page.locator('#challenge-inspector').scrollIntoViewIfNeeded();
+ await page.locator('.challenge-inspector').scrollIntoViewIfNeeded();
  await page.waitForTimeout(2100);
  await page.screenshot({path:out+'/04-open-bounty.png'});
  const summary=await page.locator('#challenge-summary').innerText();
