@@ -1,3 +1,5 @@
+> **Historical release snapshot (November 8, 2026).** Its exact deployed SHA and pending PR references are point-in-time facts, not the November 10 release status. For current product behavior, demo and evidence use the [root README](../README.md) and [documentation index](README.md).
+
 # BEFORE — combined release and submission readiness
 
 Assessment date: 2026-11-08. **Current application release:** `951626c4059004ea7a39ac48230e9c06c0c82fc0`, including [merged PR #22](https://github.com/Iniwura/before-protocol/pull/22). The earlier [f7dd6bf engineering freeze](ENGINEERING_RELEASE_FREEZE_2026-11-08.md) is a historical baseline. The live code now presents Support first, authentic mainnet receipts on the homepage and optional one-time manually imported calendar reminders after verified weekly/monthly contributions. The underlying WIF transfer, signed-intent and onchain proof boundaries remain unchanged.

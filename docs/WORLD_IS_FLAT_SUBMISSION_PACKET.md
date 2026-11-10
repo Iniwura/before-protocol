@@ -1,3 +1,5 @@
+> **Historical planning packet (November 8, 2026).** Written before the final [demo video](https://youtu.be/YC7t2mql-cI) was uploaded and before the November 10 Bounty Studio improvements. Keep for decision history, **not** as live submission instructions. See the [root README](../README.md), [current evidence index](README.md) and actual public receipts. **Organizer submission remains unconfirmed.**
+
 # BEFORE — World Is Flat submission package
 
 Prepared: November 8, 2026. **Not yet submitted.** The engineering build is [frozen and documented](ENGINEERING_RELEASE_FREEZE_2026-11-08.md); mainnet WIF Support evidence is public and independently checked. The demo video, signed-in organizer entry/approval, final portal fields and final submission are still pending.

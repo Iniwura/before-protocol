@@ -1,3 +1,5 @@
+> **Historical submission draft.** This describes an earlier product, before BEFORE Support's documented WIF mainnet transfers and the final uploaded demo. For current facts see the [root README](../README.md) and [documentation index](README.md).
+
 # BEFORE — World Is Flat Hackathon submission package
 
 **Status:** Technical prototype ready for owner review and public release. **Not yet submitted through the organizer's sign-in flow.**

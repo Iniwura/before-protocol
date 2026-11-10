@@ -2,186 +2,172 @@
 
 **Know who you're paying. Verify what you're sending. Prove what happened.**
 
-**Current product:** BEFORE Support is the main entry point, with two independently verified real mainnet WIF receipts visible on the homepage. Following verified contributions to weekly/monthly offers, supporters can **optionally download a one-time calendar reminder** to import themselves. Nothing is scheduled by BEFORE; no wallet approval or automatic transfer is created. [Original technical baseline](docs/ENGINEERING_RELEASE_FREEZE_2026-11-08.md) · [Current submission packet](docs/WORLD_IS_FLAT_SUBMISSION_PACKET.md). The demo and organizer submission remain separate pending steps.
+BEFORE is a noncustodial **$WIF payment and verification app on Robinhood Chain**. A creator signs a payment request. A supporter checks the recipient, amount and network before approving a transfer in their own wallet. Afterwards, anyone can inspect the actual blockchain receipt.
 
-BEFORE is a [World Is Flat](https://worldisflat.fun/build) Robinhood Chain product combining **noncustodial $WIF payments and repeat voluntary support with verifiable receipts**, **read-only WIF spending-permission checks**, and a separate **BTEST-only security bounty** on testnet.
+**The core idea:** make a token payment understandable *before* someone confirms it, and independently verifiable *after* it settles.
 
-On November 8, BEFORE Support exercised the deployed product with **two real WIF mainnet payments**, each of exactly 200 WIF, documented with public receipts in [Issue #18 evidence](docs/ISSUE_18_MAINNET_SUPPORT_EVIDENCE.md). The controlled signer was automated local-wallet acceptance rather than a human wallet-extension click; the two transfers do not prove sustained user retention.
+[**Launch BEFORE**](https://before-web-theta.vercel.app/) · [**Watch the 2:38 demo**](https://youtu.be/YC7t2mql-cI) · [**Try WIF Support**](https://before-web-theta.vercel.app/app/support/) · [**Verify real transactions**](#real-wif-transactions)
 
-For WIF holders, BEFORE inspects an identified wallet/spender allowance against the official $WIF token contract without wallet connection, signing or custody. For builders and researchers, the Bounty Studio demonstrates sponsor → researcher → appointed reviewer → verifiable settlement using valueless BTEST. The optional Protect → Challenge → Proof training experience shows enforceable policy vaults, intentional vulnerabilities and actual testnet receipts.
+> **Release scope:** Real WIF **Support** transfers have been verified on Robinhood Chain **mainnet**. The security vault, training challenge and bounty studio use **valueless BTEST on testnet only**. BEFORE does not custody real WIF, automate payments or claim a third-party security audit.
 
-> **Scope:** BEFORE Pay prepares standard WIF transfers for explicit confirmation by the payer's own wallet; it never holds keys or tokens or initiates transfers automatically. No real-WIF transaction has been broadcast or independently proven through BEFORE Pay at this release checkpoint. The permission checker only reads mainnet state; PR #7's optional revocation is not part of this release. Bounty contracts are unaudited and testnet-only. Public BTEST Challenge #7 was completed with three authorized testnet accounts controlled by one operator, not independent human security reviewers.
+## Why BEFORE?
 
-## Product routes
+A wallet address, a signed request and a payment screenshot each tell a different story. None alone proves that the payer reviewed the intended destination or that the claimed payment actually happened.
 
-- **Landing:** https://before-web-theta.vercel.app/
-- **BEFORE Pay (mainnet $WIF, human-confirmed):** https://before-web-theta.vercel.app/app/pay/
-- **BEFORE Support (mainnet $WIF, human-confirmed per cycle):** https://before-web-theta.vercel.app/app/support/
-- **Bounty Studio (main guided app, testnet-only):** https://before-web-theta.vercel.app/app/bounty/
-- **WIF Permission Check (mainnet, read-only):** https://before-web-theta.vercel.app/app/wif/
-- **Protect → Challenge → Proof demonstration:** https://before-web-theta.vercel.app/app/
+BEFORE connects those steps:
 
-The website uses dependency-free static routes. Legacy `/#protect`, `/#challenge`, and `/#proof` links redirect to the corresponding section of `/app/`. Contracts, chain IDs and proof manifests are fixed to their documented networks. The source is public, and the mainnet WIF reader uses the official `0x5173b8eA6923c2d40267890D45C46a3480954773` token contract on chain **4663**. The bounty and training contracts use Robinhood Testnet **46630** only.
-
-See [WIF Permission Check](docs/WIF_PERMISSION_CHECK.md), [Bounty Studio guide](docs/BOUNTY_STUDIO.md) and [public testnet evidence](docs/BOUNTY_TESTNET_EVIDENCE.md).
-
-## BEFORE Pay: request → check → pay → proof
-
-The recipient connects their wallet and signs an EIP-712 payment request for an exact WIF amount and expiry. They share a link; the payer verifies its signature, recipient, official token and network, checks wallet balance and gas, and **explicitly confirms** an ERC-20 transfer in their own wallet. Once mined, BEFORE verifies the exact transaction, receipt, confirmation depth and WIF Transfer log. No custody, spending approval or automatic payments.
-
-The browser prevents a second Pay action after a submitted or uncertain wallet attempt, even when receipt verification is delayed or the page reloads. This is a client-side safeguard, **not** globally enforced one-time invoice settlement: the same request can be paid more than once on a different device or with another wallet. A real payment incurs mainnet gas, is irreversible, and has not yet been exercised with real WIF through this application. Read the [Pay security and release limits](docs/WIF_PAY_SECURITY_AND_RELEASE.md).
-
-## BEFORE Support: a repeat-use WIF page
-
-The `/app/support/` route reuses Pay's exact mainnet preflight, transfer and receipt-proof boundary for a smaller repeat-use loop. A creator signs a distinct `SupportOffer` binding the official WIF contract, recipient, amount, voluntary return cadence, at most 120-day expiry and campaign ID. A supporter sees the full offer, starts a new cycle deliberately, confirms a fresh standard WIF transfer in their own wallet and can return to the same page to inspect device-local receipts. “Support again” is available only after verified proof and never schedules a payment.
-
-Pending, uncertain, rejected or reloaded cycles remain locked; receipt retries are read-only. Device-local history is revalidated against public RPC before display, but it is not a global ledger or cross-device duplicate-prevention mechanism. Cadence is a device-local date suggestion, not a subscription. A supporter may optionally download one single calendar event after verified proof and choose whether to import it. BEFORE itself sends no notifications or automatic payments. Signed support offers stay valid until their expiry (at most 120 days); they cannot be revoked early, so creators should choose an appropriate expiration. On November 8, 2026, BEFORE Support completed two real 200-WIF contributions using a controlled local automated EIP-1193 signer through the live production route. Both public mainnet receipts and official WIF `Transfer` logs were independently checked by the acceptance runner; the second used a fresh signed offer after a timeout in the first browser proof wait. This demonstrates genuine WIF movement, **not** organic retention or a human extension-click journey. See [Issue #18 mainnet evidence](docs/ISSUE_18_MAINNET_SUPPORT_EVIDENCE.md). See [Support security and release gate](docs/BEFORE_SUPPORT_SECURITY_AND_RELEASE.md).
-
-### Public WIF transfer history (cross-device, no wallet)
-
-BEFORE Support now has a separate **Previous WIF transfers** viewer. Enter any recipient wallet to search the official WIF token's public `Transfer` events on Robinhood Chain mainnet. The page searches the most recent two million blocks per request, allows older windows on demand, and independently rechecks each displayed direct transfer's transaction, successful receipt, exact WIF calldata, sender, recipient, event and confirmation depth. It cannot initiate a payment or require a wallet connection. A valid signed Support offer pre-fills its recipient.
-
-**Important attribution limit:** Standard ERC-20 transfers contain no BEFORE campaign ID. This public recipient ledger includes direct WIF transfers made outside BEFORE, and is **not** a database of verified BEFORE users, a complete all-time search, or proof of a particular signed campaign. Saved per-offer proof links remain device-local and separately verified. The first historical test found the two previously verified 200-WIF real mainnet transfers without any additional WIF spend.
-
-## Real WIF utility: read-only permission inspection
-
-Paste a confirmed WIF `approve(spender, amount)` transaction hash or enter a wallet address and a specific spender. BEFORE checks the token contract's current `allowance(owner, spender)` and `balanceOf(owner)` at the same mainnet block. It makes large permissions readable, shows whether spender bytecode exists, links the approval and wallet addresses to the public explorer, and refuses mismatched network/token data. Nothing is signed, sent, revoked or deposited. An allowance of zero applies **only to the selected spender**.
-
-The permission checker was exercised against the real Robinhood mainnet RPC in Chromium and is covered by independent ABI tests and 320/375/768/1280px accessibility regressions. Read [exact capabilities and limits](docs/WIF_PERMISSION_CHECK.md).
-
-## Guided application and Bounty Studio
-
-The landing page opens **BEFORE Support** first for creator-backed WIF utility, with one-off Pay available as a secondary action. **Bounty Studio at `/app/bounty/`** is a separate, valueless BTEST research and proof experience. New users first choose what they want to do: **Post a reward**, **Submit a finding**, **Review a finding**, or **Recover an unfinished deposit**. BEFORE shows one task at a time, asks for a wallet only when an action needs signing, and gives the sponsor distinct researcher/reviewer links after creation. Its core workflow is **post a BTEST reward → submit a finding → reviewer checks and approves → researcher reveals → escrow settles**. The separate **Protect → Challenge → Proof educational demonstration** remains at `/app/` and needs no wallet for simulations and public receipts.
-
-Bounty Studio uses the existing testnet escrow, freely mintable BTEST and the fixed training-vault target. A sponsor can deploy a per-bounty, immutable `ReviewedFindingVerifier` with chosen reviewer wallets and a quorum, mint and approve the exact mock reward, and open a timed challenge. A different solver wallet can commit a private evidence hash and BTEST bond. Appointed reviewers can record their approval of the exact context and evidence; the solver can reveal and settle only during the reveal window with the required approvals. Sponsors/solvers can cancel or recover expired funds when onchain conditions allow.
-
-The **full wallet workflow** passed real local Anvil transactions in Playwright across sponsor, solver and reviewer wallets, including reviewed payout, unappointed-reviewer rejection, premature and unapproved reveal protection, cancellation and expiry refunds, with no remaining test escrow BTEST. The UI-driven lifecycle remains verified locally. Separately, a **public BTEST Challenge #7** was created, committed, approved and settled on Robinhood Testnet with three distinct authorized wallets through a script-driven test. See the [read-only public audit](docs/ISSUE_8_PUBLIC_TESTNET_EVIDENCE.md). This is not evidence of a real WIF transfer or an independent human review.
-
-See [how to use Bounty Studio](docs/BOUNTY_STUDIO.md) and [public BTEST testnet evidence](docs/BOUNTY_TESTNET_EVIDENCE.md). **No WIF token can be selected in the studio; no real WIF bounty, independent audit or mainnet custody is claimed.**
-
-## Complete BTEST bounty lifecycle
-
-The [BTEST-only end-to-end demo](docs/BOUNTY_TESTNET_DEMO.md) now exercises the real `WifSecurityChallenge` settlement code end to end: sponsor deposits, solver commits, two explicit reviewer approvals, payout, invalid-evidence slashing, cancellation, expiry and bond refunds. Synthetic demo actors have separate onchain addresses, but **all are controlled by one operator**. This is not independent security review.
-
-```sh
-node script/run-bounty-lifecycle.mjs --local
+```text
+Creator signs a WIF support request
+             ↓
+Creator shares the link
+             ↓
+Supporter verifies the signed recipient, token, amount and network
+             ↓
+Supporter chooses to confirm an exact WIF transfer in their own wallet
+             ↓
+BEFORE independently checks the transaction, receipt and WIF Transfer event
+             ↓
+Anyone can inspect the public receipt; returning supporters opt in again
 ```
 
-The local runner deploys contracts and advances disposable Anvil time. The public runner targets **only Robinhood Chain Testnet (46630)**, requires the previously authorized `before-testnet` keystore and real block timestamps, and writes public proof metadata only after all signed receipts are verified. The public BTEST-only lifecycle has completed and its receipts are recorded in [BOUNTY_TESTNET_EVIDENCE.md](docs/BOUNTY_TESTNET_EVIDENCE.md); `web/bounty-proof.json` is `verified:true`. No WIF token is funded.
+**No custody. No automatic debits. No unverifiable success screen.**
 
-## Protect
+## Try it in two minutes
 
-BeforeVault accepts a single ERC-20, has an immutable owner and withdrawal destination, and enforces both a maximum amount per transfer and an aggregate spending limit per fixed UTC day. The owner cannot bypass the contract by requesting a larger single transfer or splitting a transfer across the same UTC day. This protects only tokens **inside that vault**, not arbitrary wallet transactions.
+| If you are… | Start here | What you can do |
+| --- | --- | --- |
+| A creator | [WIF Support](https://before-web-theta.vercel.app/app/support/) | Prepare a signed, shareable request for voluntary WIF support |
+| A supporter | [Open WIF Support](https://before-web-theta.vercel.app/app/support/) | Verify a shared request before deciding to sign an exact transfer |
+| Checking evidence | [Public WIF history](https://before-web-theta.vercel.app/app/support/) | Search a recipient's previous direct WIF transfers and inspect real receipts **without connecting a wallet** |
+| Making a one-off payment | [BEFORE Pay](https://before-web-theta.vercel.app/app/pay/) | Request, check and explicitly authorize a one-time WIF transfer |
+| Checking permissions | [WIF Permission Check](https://before-web-theta.vercel.app/app/wif/) | Inspect an identified wallet/spender's WIF allowance without signing |
+| Exploring security | [Protect / Challenge / Proof](https://before-web-theta.vercel.app/app/) | Preview spending rules, create a **testnet BTEST** vault with a wallet, and inspect testnet evidence |
+| Researching bounties | [Bounty Studio](https://before-web-theta.vercel.app/app/bounty/) | Browse existing BTEST bounties, or run the sponsor → researcher → reviewer workflow on testnet |
 
-## Challenge
+**Judges:** [Watch the final walkthrough](https://youtu.be/YC7t2mql-cI), then examine the [two mainnet WIF receipts](#real-wif-transactions), then [inspect the source and reproduce tests](#run-and-verify-locally). This is the fastest path to assess the submitted project.
 
-TrainingVault intentionally omits the aggregate daily limit. TrainingArena lets anyone demonstrate the error using real mock-token transfers. The arena and training vault are restricted to local chain ID 31337 or Robinhood Chain testnet 46630 and the exact MockERC20 runtime code. The obvious practice solution has no monetary reward.
+## Real WIF transactions
 
-## Proof
+BEFORE Support was exercised **through the deployed production route** on November 8, 2026. Two transfers of **200 WIF each** were mined on Robinhood Chain mainnet.
 
-The exercise verifies token balance changes and a one-time solution state using contract execution, not an AI opinion. The verified deployment manifest also lets the app read the actual challenge escrow's record count without enabling WIF funding. Public-chain receipts and immutable-aware bytecode evidence are recorded in [TESTNET_PROOF.md](docs/TESTNET_PROOF.md).
+| Verified transfer | Amount | Public transaction |
+| --- | ---: | --- |
+| Controlled acceptance cycle 1 | 200 WIF | [View mainnet receipt](https://robinhoodchain.blockscout.com/tx/0x4f6b1b2d48f73643408418896a7de886be4a522bf583a1c3d1d9c104c3b42476) |
+| Controlled acceptance cycle 2 | 200 WIF | [View mainnet receipt](https://robinhoodchain.blockscout.com/tx/0x7e5ca115c13fed7e36109478c9f454adc81c58c2c114f569624d95792f64033a) |
+| **Total** | **400 WIF** | [Full independent verification report](docs/ISSUE_18_MAINNET_SUPPORT_EVIDENCE.md) |
 
-## Reproduce locally
+For each transaction, the read-only verifier checked the **official WIF contract, payer, recipient, exact ERC-20 `transfer` calldata, successful receipt, confirmation depth and matching Transfer event**.
 
-Requires [Foundry](https://getfoundry.sh/) and Node.js.
+**Evidence integrity:** These were **controlled mainnet acceptance tests using an automated local wallet harness**, not outside customer donations, human wallet-extension clicks, organic retention or transactions performed during the narrated demo. The second test used a newly signed support offer. No user keys or secrets were included in the repository.
 
-~~~sh
+## Why people would return
+
+A creator can keep sharing their signed support page. A supporter can:
+
+1. Review the terms and make a **voluntary** WIF contribution.
+2. Reopen the page, inspect previous verified transfers and decide whether to support again.
+3. Optionally export a **single calendar reminder** for manual import. Every new contribution requires another wallet confirmation.
+
+This is BEFORE's **repeat-use mechanism**, not a subscription or guaranteed growth. BEFORE itself sends no notifications, collects no recurring allowances and cannot charge supporters automatically. The two mainnet receipts prove that two deliberate payment cycles work; they **do not prove independent repeat customers**.
+
+The public history reader checks direct WIF transfers to a recipient, including transfers that may have originated **outside** BEFORE. Standard ERC-20 transfers do not include a BEFORE campaign identifier, so it does not attribute every transfer to a particular offer.
+
+## What runs where
+
+| Experience | Network | Current boundary |
+| --- | --- | --- |
+| **Support** | Robinhood Chain **mainnet · 4663** | Signed EIP-712 offers, explicit standard WIF transfers, verified receipts; two controlled mainnet transfers demonstrated |
+| **Pay** | Robinhood Chain **mainnet · 4663** | One-off signed requests, payer preflight and explicit transfer; tested with simulated wallets; **no separate real Pay transfer claimed** |
+| **WIF History / Permission Check** | Robinhood Chain **mainnet · 4663** | Read-only balance, transfer and allowance inspection |
+| **Protect** | Robinhood Chain **testnet · 46630** | Testnet-only factory creates an owner-controlled BTEST vault with fixed demo limits (60 per transfer, 100 per UTC day); the on-screen policy evaluator is explicitly a local preview |
+| **Challenge / Proof** | Robinhood Chain **testnet · 46630** | Deliberately vulnerable BTEST training vault and independently inspectable testnet receipts |
+| **Bounty Studio** | Robinhood Chain **testnet · 46630** | Valueless BTEST rewards, commitment, appointed reviewer approval and contract settlement; public bounty list and proof |
+
+The BTEST training and escrow contracts are **not audited production WIF custody contracts**. The one-click testnet vault demo uses fixed limits; custom factory parameters are not exposed by that button.
+
+### Testnet bounty proof
+
+Public BTEST **Bounty #7** completed sponsor creation, researcher commitment, appointed reviewer approval and reward settlement. The three distinct wallets were controlled by **one operator** in an acceptance test, not independent human researchers.
+
+[Create](https://explorer.testnet.chain.robinhood.com/tx/0x5b54ab0f8db383cde66ff40a59ab7b926090d17f1854183a88ca2486b288a9a1) · [Commit](https://explorer.testnet.chain.robinhood.com/tx/0x4a00d1d9133670b738571823ee9e93d0dc861f938fcf832c1cbe121a4ab0ddd3) · [Review](https://explorer.testnet.chain.robinhood.com/tx/0x7682cbf90feac893c20cae875d4c1b8b216eae8a4faca813c2f31b505fab6bec) · [Settle](https://explorer.testnet.chain.robinhood.com/tx/0x17ecb3839f4c249fa1ca7c0283a191675d6f38256a498afda83059ec21750f5c) · [Read the audit](docs/ISSUE_8_PUBLIC_TESTNET_EVIDENCE.md)
+
+## Architecture
+
+The payment path is a **static, client-side application**. A creator's EIP-712 signature authorizes an offer; it **does not** move tokens. The supporter separately approves a standard ERC-20 `transfer` through an EIP-1193 browser wallet. Public Robinhood Chain RPC reads are used to verify the transaction and receipt. BEFORE does not have a backend signer or hold user funds.
+
+**Mainnet official WIF contract:** `0x5173b8eA6923c2d40267890D45C46a3480954773`
+
+**Code map**
+
+| Directory | Purpose |
+| --- | --- |
+| [`web/`](web/) | Live static app, mainnet Pay/Support/history, read-only WIF checker, testnet demos |
+| [`src/`](src/) | Solidity policy vault, restricted testnet factory, training arena, BTEST reward escrow and reviewer verifier |
+| [`test/`](test/) · [`checks/`](checks/) | Solidity, reference-model, proof and adversarial tests |
+| [`qa/`](qa/) | Browser, accessibility, wallet-flow and RPC acceptance tests |
+| [`script/`](script/) | Local Anvil lifecycle, public testnet verification and deployment tooling |
+| [`docs/`](docs/) | Evidence, security boundaries, runbooks and **historical checkpoints**; start with the [documentation index](docs/README.md) |
+
+## Run and verify locally
+
+**Prerequisites:** [Foundry](https://getfoundry.sh/) (Forge and Anvil), a recent Node.js LTS release, and Chromium for browser QA. The app itself is plain HTML, CSS and JavaScript and has no runtime package-install step.
+
+```bash
+git clone https://github.com/Iniwura/before-protocol.git
+cd before-protocol
+
+# Compile contracts and run adversarial/fuzz tests
 forge build
 forge test --fuzz-runs 1024 -vvv
-node --test checks/reference.test.mjs checks/deployment-proof.test.mjs checks/deployment-cli.test.mjs checks/broadcast-args.test.mjs web/test/core.test.mjs web/test/onchain.test.mjs web/test/pay-core.test.mjs web/test/support-core.test.mjs web/test/bounty-core.test.mjs web/test/wif-core.test.mjs
+
+# Test policy logic, security checks and browser-facing modules
+node --test checks/*.test.mjs web/test/*.test.mjs
+
+# Execute actual contract creation, withdrawals, and verification on local Anvil
 node script/anvil-e2e.mjs
-node script/run-bounty-lifecycle.mjs --local
-node script/check-chain.mjs
-# After installing browser QA dependencies and Chromium:
+
+# Install browser QA dependencies once
+npm ci --prefix qa
+cd qa && npx playwright install chromium && cd ..
+
+# Run first-time-user and wallet security regressions
 node qa/verify.mjs
 node qa/pay-e2e.mjs
 node qa/support-e2e.mjs
 node qa/bounty-e2e.mjs
 node qa/wif-verify.mjs
-# Read-only public Robinhood testnet audits:
+```
+
+To explore the frontend locally, serve the `web/` folder with any static file server, for example `python3 -m http.server 4173 --directory web`, then open `http://localhost:4173/`. This serves the same static routes, but mainnet payment actions still require a compatible EVM wallet, explicit user confirmation, and actual WIF plus gas. **Do not send real WIF while testing.**
+
+For public **read-only** BTEST evidence:
+
+```bash
 node qa/issue-8-public-testnet-audit.mjs
 node qa/issue-8-fresh-bounty-audit.mjs
-~~~
+```
 
-The network check is read-only; it requires internet access.
+These checks require RPC connectivity. Some older block-state queries require an archival RPC; a pruned public node may be unable to rerun every historical balance assertion. That does not establish that a transaction failed.
 
-## Verified engineering checkpoint — 2026-11-05
+[**Latest production CI**](https://github.com/Iniwura/before-protocol/actions/runs/42879770424) · [**Public live-vault verification**](https://github.com/Iniwura/before-protocol/actions/runs/42894070451) · [**All workflows**](https://github.com/Iniwura/before-protocol/actions)
 
-- Foundry 1.9.0 and Solc 0.8.36 compiled the code successfully.
-- Solidity policy, factory, adversarial and escrow tests pass in a local Foundry EVM; fuzz tests run at 1,024 cases each.
-- Independent JavaScript policy, deployment-proof, web ABI and CLI tests pass, including manifest-preservation checks for both verified and unverified starting states.
-- The WIF-capable escrow has dedicated commit/reveal, copied-commitment, invalid-proof, expiry, cancellation and fee-token tests.
-- Robinhood Chain testnet public RPC returned chain ID 46630 in a read-only check.
-- The public mock-only deployment passed the complete eleven-argument verifier: direct bytecode, immutable constructor state, events, receipts, historical balances and Protect/Challenge flow.
-- The authorized disposable signer was `0xd1061825504b30f404c0d94b745205925f251f2c`; the earlier `0xa35dc047f9937bf668743efbdf8ea93b31a55888` preflight address was not used.
-- **No audited security claim, real-token custody, funded WIF reward or mainnet deployment.**
+## Security and limitations
 
-GitHub Actions [run 123](https://github.com/Iniwura/before-protocol/actions/runs/42114536969) independently passed the contract, real local-Anvil release gate and browser-quality jobs for release commit `a5a0b49`, including the reviewed-finding quorum, escrow-instance binding, source-side token-accounting hardening, verifier/target/reward-token code-pinning tests, transfer-callback mutation protection, cross-chain commitment-domain separation, empty-evidence rejection, immutable-aware runtime proof, historical-balance proof, read-only escrow status, wallet transaction-identity checks, event-bound deployment proof, complete-manifest Proof rendering, deployed-state accessibility checks, public-flow evidence checks and expanded browser failure-path checks. This CI evidence does not establish an audit or WIF custody.
+- **No automatic transfers or token custody.** A signed offer is not a payment. Each contribution needs a deliberate wallet confirmation, and mainnet transactions are irreversible.
+- **No globally enforced single-use invoice.** Browser locks reduce accidental repeat sends but do not stop another wallet/device from paying a valid signed request again.
+- **No unverified payment proof.** The verifier checks the specific token, calldata, receipt and Transfer logs; screenshots alone are not proof.
+- **No production WIF vault or real-WIF bounty.** The security lab is restricted to freely mintable BTEST on testnet. It is not safe to infer general security from a training challenge.
+- **No independent audit, third-party usage or organic retention claim.** Engineering tests and controlled mainnet transactions are not equivalent to those outcomes.
+- **No custody of wallet secrets.** Never paste a private key, seed phrase or funded-wallet keystore into issues, CI, demos or this repository.
 
-## Live research prototype
+Read [Support security assumptions](docs/BEFORE_SUPPORT_SECURITY_AND_RELEASE.md), [Pay limitations](docs/WIF_PAY_SECURITY_AND_RELEASE.md), [testnet verification](docs/TESTNET_PROOF.md) and [technical security notes](docs/SECURITY_NOTES.md).
 
-**Current approved public site:** https://before-web-theta.vercel.app/
+## Submission and maintainers
 
-The responsive, dependency-free application at `/app/` has three experiences:
+Built for the [World Is Flat hackathon](https://worldisflat.fun/build), where the requirement is a product that **uses WIF onchain** and gives people a genuine reason to return. BEFORE's mainnet Support flow is the primary WIF use case; the testnet lab is supporting security infrastructure.
 
-- **Protect:** local, clearly labeled policy preview. No real transaction occurs.
-- **Challenge:** local simulation of the intentional split-transfer flaw using mock amounts. The onchain practice path uses BTEST only and pays no bounty.
-- **Proof:** live read-only testnet RPC inspection for supplied vault-like addresses and transaction receipts. It does not establish contract authenticity or security.
+**Developer:** [Iniwura](https://github.com/Iniwura) · [Live product](https://before-web-theta.vercel.app/) · [Final demo](https://youtu.be/YC7t2mql-cI) · [Evidence and documentation](docs/README.md)
 
-The web code is in `web/`; the Node test commands cover policy, ABI, deployment-proof and browser-facing logic. GitHub Actions checks Solidity, policy-model, deployment and web tests. CI is at https://github.com/Iniwura/before-protocol/actions.
+Questions and bug reports: [repository issues](https://github.com/Iniwura/before-protocol/issues). For a potential security vulnerability, please avoid publishing exploit details before contacting the maintainer through a private channel.
 
-The security demonstration and Bounty Studio read the verified public testnet deployment through the checked-in manifest. The WIF checker independently reads the official mainnet WIF contract without changing any token permissions or transmitting wallet secrets.
-
-## BEFORE Pay — deployed, mainnet-aware and noncustodial
-
-The deployed `/app/pay/` route provides a focused request → check → pay → proof flow for the official WIF token on Robinhood Chain mainnet. A recipient signs an EIP-712 exact-amount request; a payer independently verifies the recipient, token, chain, balance and gas before an explicit standard ERC-20 transfer. Public proof rechecks the mined transaction and WIF `Transfer` event. After send intent, the request/hash is persisted in the URL, Pay stays locked through delayed receipts and reloads, and retry is read-only; generic ERC-20 transfers still cannot enforce unique invoice settlement outside this flow. The automated flow uses mock wallets and RPC only; it never broadcasts real WIF. See [WIF_PAY_SECURITY_AND_RELEASE.md](docs/WIF_PAY_SECURITY_AND_RELEASE.md) for the threat model and owner-controlled real-WIF gate.
-
-## Architecture
-
-- src/BeforeVault.sol — protected immutable policy vault.
-- src/TrainingVault.sol — deliberately vulnerable mock-only practice vault.
-- src/TrainingArena.sol — deterministic training proof verifier.
-- src/WifSecurityChallenge.sol — separate ERC-20 reward escrow with solver-bound commit/reveal and expiry paths.
-- src/ReviewedFindingVerifier.sol — fixed-quorum reviewer gate for exact challenge evidence; it is not an oracle.
-- src/mocks — purpose-built test tokens, including adversarial mocks.
-- test — Solidity unit, fuzz, negative-path, and end-to-end tests.
-- reference and checks — dependency-free policy model, not a replacement for Solidity execution.
-- script — test-only deployment helper and read-only chain ID checker.
-- docs — deployment, security boundaries, evidence, and milestone handoff.
-
-## Phase 3 — Testnet demo factory (verified mock-only deployment)
-
-The `BeforeFactory` source adds self-service creation of **testnet-only, mock-token** vaults and independent practice arenas. A single wallet transaction can create an owner-controlled protected vault pre-funded with valueless BTEST; another creates a separate challenge funded only with BTEST. Factory registry reads let observers check whether an address was created by the configured factory.
-
-The versioned `web/deployment.json` now contains independently verified Robinhood Chain testnet addresses and genuine deployment transaction hashes. The UI exposes only the mock-token Protect/Challenge paths; the WIF-capable escrow remains read-only in the app and receives no WIF funding from the demonstration.
-
-This is not a real-WIF bounty or a mainnet custody release.
-
-See [Phase 3 implementation and deployment gates](docs/PHASE_3.md).
-
-## WIF-funded security challenges
-
-The solver commitment domain includes the escrow address, Robinhood Chain ID, challenge ID, solver address, salt and evidence hash, preventing cross-chain or copied-wallet replay.
-
-`WifSecurityChallenge` is intentionally separate from the public BTEST exercise. A sponsor escrows a chosen ERC-20 reward, records a concrete target contract, its code hash and an immutable hash of the written challenge scope, sets an independently reviewed verifier and a maximum 30-day commit/reveal window, and requires each solver to post a bond. The verifier receives the challenge ID, solver, target and scope hash explicitly, alongside the revealed evidence. A solver commits a hash bound to their wallet, salt and evidence, then reveals after the commit window. Only a verifier-approved reveal receives the reward and bond; invalid evidence slashes the bond to the sponsor; expiry returns the reward and releases unanswered bonds. Settlement fails closed if the target, verifier or reward token code changes. `ReviewedFindingVerifier` provides a fixed reviewer set and threshold that must approve the exact escrow instance, challenge context and evidence hash before settlement.
-
-The escrow contract is ERC-20-configurable, but the released public Bounty Studio uses only valueless BTEST on testnet. The repository does pin the official Robinhood mainnet WIF contract for the separate noncustodial Pay, Support and read-only permission-check flows; that is **not** a WIF-funded escrow or mainnet policy-vault deployment. No real-WIF security bounty, audited challenge, or WIF reward payout is claimed. The verifier remains a trust boundary and would require independent review before any valuable escrow funding.
-
-## Proving a testnet deployment
-
-After a mock-only testnet deployment, `script/verify-testnet.mjs` can check the actual factory, test-token and challenge escrow creation receipts, their contract addresses, 12 confirmation blocks, and immutable-aware runtime provenance against Foundry artifacts. Its full interaction mode also checks the two factory-call receipts, exact calldata and factory event data, deployer-owned registry outputs, created vault/arena constructor state, exact BTEST transfer logs, block-specific 150/130/40 BTEST balances, and public Protect/Challenge receipts for an allowed withdrawal, a denied withdrawal and the 60+50 practice proof. It is read-only and cannot make a false testnet claim from only a pasted address.
-
-The same eleven-argument verifier is exercised against real local Anvil state by `node script/anvil-e2e.mjs`; genuine evidence must pass and swapped receipts must fail. Local evidence is never eligible to enable the hosted manifest.
-
-**A mock-only testnet deployment is claimed here.** Verified metadata is `true` because the public eleven-argument evidence passed. This is not an audit, a WIF payout or a mainnet release.
-
-[Read the testnet proof process](docs/TESTNET_PROOF.md).
-
-## Competitive hardening and hackathon handoff — November 8, 2026
-
-1. **Already proven:** deployed Pay and Support, two public mainnet WIF Support receipts, independent receipt checks, a Support-first landing, optional manual calendar export after verified proof, public source, and green CI. These payments were executed with an automated local signer; the separate one-off Pay page and same-offer “Support again” live experience do not have an independently recorded mainnet wallet-extension run.
-2. **Next:** record an authentic Support-first 1080p demo, prioritizing verified payments and the user workflow, honestly separating automated acceptance and simulated-browser checks.
-3. **Then:** verify the logged-in organizer form, category, actual cutoff and video-hosting requirements; submit and preserve the submission confirmation. The organizer has announced **November 12, 2026, 17:30 UTC** as the cutoff.
-4. **Keep production online through finals:** November 16, 2026. Do not make unreviewed security or UI changes or spend additional WIF for show.
-
-[Deployment](docs/DEPLOYMENT.md) · [Security boundaries](docs/SECURITY_NOTES.md) · [WIF challenge design](docs/WIF_CHALLENGE_DESIGN.md) · [Verification](docs/VERIFICATION.md) · [Submission runbook](docs/SUBMISSION.md) · [Phase 1](docs/PHASE_1.md) · [Phase 2](docs/PHASE_2.md)
+*This repository is public for judge review and reproducibility. No open-source license has been declared; public visibility alone does not grant reuse rights.*
