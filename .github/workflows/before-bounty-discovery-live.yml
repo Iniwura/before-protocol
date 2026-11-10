@@ -1,0 +1,31 @@
+name: BEFORE real public testnet bounty discovery read-only smoke
+on:
+  push:
+    branches: [fix/before-demo-clarity-bounty-discovery-2026-11-10]
+    paths: ["qa/bounty-discovery-live.mjs",".github/workflows/before-bounty-discovery-live.yml"]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Chromium
+        run: |
+          cd qa
+          npm ci --silent
+          npx playwright install --with-deps chromium
+      - name: Check real public testnet bounties without signing
+        run: |
+          python3 -m http.server 8123 --bind 127.0.0.1 --directory web >/tmp/before-server.log 2>&1 &
+          node qa/bounty-discovery-live.mjs
+      - name: Capture result
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: BEFORE-REAL-TESTNET-BOUNTY-DISCOVERY
+          path: /tmp/before-bounty-live/
+          retention-days: 7
+          if-no-files-found: warn
