@@ -1,0 +1,19 @@
+Every WIF transfer is visible on-chain. But a transfer alone doesn't tell you who asked for it, what they agreed to, or whether the link was genuine.
+
+This is BEFORE. It makes creator support verifiable before payment, and independently checkable after.
+
+First, the creator. I choose two hundred WIF, a weekly return suggestion, and an expiration. Then I sign the offer. That signature is off-chain. No WIF moves. It binds the intended recipient, token, amount, and terms into a shareable link.
+
+Now the supporter opens that link. BEFORE verifies the creator's signature and shows the exact destination and amount. The supporter can check the network, wallet balance, and estimated gas before deciding whether to continue. Every contribution requires a separate wallet confirmation. There is no subscription, automatic charge, or custodial balance.
+
+This part uses an unfunded demo signer and simulated supporter identity. It does not claim a new transfer.
+
+Now for the proof. On November eighth, our controlled mainnet acceptance test sent two separate payments of two hundred WIF each. That's four hundred WIF moved on Robinhood Chain.
+
+BEFORE finds both historical transfers through the live chain, verifies the receipts, and links to the transaction hashes on Blockscout. Anyone can inspect the real sender, recipient, token, amount, and confirmation.
+
+These receipts prove the payments happened. They do not prove independent customer adoption, and they are not attributed to the demo offer.
+
+The whole experience has one purpose: create a verifiable request, check it before paying, and prove what happened afterward.
+
+BEFORE. Real WIF support. Clear consent. Public proof.
