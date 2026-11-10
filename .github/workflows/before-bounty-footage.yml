@@ -1,0 +1,38 @@
+name: BEFORE real bounty browse demo footage
+on:
+  push:
+    branches: [demo/last-clarity-fixes-2026-11-10]
+    paths: ["demo/bounty-footage.mjs",".github/workflows/before-bounty-footage.yml"]
+permissions:
+  contents: read
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Chromium
+        run: |
+          cd qa
+          npm ci --silent
+          npx playwright install --with-deps chromium
+      - name: Record real browser showing live onchain test bounties
+        run: node demo/bounty-footage.mjs
+      - name: H.264 high quality master
+        if: success()
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg >/dev/null
+          ffmpeg -y -hide_banner -loglevel error -i demo/bounty-footage/output/BEFORE_BOUNTY_DISCOVERY_REAL_BROWSER.webm \
+            -c:v libx264 -preset medium -crf 12 -pix_fmt yuv420p -r 30 -movflags +faststart \
+            demo/bounty-footage/output/BEFORE_BOUNTY_DISCOVERY_REAL_BROWSER_HQ.mp4
+          ffprobe -v error -show_entries stream=codec_name,width,height,avg_frame_rate:format=duration,size -of json \
+            demo/bounty-footage/output/BEFORE_BOUNTY_DISCOVERY_REAL_BROWSER_HQ.mp4
+      - name: Upload read-only evidence and real footage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: BEFORE-REAL-BOUNTY-BROWSER-INSERT
+          path: demo/bounty-footage/output/
+          retention-days: 7
+          if-no-files-found: warn
