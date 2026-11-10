@@ -1,0 +1,13 @@
+Anyone can paste a WIF address. But did the creator actually make the request? And can you prove the transfer arrived?
+
+This is BEFORE. Here are two genuine two-hundred-WIF mainnet transfers from our controlled acceptance test. Their receipts are public.
+
+Now I create a signed Support offer: two hundred WIF, a voluntary return suggestion, and an expiry. Signing is off-chain; it moves no funds.
+
+The supporter opens the link and sees the exact recipient, token, and amount. BEFORE verifies the signature, network, balance, and gas before any transfer. Each payment still needs wallet confirmation. The wallet shown here is simulated; nothing new is sent.
+
+Next, I search our earlier recipient. BEFORE finds the real transfers across devices and independently checks their receipts. These prove token movement, not organic customer adoption or a specific campaign.
+
+Supporters choose when to return. No subscription, automatic charge, or custody.
+
+The product, code, and proof are public. BEFORE: check before paying. Prove what happened.
