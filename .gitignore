@@ -1,10 +1,28 @@
+# Foundry output and local chain state
 out/
 cache/
 broadcast/
+
+# Local credentials and secrets
 .env
 .env.*
 !.env.example
-node_modules/
 *.pem
 *.key
+*.keystore
+*.seed
+
+# Dependencies and generated QA reports
+node_modules/
+qa/results/
+coverage/
+playwright-report/
+test-results/
+*.log
+
+# Local development environments
+.vercel/
+.vscode/
+.idea/
 .DS_Store
+Thumbs.db
