@@ -1,0 +1,28 @@
+name: BEFORE check full generated audio source
+on:
+  push:
+    branches: [demo/submission-voiceover-final-2026-11-10]
+    paths: [".github/workflows/before-check-full-voice-url.yml"]
+permissions:
+  contents: read
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Inspect public audio page for audio source
+        shell: bash
+        run: |
+          curl -LsS --max-time 25 \
+            'https://www.aidocmaker.com/g0/audio?name=06d27ac0f0e5415c92029ccfb89b9ff7' \
+            -o /tmp/audio-page.html
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          s=Path('/tmp/audio-page.html').read_text(errors='replace')
+          print("HTML_BYTES",len(s))
+          for term in ['audio', 'mp3', 'storage.googleapis', 'download', '06d27ac0']:
+              hits=list(re.finditer(term,s,re.I))
+              print(term,len(hits))
+              for m in hits[:3]:
+                  print(s[max(0,m.start()-90):m.start()+180].replace('\n',' ')[:260])
+          PY
