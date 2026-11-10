@@ -31,6 +31,7 @@ jobs:
         shell: bash
         run: |
           mkdir -p qa/results
+          set +e
           node - <<'NODE' > qa/results/VERIFIER_HISTORICAL.log 2>&1
           const {spawnSync}=require('node:child_process');
           const c=require('./web/deployment.json');
@@ -44,6 +45,7 @@ jobs:
           process.exit(result.status===null?1:result.status);
           NODE
           rc=$?
+          set -e
           cat qa/results/VERIFIER_HISTORICAL.log
           if [[ "$rc" != "0" ]]; then
             if grep -Eqi 'historical state .* is not available' qa/results/VERIFIER_HISTORICAL.log; then
