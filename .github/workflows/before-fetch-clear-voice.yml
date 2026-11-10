@@ -1,0 +1,51 @@
+name: BEFORE clear professional narration chapter masters
+on:
+  push:
+    branches: [demo/submission-voiceover-final-2026-11-10]
+    paths: [".github/workflows/before-fetch-clear-voice.yml", "demo/audio/clear_voice_manifest.json"]
+permissions:
+  contents: read
+jobs:
+  audio:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - name: Prepare audio verification
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg >/dev/null
+      - name: Retrieve clear AI voice chapters and verify actual media
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import json,subprocess,urllib.request
+          out=Path('demo/audio/masters');out.mkdir(parents=True,exist_ok=True)
+          manifest=json.loads(Path('demo/audio/clear_voice_manifest.json').read_text())
+          durations={}
+          for name,item in manifest.items():
+              req=urllib.request.Request(item['url'],headers={'User-Agent':'Mozilla/5.0'})
+              with urllib.request.urlopen(req,timeout=60) as res:
+                  data=res.read()
+              dst=out/(name+'.mp3')
+              dst.write_bytes(data)
+              if not data.startswith(b'ID3') and data[:2]!=b'\\xff\\xfb' and data[:2]!=b'\\xff\\xf3':
+                  raise RuntimeError(name+': downloaded data is not MP3')
+              p=subprocess.check_output(['ffprobe','-v','error','-show_entries','stream=codec_name,sample_rate,channels:format=duration,size','-of','json',str(dst)])
+              j=json.loads(p)
+              assert j['streams'][0]['codec_name']=='mp3'
+              duration=float(j['format']['duration'])
+              durations[name]=round(duration,3)
+              print(name,'DURATION',duration,'SIZE',len(data))
+          (out/'durations.json').write_text(json.dumps(durations,indent=2))
+          print('TOTAL spoken seconds',sum(durations.values()))
+          PY
+      - name: Retain full-quality narration clips
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: BEFORE-CLEAR-NATURAL-VOICE-CHAPTERS
+          path: demo/audio/masters/
+          retention-days: 7
+          if-no-files-found: warn
