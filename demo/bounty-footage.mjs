@@ -1,4 +1,4 @@
-import {chromium} from 'playwright';
+import {chromium} from '../qa/node_modules/playwright/index.mjs';
 import {mkdir,copyFile,writeFile} from 'node:fs/promises';
 import path from 'node:path';
 const out=path.resolve('demo/bounty-footage/output');
