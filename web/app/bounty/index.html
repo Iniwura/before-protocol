@@ -23,7 +23,7 @@
 <main class="main">
   <section class="entry-choice" id="entry-choice" aria-labelledby="entry-title">
     <div class="entry-kicker">START HERE <span>NO EXPERIENCE REQUIRED</span></div>
-    <div class="entry-heading"><h1 id="entry-title" tabindex="-1">What do you<br><em>want to do?</em></h1><p>Try the complete bounty process on BEFORE's training vault using valueless BTEST. Choose what you want to do.</p></div>
+    <div class="entry-heading"><h1 id="entry-title" tabindex="-1">What do you<br><em>want to do?</em></h1><p>Developers post test-token rewards to have security findings reviewed. Researchers submit evidence, appointed reviewers check it, and a smart contract settles the reward. Choose a task to begin.</p></div>
     <div class="journey-strip" aria-label="How BEFORE works"><span>THE PROCESS</span><div>Post reward <i aria-hidden="true">→</i> Submit finding <i aria-hidden="true">→</i> Reviewer approves <i aria-hidden="true">→</i> Settle in BTEST</div></div>
     <div class="entry-grid">
       <button class="entry-card" type="button" data-start="sponsor">
@@ -39,6 +39,21 @@
         <p>Check a researcher's report and approve it if it is valid.</p><span class="entry-action">Review evidence <span aria-hidden="true">↗</span></span>
       </button>
     </div>
+    <section class="bounty-discovery" id="bounty-discovery" aria-labelledby="bounty-discovery-heading">
+      <div class="bounty-discovery-head">
+        <div><span class="bounty-discovery-eyebrow">LIVE ROBINHOOD TESTNET · BTEST ONLY</span><h2 id="bounty-discovery-heading">Browse existing bounties.</h2><p>Find real test challenges onchain before connecting a wallet. Closed examples remain available to inspect.</p></div>
+        <button type="button" id="bounty-discovery-refresh" class="bounty-discovery-refresh">Refresh <span aria-hidden="true">↻</span></button>
+      </div>
+      <div class="bounty-discovery-filters" role="group" aria-label="Filter bounties">
+        <button type="button" data-bounty-filter="all" aria-pressed="true">All</button>
+        <button type="button" data-bounty-filter="open" aria-pressed="false">Open</button>
+        <button type="button" data-bounty-filter="finished" aria-pressed="false">Finished</button>
+      </div>
+      <p id="bounty-discovery-status" class="bounty-discovery-status" role="status" aria-live="polite">Loading verified testnet bounties…</p>
+      <ul id="bounty-discovery-list" class="bounty-discovery-list" aria-label="Discovered BTEST bounties"></ul>
+      <button id="bounty-discovery-more" class="bounty-discovery-more" type="button" hidden>Load older bounties <span aria-hidden="true">↗</span></button>
+      <p class="bounty-discovery-note">Only compatible BEFORE training bounties are listed. Each entry is read from testnet; other escrow challenges are not shown. No real WIF rewards or independent security audit are implied.</p>
+    </section>
     <div class="entry-explore"><div><strong>Just exploring?</strong><span>See a complete public testnet example, without connecting a wallet.</span></div><a href="/app/#proof">See how BEFORE works <span aria-hidden="true">↗</span></a></div><p class="entry-wif">Have $WIF on Robinhood Chain? <a href="/app/wif/">Check a spending permission on mainnet ↗</a> No wallet connection required.</p><div class="entry-recover"><span>Already have an unfinished bounty?</span><button type="button" data-start="recover">Recover a deposit or reward ↗</button></div>
     <p class="entry-safety">This version uses freely mintable BTEST on Robinhood testnet, not real money. Appointed reviewers must assess evidence independently; this is not a security audit.</p>
   </section>

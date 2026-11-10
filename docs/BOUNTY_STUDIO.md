@@ -12,6 +12,12 @@ The main landing page starts with **BEFORE Pay**, the WIF payment workflow. Boun
 
 When you first open Bounty Studio, you **do not need a wallet**. It asks what you want to accomplish: **Post a reward**, **Submit a finding**, **Review a finding**, or **Recover an unfinished bounty**. Choose one to see only the relevant task. Select **Change what I want to do** to start another task. The proof demo is read-only and wallet-free.
 
+## Browse existing BTEST bounties
+
+The Bounty Studio home screen now shows **Browse existing bounties** before asking for a wallet. It reads the pinned Robinhood testnet escrow and lists only challenges with the correct BTEST token, practice target, review scope, and matching approved reviewer-gate runtime. You can filter **All**, **Open**, and **Finished**, or load older records in small batches. Each row opens the live challenge by its onchain ID. No indexer, login, signing, or token transfer is involved in browsing.
+
+The current read-only public-chain acceptance check found **#7 settled, #6 settled, and #5 expired**. These are genuine testnet records, not open paid opportunities. The current listed set has no open reward to claim. The list's statuses are chain-derived; onchain records from other scopes are deliberately excluded. The original manual paste-ID/link workflow is preserved.
+
 ## First time: create a test bounty
 
 1. Use a browser EVM wallet with **Robinhood Chain Testnet ETH** for transaction gas. Open **Bounty Studio**, choose **Create**, and connect the wallet. The app switches to chain 46630 if necessary.

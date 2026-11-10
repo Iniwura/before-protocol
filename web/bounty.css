@@ -264,3 +264,32 @@ button:disabled{opacity:.48;cursor:not-allowed}
 
 .entry-wif{margin:15px 0 0;font-size:12px;line-height:1.5;color:#55554d}
 .entry-wif a{color:#171717;font-weight:760;text-decoration:underline;text-underline-offset:4px}
+
+
+/* Existing BTEST bounties: public, wallet-free, verified live from the pinned testnet escrow. */
+.bounty-discovery{margin:34px 0 18px;padding:30px;border:1px solid var(--ink);background:#f1f1eb}
+.bounty-discovery-head{display:flex;justify-content:space-between;align-items:start;gap:22px}
+.bounty-discovery-eyebrow{display:block;font-size:10px;font-weight:760;letter-spacing:.07em;color:#636359;margin-bottom:12px}
+.bounty-discovery h2{font-size:clamp(27px,3.7vw,46px);line-height:1.02;letter-spacing:-.065em;margin:0 0 12px}
+.bounty-discovery-head p{font-size:14px;line-height:1.5;max-width:500px;color:#55554e;margin:0}
+.bounty-discovery-refresh,.bounty-discovery-more{font-size:12px;font-weight:750;border:1px solid var(--ink);background:transparent;color:var(--ink);padding:13px 17px;white-space:nowrap}
+.bounty-discovery-filters{display:flex;gap:7px;margin:24px 0 14px;flex-wrap:wrap}
+.bounty-discovery-filters button{font-size:12px;font-weight:740;background:transparent;border:1px solid #77776c;border-radius:100px;padding:9px 18px}
+.bounty-discovery-filters button[aria-pressed="true"]{color:#fff;background:var(--ink);border-color:var(--ink)}
+.bounty-discovery-status,.bounty-discovery-note{font-size:12px;line-height:1.55;color:#62625b}
+.bounty-discovery-list{list-style:none;padding:0;margin:8px 0 0;display:grid;gap:1px}
+.bounty-discovery-link{display:grid;grid-template-columns:minmax(130px,1fr) minmax(0,2fr) 24px;gap:14px;align-items:center;padding:18px 15px;background:#fff;border-bottom:1px solid #d4d4ca}
+.bounty-discovery-link:hover{background:#e4e9df}
+.bounty-discovery-id{font-size:17px;font-weight:780;letter-spacing:-.035em}
+.bounty-discovery-meta{font-size:13px;color:#53534b}
+.bounty-discovery-arrow{font-size:22px;text-align:right}
+.bounty-discovery-more{margin-top:17px;width:100%;text-align:center}
+.bounty-discovery-note{margin:18px 0 0}
+@media(max-width:720px){
+ .bounty-discovery{padding:22px 16px}
+ .bounty-discovery-head{flex-direction:column;align-items:stretch}
+ .bounty-discovery-refresh{align-self:flex-start}
+ .bounty-discovery-link{grid-template-columns:1fr 24px;gap:4px}
+ .bounty-discovery-meta{grid-row:2}
+ .bounty-discovery-arrow{grid-column:2;grid-row:1 / span 2}
+}
