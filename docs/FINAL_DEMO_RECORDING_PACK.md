@@ -26,7 +26,7 @@ Produce an approximately two-minute **human-readable, live-browser app walkthrou
 
 These are editing targets, not proof of video duration. Confirm any maximum duration in the authenticated organizer portal before exporting. The actual narration may run longer or shorter depending on delivery; prioritize a readable uninterrupted explanation over a forced 120-second target.
 
-## Final voiceover transcript (256 words)
+## Final voiceover transcript (revised for separate recipient attribution)
 
 A creator shares a wallet address and asks for WIF. How does a supporter know the request really came from them? And once they pay, how can anyone verify what arrived?
 
@@ -36,9 +36,9 @@ Let's create a Support offer in the live app. I choose two hundred WIF, an optio
 
 Now I open the link as a supporter. BEFORE shows the signed recipient, amount, official WIF token, and Robinhood Chain network. It verifies the offer and checks the conditions for a transfer. Every real contribution still requires a new confirmation in the supporter's wallet. The payer wallet in this walkthrough is simulated. We're not sending any new WIF here.
 
-But the evidence is real. On the live Support page, I search this recipient's public WIF transfers. BEFORE finds two genuine mainnet payments of two hundred WIF each, then links to their original blockchain receipts. I can inspect the transaction, token, amount, and recipient on Blockscout.
+The evidence is real, but it is separate from that demo offer. I switch to the recipient wallet from our earlier production acceptance test. BEFORE finds two genuine mainnet payments of two hundred WIF each and links to their original Blockscout receipts. Anyone can inspect the sender, token, amount, recipient and confirmed status.
 
-These were controlled acceptance transactions, not evidence of independent customer adoption. Public transfers also don't identify a specific BEFORE campaign.
+Those transfers prove actual WIF movement, not independent customer adoption or attribution to a specific BEFORE campaign.
 
 Supporters can return by choice. There's an optional calendar reminder, but no subscription, automatic charge, or custody.
 
