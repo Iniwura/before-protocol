@@ -1,0 +1,40 @@
+name: BEFORE four final clear narrator clips
+on:
+  push:
+    branches: [demo/last-clarity-fixes-2026-11-10]
+    paths: [".github/workflows/before-clarity-narration.yml","demo/clarity-fix-voice.json"]
+permissions:
+  contents: read
+jobs:
+  voice:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install ffprobe
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg >/dev/null
+      - name: Fetch narrator chapters and validate
+        run: |
+          python3 - <<'PY'
+          import json,subprocess,urllib.request,pathlib
+          clips=json.loads(pathlib.Path('demo/clarity-fix-voice.json').read_text())
+          dst=pathlib.Path('demo/clarity-narration');dst.mkdir(exist_ok=True)
+          durations={}
+          for name,item in clips.items():
+            req=urllib.request.Request(item['url'],headers={'User-Agent':'Mozilla/5.0'})
+            data=urllib.request.urlopen(req,timeout=45).read()
+            file=dst/(name+'.mp3');file.write_bytes(data)
+            info=json.loads(subprocess.check_output(['ffprobe','-v','error','-show_entries','stream=codec_name:format=duration','-of','json',str(file)]))
+            assert info['streams'][0]['codec_name']=='mp3'
+            duration=float(info['format']['duration'])
+            durations[name]=round(duration,3)
+            print(name,'audio duration:',duration)
+          (dst/'durations.json').write_text(json.dumps(durations,indent=2))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: BEFORE-FINAL-CLARITY-NARRATION
+          path: demo/clarity-narration/
+          retention-days: 7
