@@ -1,0 +1,51 @@
+name: BEFORE final live footage review
+
+on:
+  push:
+    branches:
+      - demo/final-support-storyboard-2026-11-10
+    paths:
+      - ".github/workflows/before-final-footage-review.yml"
+      - "demo/record-review-footage.mjs"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  capture-review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Prepare recording dependencies
+        run: |
+          set -euo pipefail
+          cd demo
+          npm install --no-save --silent playwright@1.64.1 ethers@6.15.0
+          npx playwright install --with-deps chromium
+      - name: Record genuine production actions with no wallet send permission
+        run: |
+          set -euo pipefail
+          node demo/record-review-footage.mjs
+      - name: Convert review footage to 1080p MP4 and verify media
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg >/dev/null
+          ffmpeg -y -hide_banner -loglevel error \
+            -i demo/output/BEFORE_FRESH_REAL_BROWSER_REVIEW.webm \
+            -c:v libx264 -preset fast -crf 19 -pix_fmt yuv420p \
+            -movflags +faststart \
+            demo/output/BEFORE_FRESH_REAL_BROWSER_REVIEW_1080P.mp4
+          ffprobe -v error -show_entries stream=codec_name,codec_type,width,height:format=duration,size \
+            -of json demo/output/BEFORE_FRESH_REAL_BROWSER_REVIEW_1080P.mp4
+          ffmpeg -v error -i demo/output/BEFORE_FRESH_REAL_BROWSER_REVIEW_1080P.mp4 -f null -
+      - name: Upload fresh raw footage for edit review (not a final submission video)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: BEFORE-FRESH-PRODUCTION-FOOTAGE-REVIEW
+          path: demo/output/
+          if-no-files-found: warn
+          retention-days: 7
