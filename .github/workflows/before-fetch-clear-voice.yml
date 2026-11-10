@@ -30,8 +30,7 @@ jobs:
                   data=res.read()
               dst=out/(name+'.mp3')
               dst.write_bytes(data)
-              if not data.startswith(b'ID3') and data[:2]!=b'\\xff\\xfb' and data[:2]!=b'\\xff\\xf3':
-                  raise RuntimeError(name+': downloaded data is not MP3')
+              if len(data) < 2000: raise RuntimeError(name+': audio file unexpectedly small')
               p=subprocess.check_output(['ffprobe','-v','error','-show_entries','stream=codec_name,sample_rate,channels:format=duration,size','-of','json',str(dst)])
               j=json.loads(p)
               assert j['streams'][0]['codec_name']=='mp3'
