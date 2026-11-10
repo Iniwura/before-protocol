@@ -77,6 +77,7 @@ export function mountPublicWifHistory({rpcCall}) {
     }
     if (older && (nextBlock === null || activeRecipient?.toLowerCase() !== recipient.toLowerCase())) return;
     const requestId = ++searchId;
+    let autoLoadOlder = false;
     loading = true;
     if (!older) {
       activeRecipient = recipient;
@@ -123,11 +124,17 @@ export function mountPublicWifHistory({rpcCall}) {
       if (requestId !== searchId || input.value.trim().toLowerCase() !== recipient.toLowerCase()) return;
       activeRecipient = recipient;
       nextBlock = olderTo;
+      // A wallet can have no recent WIF activity even when it has older
+      // receipts. Automatically check one older window before showing empty
+      // results; keep further pagination explicit and bounded.
+      autoLoadOlder = !older && validEvents.length === 0 && nextBlock !== null;
       render();
       const verifiedCount = entries.size;
       const limited = validEvents.length > PUBLIC_HISTORY_DISPLAY_LIMIT;
       const notice = limited ? ' Showing up to ' + PUBLIC_HISTORY_DISPLAY_LIMIT + ' direct transfers from this block window.' : '';
-      updateStatus(
+      if (autoLoadOlder) {
+        updateStatus('No direct WIF transfers in the most recent block window. Checking one older window…');
+      } else updateStatus(
         verifiedCount + ' independently verified direct WIF transfer' + (verifiedCount === 1 ? '' : 's')
         + ' shown. Scanned blocks ' + from.toString() + '–' + to.toString() + '.'
         + notice + ' These are recipient transfers, not proof of BEFORE campaign attribution.'
@@ -139,6 +146,9 @@ export function mountPublicWifHistory({rpcCall}) {
     } finally {
       loading = false;
       updateControls();
+      if (autoLoadOlder && requestId === searchId && input.value.trim().toLowerCase() === recipient.toLowerCase()) {
+        void search({older: true});
+      }
     }
   }
   form.addEventListener('submit', event => { event.preventDefault(); void search(); });
