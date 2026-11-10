@@ -1,0 +1,118 @@
+name: BEFORE professionally narrated review cut
+
+on:
+  push:
+    branches:
+      - demo/final-support-storyboard-2026-11-10
+    paths:
+      - ".github/workflows/before-narrated-review.yml"
+      - "demo/FINAL_NARRATION_SHORT.txt"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  narrated-review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install media tools and natural speech engine
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg >/dev/null
+          python3 -m pip install --break-system-packages -q edge-tts==7.2.7
+      - name: Download the successful fresh recorded browser footage
+        uses: actions/download-artifact@v4
+        with:
+          name: BEFORE-FRESH-PRODUCTION-FOOTAGE-REVIEW
+          run-id: 42825151538
+          github-token: ${{ github.token }}
+          path: demo/output
+      - name: Generate original calm voiceover with word-timed captions
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import asyncio
+          import edge_tts
+
+          source = Path("demo/FINAL_NARRATION_SHORT.txt").read_text()
+          out = Path("demo/output")
+          out.mkdir(parents=True,exist_ok=True)
+          def stamp(seconds):
+              ticks = max(0,round(seconds*1000))
+              return f"{ticks//3600000:02d}:{ticks%3600000//60000:02d}:{ticks%60000//1000:02d},{ticks%1000:03d}"
+          async def main():
+              voice = edge_tts.Communicate(source,"en-US-AndrewNeural",rate="+8%")
+              boundaries=[]
+              with (out/"BEFORE_VOICEOVER.mp3").open("wb") as audio:
+                  async for data in voice.stream():
+                      if data["type"]=="audio": audio.write(data["data"])
+                      elif data["type"]=="WordBoundary":
+                          boundaries.append((data["offset"]/10_000_000,data["duration"]/10_000_000,data["text"]))
+              groups=[]
+              current=[]
+              for begin,duration,word in boundaries:
+                  if not current: group_start=begin
+                  current.append((begin,duration,word))
+                  if len(current)>=7 or (begin-group_start)>2.8 or word.rstrip().endswith((".","?","!")):
+                      groups.append(current)
+                      current=[]
+              if current:groups.append(current)
+              lines=[]
+              for i,words in enumerate(groups,1):
+                  start=words[0][0]
+                  end=words[-1][0]+words[-1][1]+0.09
+                  caption=" ".join(w for _,__,w in words)
+                  lines.append(f"{i}\n{stamp(start)} --> {stamp(end)}\n{caption}\n")
+              (out/"BEFORE_CAPTIONS.srt").write_text("\n".join(lines))
+              if not boundaries: raise RuntimeError("TTS returned no word timing boundaries")
+              print("Narration word boundaries:",len(boundaries), "subtitle groups:",len(groups))
+          asyncio.run(main())
+          PY
+      - name: Export legible 1080p H.264 AAC owner-review video
+        shell: bash
+        run: |
+          set -euo pipefail
+          raw=demo/output/BEFORE_FRESH_REAL_BROWSER_REVIEW_1080P.mp4
+          voice=demo/output/BEFORE_VOICEOVER.mp3
+          test -s "$raw" && test -s "$voice"
+          python3 - <<'PY'
+          import json,subprocess,pathlib
+          base=pathlib.Path("demo/output")
+          def duration(f):
+              return float(json.loads(subprocess.check_output(["ffprobe","-v","error","-show_entries","format=duration","-of","json",str(f)]))["format"]["duration"])
+          video=duration(base/"BEFORE_FRESH_REAL_BROWSER_REVIEW_1080P.mp4")
+          voice=duration(base/"BEFORE_VOICEOVER.mp3")
+          speed=voice/video
+          if not 0.8 < speed < 1.45: raise RuntimeError(f"Unacceptable video to voice pacing: {speed:.3f} (video={video:.1f}, voice={voice:.1f})")
+          (base/"VIDEO_STRETCH.txt").write_text(str(speed))
+          print(f"Original recording {video:.2f}s, natural narration {voice:.2f}s, video slowdown {speed:.3f}x")
+          PY
+          ratio="$(cat demo/output/VIDEO_STRETCH.txt)"
+          ffmpeg -y -hide_banner -loglevel error -i "$raw" -i "$voice" \
+            -filter_complex "[0:v]setpts=${ratio}*(PTS-STARTPTS),subtitles=demo/output/BEFORE_CAPTIONS.srt:force_style='FontName=DejaVu Sans,FontSize=24,PrimaryColour=&H00FFFFFF,OutlineColour=&H00000000,BorderStyle=1,Outline=2,Shadow=0,Alignment=2,MarginV=54'[v]" \
+            -map "[v]" -map 1:a:0 -shortest \
+            -c:v libx264 -preset medium -crf 20 -pix_fmt yuv420p -movflags +faststart \
+            -c:a aac -b:a 192k \
+            demo/output/BEFORE_NEW_DEMO_NARRATED_REVIEW_1080P.mp4
+          ffprobe -v error -show_entries stream=codec_name,codec_type,width,height:format=duration,size \
+            -of json demo/output/BEFORE_NEW_DEMO_NARRATED_REVIEW_1080P.mp4
+          ffmpeg -v error -i demo/output/BEFORE_NEW_DEMO_NARRATED_REVIEW_1080P.mp4 -f null -
+      - name: Publish review artifact for owner check only
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: BEFORE-NEW-NARRATED-OWNER-REVIEW
+          path: |
+            demo/output/BEFORE_NEW_DEMO_NARRATED_REVIEW_1080P.mp4
+            demo/output/BEFORE_VOICEOVER.mp3
+            demo/output/BEFORE_CAPTIONS.srt
+            demo/output/VIDEO_STRETCH.txt
+          if-no-files-found: warn
+          retention-days: 7
