@@ -209,6 +209,110 @@ const initialRole=location.hash.slice(1);
 if(roleNames[initialRole])showRole(initialRole);
 window.addEventListener('hashchange',()=>{const h=location.hash.slice(1);if(roleNames[h])showRole(h)});
 
+
+const discovery={items:[],filter:'all',cursor:null,busy:false,scanErrors:0};
+// Read from the pinned public BTEST escrow. Nothing here signs or sends transactions.
+// Avoid placing incompatible challenge scopes or unaudited reviewer bytecode in the public list.
+function renderDiscoveredBounties(){
+ const ul=$('bounty-discovery-list');
+ ul.replaceChildren();
+ const items=discovery.items.filter(item=>
+   discovery.filter==='all' ||
+   (discovery.filter==='open' && item.open) ||
+   (discovery.filter==='finished' && !item.open));
+ for(const item of items){
+  const li=document.createElement('li');
+  const a=document.createElement('a');
+  a.className='bounty-discovery-link';
+  a.href='/app/bounty/?id='+encodeURIComponent(item.id)+'#solver';
+  const number=document.createElement('span');
+  number.className='bounty-discovery-id';
+  number.textContent='Bounty #'+item.id;
+  const meta=document.createElement('span');
+  meta.className='bounty-discovery-meta';
+  meta.textContent=item.reward+' BTEST reward · '+item.status;
+  const action=document.createElement('span');
+  action.className='bounty-discovery-arrow';
+  action.setAttribute('aria-hidden','true');
+  action.textContent='↗';
+  a.append(number,meta,action);
+  li.append(a);ul.append(li);
+ }
+ const status=$('bounty-discovery-status');
+ if(!discovery.items.length && !discovery.busy){
+  status.textContent=discovery.scanErrors?
+    'Some testnet records could not be checked. Refresh to try again, or open a bounty by its link.' :
+    'No compatible BTEST bounties in the scanned history. You can still open a known bounty by its link.';
+ }else if(!items.length && !discovery.busy){
+  status.textContent='No '+(discovery.filter==='open'?'open':'finished')+' bounties in the scanned results. Use All to see other statuses.';
+ }else if(!discovery.busy){
+  status.textContent=items.length+' '+(discovery.filter==='all'?'bounties':discovery.filter+' bounties')+' shown from public testnet'+(discovery.cursor!==null?' · older entries available below':'')+'.';
+ }
+}
+async function scanDiscoveredBounties(reset=false){
+ if(discovery.busy||!state.config||!state.verifierArtifact)return;
+ discovery.busy=true;
+ const btn=$('bounty-discovery-refresh'),more=$('bounty-discovery-more');
+ btn.disabled=true;more.disabled=true;
+ $('bounty-discovery-status').textContent='Checking Robinhood testnet records…';
+ if(reset){discovery.items=[];discovery.cursor=null;discovery.scanErrors=0;$('bounty-discovery-list').replaceChildren();}
+ try{
+  await checkChain();
+  const end=BigInt(await read(state.config.challengeEscrow,encodeCall('nextChallengeId()')));
+  const latest=end-1n;
+  let cursor=discovery.cursor===null?latest:discovery.cursor;
+  if(cursor>latest)cursor=latest;
+  const ids=[];
+  while(cursor>0n && ids.length<12){ids.push(cursor.toString());cursor--;}
+  const now=await blockTime();
+  const found=[];
+  // Limit RPC concurrency and verify each displayed reward and reviewer gate.
+  const verifierCodes=new Map();
+  async function inspect(id){
+   const [payload,scope]=await Promise.all([
+     read(state.config.challengeEscrow,encodeId('challenges(uint256)',id)),
+     read(state.config.challengeEscrow,encodeId('scopeHashes(uint256)',id))
+   ]);
+   const c=parseChallenge(payload);
+   if(!isAddress(c.sponsor)||/^0x0{40}$/i.test(c.sponsor))return null;
+   if(!challengeAllowed(c,state.config)||!same(scope,reviewScopeHash))return null;
+   let code=verifierCodes.get(c.verifier.toLowerCase());
+   if(!code){
+     code=await rpc('eth_getCode',[c.verifier,'latest']);
+     verifierCodes.set(c.verifier.toLowerCase(),code);
+   }
+   if(!matchVerifierRuntime(code,state.verifierArtifact))return null;
+   const status=c.canceled?'Canceled':c.rewardReleased?'Settled':now>c.revealDeadline?'Expired':now>c.commitDeadline?'In review':'Open';
+   return {id,reward:displayAmount(c.reward),status,open:status==='Open'};
+  }
+  for(let i=0;i<ids.length;i+=3){
+    const inspected=await Promise.allSettled(ids.slice(i,i+3).map(inspect));
+    for(const entry of inspected){
+      if(entry.status==='fulfilled'&&entry.value)found.push(entry.value);
+      else if(entry.status==='rejected')discovery.scanErrors++;
+    }
+  }
+  discovery.items.push(...found);
+  discovery.cursor=cursor>0n?cursor:null;
+  more.hidden=discovery.cursor===null;
+ }catch(error){
+  discovery.scanErrors++;
+  $('bounty-discovery-status').textContent='Unable to check testnet bounties. Please refresh or open a shared bounty link.';
+ }finally{
+  discovery.busy=false;btn.disabled=false;more.disabled=false;
+  renderDiscoveredBounties();
+ }
+}
+for(const button of all('[data-bounty-filter]')){
+ button.addEventListener('click',()=>{
+  discovery.filter=button.dataset.bountyFilter;
+  for(const b of all('[data-bounty-filter]'))b.setAttribute('aria-pressed',String(b===button));
+  renderDiscoveredBounties();
+ });
+}
+$('bounty-discovery-refresh')?.addEventListener('click',()=>{void scanDiscoveredBounties(true)});
+$('bounty-discovery-more')?.addEventListener('click',()=>{void scanDiscoveredBounties(false)});
+
 async function loadChallenge(id){
  if(!state.config)throw Error('The verified testnet deployment is not available.');
  if(!isValidChallengeId(id))throw Error('Enter a valid positive challenge ID.');
@@ -498,6 +602,7 @@ async function initialize(){
   if([escrowCode,tokenCode,targetCode].some(c=>!c||c==='0x'))throw Error('One or more verified testnet contracts are unavailable.');
   if(typeof artifact.creationCode!=='string'||typeof artifact.runtimeCode!=='string'||!Array.isArray(artifact.immutableRefs))throw Error('Reviewer bytecode manifest is incomplete.');
   state.config=config;state.verifierArtifact=artifact;
+  void scanDiscoveredBounties(true);
   activity('Ready. Connect your wallet to create a valueless BTEST bounty, or load an existing challenge without a wallet.');
   if(window.ethereum?.request){
    try{
