@@ -1,0 +1,37 @@
+import {chromium} from 'playwright';
+import {mkdir,copyFile,writeFile} from 'node:fs/promises';
+import path from 'node:path';
+const out=path.resolve('demo/bounty-footage/output');
+await mkdir(out,{recursive:true});
+const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
+const context=await browser.newContext({viewport:{width:1920,height:1080},screen:{width:1920,height:1080},deviceScaleFactor:1,recordVideo:{dir:out,size:{width:1920,height:1080}},reducedMotion:'reduce'});
+const page=await context.newPage();
+const errors=[];
+page.on('pageerror',e=>errors.push(e.message));
+try{
+ await page.goto('https://before-web-theta.vercel.app/app/bounty/',{waitUntil:'domcontentloaded',timeout:60000});
+ await page.waitForFunction(()=>document.querySelectorAll('.bounty-discovery-link').length>=3,null,{timeout:60000});
+ await page.locator('#bounty-discovery').scrollIntoViewIfNeeded();
+ await page.waitForTimeout(1800);
+ await page.screenshot({path:out+'/01-browse.png'});
+ await page.locator('[data-bounty-filter="finished"]').click();
+ await page.waitForTimeout(1400);
+ await page.screenshot({path:out+'/02-finished.png'});
+ await page.locator('[data-bounty-filter="open"]').click();
+ await page.waitForTimeout(1400);
+ await page.screenshot({path:out+'/03-open-empty.png'});
+ await page.locator('[data-bounty-filter="all"]').click();
+ await page.waitForTimeout(700);
+ await page.locator('.bounty-discovery-link').first().click();
+ await page.locator('#challenge-summary').waitFor({state:'visible',timeout:35000});
+ await page.locator('#challenge-inspector').scrollIntoViewIfNeeded();
+ await page.waitForTimeout(2100);
+ await page.screenshot({path:out+'/04-open-bounty.png'});
+ const summary=await page.locator('#challenge-summary').innerText();
+ await writeFile(out+'/LIVE_FACTS.json',JSON.stringify({source:'BEFORE public production Bounty Studio',bounty:summary,hasWallet:false,errors,allReal:true,readsOnly:true},null,2));
+ const v=page.video();
+ await context.close();
+ await copyFile(await v.path(),out+'/BEFORE_BOUNTY_DISCOVERY_REAL_BROWSER.webm');
+ if(errors.length)throw Error('Browser errors: '+errors.join('; '));
+ console.log('PUBLIC BOUNTY PROOF',summary);
+}finally{await browser.close();}
