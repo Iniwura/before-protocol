@@ -1,0 +1,38 @@
+{
+  "opening": {
+    "url": "https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/5d805390-919d-4d05-be80-d55c0d9829c2.mp3",
+    "text": "A wallet can send tokens. But who enforces the rules? Who verifies the outcome? This is BEFORE."
+  },
+  "protect": {
+    "url": "https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/1153e775-3f00-4096-86de-7d060a5c5532.mp3",
+    "text": "Start with Protect. The vault allows sixty tokens per transfer, and one hundred in a day. Watch me try seventy-five. Rejected. Now I change it to forty. Allowed. This screen previews the policy. On testnet, the Solidity vault enforces the same limits with valueless B test tokens. Even splitting a larger withdrawal cannot bypass its daily spending cap."
+  },
+  "challenge": {
+    "url": "https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/fee70669-e15c-44b2-bfdf-6c5f58793ca2.mp3",
+    "text": "Next is Challenge. Here is a deliberately weak vault. Sixty tokens pass. Then fifty more. Each transfer meets its individual limit, but together they exceed one hundred for the day. BEFORE exposes the missing check. This is safe mock-token training, not an attack on real funds."
+  },
+  "proof": {
+    "url": "https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/61a8b78e-ffcf-4154-a67e-17ce8652e39f.mp3",
+    "text": "Proof is where we stop guessing. These are real public Robinhood testnet receipts. One action succeeded. Another was rejected. The practice challenge has a verifiable result too. Anyone can inspect the transaction hashes."
+  },
+  "bounty": {
+    "url": "https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/e7936fac-bb3f-49a7-b69b-ad14896fa5f6.mp3",
+    "text": "Bounty Studio gives security research a process. A sponsor posts a test reward. A researcher submits evidence. Appointed reviewers approve a finding, and a smart contract settles it. We completed this lifecycle on public testnet with three operator-controlled wallets. The contract also handles expiry and refunds. These are valueless B test rewards, not real WIF bounties."
+  },
+  "wif": {
+    "url": "https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/b479b522-6020-440a-8543-d750bdf7cb4a.mp3",
+    "text": "Now the real WIF token. BEFORE reads a wallet's balance and spending permission for a chosen address, directly from mainnet. This check requires no wallet connection and changes nothing."
+  },
+  "support_a": {
+    "url": "https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/244fa14d-ff4f-4f23-9cbc-4524874cb259.mp3",
+    "text": "Support lets a creator sign an exact WIF request. Before sending, a supporter checks the recipient, amount, network, balance and gas. Each payment needs a fresh wallet confirmation."
+  },
+  "support_b": {
+    "url": "https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/b9fd71b4-5e0e-4ece-97ed-79339004e342.mp3",
+    "text": "And here is the real result. Our controlled production test completed two mainnet transfers of two hundred WIF each. BEFORE retrieves both receipts. That is four hundred WIF, independently verifiable onchain."
+  },
+  "closing": {
+    "url": "https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/9258042a-104f-432b-ac7b-9a8f7e5bc3d5.mp3",
+    "text": "These receipts prove real transfers, not independent customer adoption. The protection demo used B test on testnet. The payments used real WIF on mainnet. One platform: rules before transactions, and proof after. BEFORE. Verify it yourself."
+  }
+}
