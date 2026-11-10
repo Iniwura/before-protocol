@@ -1,0 +1,60 @@
+name: BEFORE full product narration master
+on:
+  push:
+    branches: [demo/seldra-full-product-film-2026-11-10]
+    paths: [".github/workflows/before-full-product-voice.yml","demo/full-capture/narration.json"]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  narrate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 13
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install offline neural speech synthesizer
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg >/dev/null
+          python3 -m pip install --break-system-packages -q piper-tts
+      - name: Fetch high-quality voice model with verified fallback
+        run: |
+          set -euo pipefail
+          mkdir -p demo/full-capture/voices demo/full-capture/narration
+          base=https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0
+          if curl -fLsS --retry 2 --max-time 120 "$base/en/en_US/ryan/high/en_US-ryan-high.onnx" -o demo/full-capture/voices/narrator.onnx &&
+             curl -fLsS --retry 2 --max-time 45 "$base/en/en_US/ryan/high/en_US-ryan-high.onnx.json" -o demo/full-capture/voices/narrator.onnx.json; then
+            echo "VOICE MODEL: en_US-ryan-high"
+          else
+            echo "HIGH model unavailable, using tested medium"
+            curl -fLsS --retry 3 --max-time 120 "$base/en/en_US/lessac/medium/en_US-lessac-medium.onnx" -o demo/full-capture/voices/narrator.onnx
+            curl -fLsS --retry 3 --max-time 45 "$base/en/en_US/lessac/medium/en_US-lessac-medium.onnx.json" -o demo/full-capture/voices/narrator.onnx.json
+          fi
+      - name: Render each chapter with independent timing
+        run: |
+          python3 - <<'PY'
+          import json,subprocess,pathlib
+          root=pathlib.Path('demo/full-capture')
+          chapters=json.loads((root/'narration.json').read_text())
+          out=root/'narration'
+          model=root/'voices'/'narrator.onnx'
+          config=root/'voices'/'narrator.onnx.json'
+          durations={}
+          for name,text in chapters.items():
+              dest=out/f'{name}.wav'
+              p=subprocess.run(['piper','--model',str(model),'--config',str(config),'--length_scale','0.93','--output_file',str(dest)],input=text+'\n',text=True,check=True,timeout=160)
+              info=json.loads(subprocess.check_output(['ffprobe','-v','error','-show_entries','format=duration','-of','json',str(dest)]))
+              durations[name]=round(float(info['format']['duration']),3)
+              print(name,durations[name])
+          (out/'durations.json').write_text(json.dumps(durations,indent=2))
+          print('total voice seconds',round(sum(durations.values()),2))
+          PY
+      - name: Upload chapter voices for final precise picture edit
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: BEFORE-NEW-FULL-PRODUCT-CHAPTER-VOICES
+          path: demo/full-capture/narration/
+          if-no-files-found: warn
+          retention-days: 7
