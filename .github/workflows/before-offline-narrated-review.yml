@@ -1,0 +1,111 @@
+name: BEFORE offline narrated owner review
+
+on:
+  push:
+    branches: [demo/final-support-storyboard-2026-11-10]
+    paths: [".github/workflows/before-offline-narrated-review.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 14
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install media tools
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg >/dev/null
+          python3 -m pip install --break-system-packages -q piper-tts
+      - name: Retrieve previously verified real-browser recording
+        uses: actions/download-artifact@v4
+        with:
+          name: BEFORE-FRESH-PRODUCTION-FOOTAGE-REVIEW
+          run-id: 42825151538
+          github-token: ${{ github.token }}
+          path: demo/output
+      - name: Generate offline professional English narration
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p demo/models
+          curl -fsSL --retry 3 --max-time 120 \
+            'https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/en/en_US/lessac/medium/en_US-lessac-medium.onnx' \
+            -o demo/models/voice.onnx
+          curl -fsSL --retry 3 --max-time 45 \
+            'https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/en/en_US/lessac/medium/en_US-lessac-medium.onnx.json' \
+            -o demo/models/voice.onnx.json
+          cat demo/FINAL_NARRATION_SHORT.txt | \
+            piper --model demo/models/voice.onnx --config demo/models/voice.onnx.json \
+              --output_file demo/output/BEFORE_VOICEOVER.wav
+          ffmpeg -y -v error -i demo/output/BEFORE_VOICEOVER.wav \
+            -c:a libmp3lame -q:a 2 demo/output/BEFORE_VOICEOVER.mp3
+      - name: Produce captions and validate pacing
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import json,subprocess,re
+          out=Path("demo/output")
+          def duration(path):
+              data=json.loads(subprocess.check_output(["ffprobe","-v","error","-show_entries","format=duration","-of","json",str(path)]))
+              return float(data["format"]["duration"])
+          voice=duration(out/"BEFORE_VOICEOVER.mp3")
+          video=duration(out/"BEFORE_FRESH_REAL_BROWSER_REVIEW_1080P.mp4")
+          ratio=voice/video
+          print("footage",video,"voice",voice,"pace ratio",ratio)
+          if not 0.7 < ratio < 1.55: raise RuntimeError("Video narration mismatch; requires edit")
+          (out/"pace.txt").write_text(str(ratio))
+          words=Path("demo/FINAL_NARRATION_SHORT.txt").read_text().split()
+          groups=[]
+          group=[]
+          for word in words:
+              group.append(word)
+              if len(group)>=7 or word.endswith((".","?","!")):
+                  groups.append(group)
+                  group=[]
+          if group:groups.append(group)
+          def stamp(s):
+              v=max(0,round(s*1000))
+              return f"{v//3600000:02d}:{v%3600000//60000:02d}:{v%60000//1000:02d},{v%1000:03d}"
+          t=0
+          lines=[]
+          for i,g in enumerate(groups,1):
+              length=voice*len(g)/len(words)
+              lines.append(f"{i}\n{stamp(t)} --> {stamp(min(voice,t+length))}\n{' '.join(g)}\n")
+              t+=length
+          (out/"BEFORE_CAPTIONS.srt").write_text("\n".join(lines))
+          print("caption groups",len(groups))
+          PY
+      - name: Render H.264 AAC 1080p review cut with readable subtitles
+        shell: bash
+        run: |
+          set -euo pipefail
+          ratio="$(cat demo/output/pace.txt)"
+          ffmpeg -y -hide_banner -loglevel error \
+            -i demo/output/BEFORE_FRESH_REAL_BROWSER_REVIEW_1080P.mp4 \
+            -i demo/output/BEFORE_VOICEOVER.mp3 \
+            -filter_complex "[0:v]setpts=${ratio}*(PTS-STARTPTS),subtitles=demo/output/BEFORE_CAPTIONS.srt:force_style='FontName=DejaVu Sans,FontSize=24,PrimaryColour=&H00FFFFFF,OutlineColour=&H00000000,Outline=2,Shadow=0,Alignment=2,MarginV=54'[v]" \
+            -map "[v]" -map 1:a -shortest -c:v libx264 -preset medium -crf 19 \
+            -pix_fmt yuv420p -movflags +faststart -c:a aac -b:a 192k \
+            demo/output/BEFORE_FRESH_NARRATED_REVIEW_1080P.mp4
+          ffprobe -v error -show_entries stream=codec_name,codec_type,width,height:format=duration,size \
+            -of json demo/output/BEFORE_FRESH_NARRATED_REVIEW_1080P.mp4
+          ffmpeg -v error -i demo/output/BEFORE_FRESH_NARRATED_REVIEW_1080P.mp4 -f null -
+      - name: Retain new narration and review cut
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: BEFORE-OFFLINE-NARRATED-1080P-REVIEW
+          path: |
+            demo/output/BEFORE_FRESH_NARRATED_REVIEW_1080P.mp4
+            demo/output/BEFORE_VOICEOVER.mp3
+            demo/output/BEFORE_CAPTIONS.srt
+            demo/output/pace.txt
+          retention-days: 7
+          if-no-files-found: warn
